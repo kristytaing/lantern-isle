@@ -2,7 +2,7 @@
 
 > *A cozy isometric adventure — made for VibeJam 2026*
 
-[![Play Now](https://img.shields.io/badge/▶%20Play%20Now-Live%20Game-9B9AE2?style=for-the-badge&logo=github)](https://kristytaing.github.io/lantern-isle/)
+[![Play Now](https://img.shields.io/badge/▶%20Play%20Now-Live%20Game-9B9AE2?style=for-the-badge&logo=github)](https://ktaing.com/lantern-isle/)
 
 ---
 
