@@ -270,10 +270,20 @@ function activateShrine() {
     updateAbilityBar();
   }
 
+  const loreDrops = [
+    'A memory stirs in the light… "The Star did not fall by accident. Someone let it go."',
+    'The shrine whispers… "The Keeper of Lanterns left willingly — to protect the islands from a greater dark."',
+    'An ancient voice breathes… "Six shards. Six islands. Each held a piece of the Keeper\'s final wish."',
+    'The light pulses… "The Keeper asked one thing: find someone who still believes in warmth. You came."',
+    'The shrine glows… "The darkness was never the enemy. It was grief. And you answered it with light."',
+    '', // Island 5 — lore delivered by Ancient Keeper NPC already
+  ];
+
   const restoreLines = [
     `The island shrine awakens! Light floods the ${island.name}!`,
     island.npcs[0].restoredLine,
-    abilityKey ? `New ability unlocked: ${abilityNames[currentIslandId]}!` : 'The Guardian Star grows closer to awakening…'
+    abilityKey ? `New ability unlocked: ${abilityNames[currentIslandId]}!` : 'The Guardian Star grows closer to awakening…',
+    ...(loreDrops[currentIslandId] ? [loreDrops[currentIslandId]] : []),
   ];
 
   showDialogue('✨ Restoration!', restoreLines, () => {
@@ -295,6 +305,11 @@ function triggerWin() {
   particles.addRestorationBurst(0, 2, 0);
   setTimeout(() => particles.addRestorationBurst(0, 2, 0), 400);
   setTimeout(() => particles.addRestorationBurst(0, 2, 0), 800);
+  document.getElementById('win-epilogue').textContent =
+    'The prophecy is fulfilled. The Lantern Bearer — once a child who wandered ' +
+    'into a fading world — has relit the heart of the Archipelago. ' +
+    'Six islands remember warmth. Six shrines sing. ' +
+    'And somewhere above, the Guardian Star smiles back at the light below.';
   document.getElementById('win-screen').style.display = 'flex';
   showHUD(false);
 }
