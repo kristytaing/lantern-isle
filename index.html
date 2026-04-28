@@ -92,6 +92,12 @@
       background:rgba(240,222,194,0.82);border:1.5px solid #4F4261;border-radius:20px;
       padding:6px 16px;cursor:pointer;pointer-events:auto;font-size:13px;
       font-family:'Nunito',sans-serif;font-weight:700;color:#4F4261;}
+    #interact-prompt{position:absolute;display:none;pointer-events:none;
+      background:rgba(79,66,97,0.82);color:#F0DEC2;font-family:'Nunito',sans-serif;
+      font-size:12px;font-weight:700;padding:4px 10px;border-radius:10px;
+      border:1.5px solid #EBB21A;white-space:nowrap;transform:translate(-50%,-100%);
+      animation:promptbob 0.7s ease-in-out infinite alternate;}
+    @keyframes promptbob{from{transform:translate(-50%,-100%) translateY(0)}to{transform:translate(-50%,-100%) translateY(-4px)}}
   </style>
 </head>
 <body>
@@ -135,6 +141,7 @@
     <canvas id="map-canvas" width="640" height="400"></canvas>
     <button id="close-map">Close Map</button>
   </div>
+  <div id="interact-prompt">Press E</div>
   <div id="win-screen">
     <h1>✨ The Guardian Star<br>is Reawakened! ✨</h1>
     <p>The Archipelago glows with warmth once more.</p>

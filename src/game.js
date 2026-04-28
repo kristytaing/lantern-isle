@@ -685,13 +685,32 @@ function loop(ts) {
   // Proximity prompt (crystals / NPCs / shrine)
   if (state === 'playing' && player) {
     const pp = player.pos;
-    let nearSomething = false;
-    crystalMeshes.forEach(cm=>{ if(pp.distanceTo(cm.position)<1.0) nearSomething=true; });
-    npcMeshes.forEach(nm=>{ if(pp.distanceTo(nm.position)<1.4) nearSomething=true; });
-    const island=getIsland(currentIslandId);
-    const sd=Math.sqrt((pp.x-island.shrinePos.x)**2+(pp.z-island.shrinePos.z)**2);
-    if(sd<1.2) nearSomething=true;
-    // Subtle: could add a floating E prompt here
+    let promptTarget = null, promptLabel = 'Press E';
+    const island = getIsland(currentIslandId);
+    const sd = Math.sqrt((pp.x-island.shrinePos.x)**2+(pp.z-island.shrinePos.z)**2);
+    if (sd < 1.2) { promptTarget = shrineMesh; promptLabel = island.restored ? '✨ Shrine' : 'Press E — Shrine'; }
+    npcMeshes.forEach((nm, ni) => {
+      if (pp.distanceTo(nm.position) < 1.4) { promptTarget = nm; promptLabel = `Talk to ${island.npcs[ni].name}`; }
+    });
+    crystalMeshes.forEach(cm => {
+      if (pp.distanceTo(cm.position) < 1.0) { promptTarget = cm; promptLabel = '✨ Crystal Shard'; }
+    });
+    const promptEl = document.getElementById('interact-prompt');
+    if (promptTarget) {
+      const worldPos = promptTarget.position.clone();
+      worldPos.y += 0.7;
+      worldPos.project(camera);
+      const sx = (worldPos.x * 0.5 + 0.5) * window.innerWidth;
+      const sy = (-worldPos.y * 0.5 + 0.5) * window.innerHeight;
+      promptEl.style.left = sx + 'px';
+      promptEl.style.top = sy + 'px';
+      promptEl.textContent = promptLabel;
+      promptEl.style.display = 'block';
+    } else {
+      promptEl.style.display = 'none';
+    }
+  } else {
+    document.getElementById('interact-prompt').style.display = 'none';
   }
 
   particles.update(dt);
