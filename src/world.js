@@ -26,7 +26,7 @@ export const ISLANDS = [
     mapPos: { x: 0.5, y: 0.22 },
     mechanic: 'shadow',
     tiles: buildTiles(0),
-    crystalPositions: [{x:-2,z:-2},{x:3,z:1},{x:-1,z:3},{x:4,z:-3},{x:-4,z:2}],
+    crystalPositions: [{x:-6,z:-5},{x:6,z:2},{x:-2,z:6},{x:7,z:-5},{x:-7,z:3}],
     shrinePos: {x:0,z:0},
     npcs: [
       { name:'Elder Moss', x:2, z:-1, color:0x6F7E4A,
@@ -52,7 +52,7 @@ export const ISLANDS = [
     mapPos: { x: 0.22, y: 0.25 },
     mechanic: 'tidal',
     tiles: buildTiles(1),
-    crystalPositions: [{x:-3,z:-1},{x:2,z:2},{x:-2,z:3},{x:4,z:0},{x:0,z:-4}],
+    crystalPositions: [{x:-8,z:0},{x:8,z:1},{x:0,z:-3},{x:5,z:2},{x:-5,z:2}],
     shrinePos: {x:0,z:0},
     npcs: [
       { name:'Sandy', x:2, z:-2, color:0xEBB21A,
@@ -78,7 +78,7 @@ export const ISLANDS = [
     mapPos: { x: 0.78, y: 0.25 },
     mechanic: 'heat',
     tiles: buildTiles(2),
-    crystalPositions: [{x:-2,z:-3},{x:3,z:2},{x:-3,z:1},{x:2,z:-1},{x:0,z:4}],
+    crystalPositions: [{x:-5,z:-4},{x:5,z:3},{x:-4,z:4},{x:4,z:-4},{x:0,z:5}],
     shrinePos: {x:0,z:0},
     npcs: [
       { name:'Ember', x:2, z:-2, color:0xEB6259,
@@ -104,7 +104,7 @@ export const ISLANDS = [
     mapPos: { x: 0.38, y: 0.55 },
     mechanic: 'social',
     tiles: buildTiles(3),
-    crystalPositions: [{x:-2,z:-2},{x:3,z:1},{x:-1,z:3},{x:4,z:-2},{x:0,z:-3}],
+    crystalPositions: [{x:-6,z:-6},{x:6,z:-5},{x:-6,z:5},{x:6,z:5},{x:0,z:-7}],
     shrinePos: {x:0,z:0},
     npcs: [
       { name:'Baker Bun', x:2, z:-2, color:0xF0DEC2,
@@ -133,7 +133,7 @@ export const ISLANDS = [
     mapPos: { x: 0.65, y: 0.6 },
     mechanic: 'echo',
     tiles: buildTiles(4),
-    crystalPositions: [{x:-3,z:-2},{x:2,z:3},{x:-2,z:2},{x:3,z:-1},{x:0,z:-3}],
+    crystalPositions: [{x:-5,z:-3},{x:4,z:4},{x:-4,z:3},{x:5,z:-3},{x:0,z:-5}],
     shrinePos: {x:0,z:0},
     npcs: [
       { name:'Glimmer', x:2, z:-2, color:0xC6C3DC,
@@ -159,7 +159,7 @@ export const ISLANDS = [
     mapPos: { x: 0.25, y: 0.75 },
     mechanic: 'wind',
     tiles: buildTiles(5),
-    crystalPositions: [{x:-2,z:-2},{x:3,z:1},{x:-3,z:2},{x:2,z:-3},{x:0,z:4}],
+    crystalPositions: [{x:-3,z:-7},{x:3,z:-6},{x:-4,z:0},{x:4,z:2},{x:0,z:7}],
     shrinePos: {x:0,z:0},
     npcs: [
       { name:'Zephyr', x:2, z:-2, color:0xC6C3DC,
