@@ -144,7 +144,7 @@ export class Player {
     this.isMoving = dx !== 0 || dz !== 0;
 
     let spd = this.speed;
-    if (this.sprintActive) spd *= 1.7;
+    if (this.sprintActive && !this.shadowSlow) spd *= 1.7;
     if (this.shadowSlow) spd *= 0.45;
 
     if (this.isMoving) {

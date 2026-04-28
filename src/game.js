@@ -499,7 +499,7 @@ window.addEventListener('keydown', e => {
     if (!wasDown && (k === 'm' || k === 'tab')) { e.preventDefault(); openMap(); return; }
     if (!wasDown && k === 'e') { handleInteract(); }
     if (!wasDown && k === 'q') { activatePulseAbility(); }
-    if (!wasDown && k === 'shift') { if(player) player.activateSprint(); }
+    if (!wasDown && k === 'shift') { if(player && player.activateSprint()) { const pp=player.pos; particles.addBurst(pp.x,0.5,pp.z,0xEBB21A,12); particles.addPulseRing(pp.x,0,pp.z); } }
   }
   if (state === 'map') {
     if (!wasDown && (k === 'm' || k === 'tab' || k === 'escape')) { e.preventDefault(); closeMap(); }
@@ -656,7 +656,7 @@ document.getElementById('map-canvas').addEventListener('click', e => {
   const my = (e.clientY - rect.top) / rect.height;
   ISLANDS.forEach((island, i) => {
     const dx = mx - island.mapPos.x, dy = my - island.mapPos.y;
-    if (Math.sqrt(dx*dx+dy*dy) < 0.08 && island.unlocked) selectIslandFromMap(i);
+    if (Math.sqrt(dx*dx+dy*dy) < 0.10 && island.unlocked) selectIslandFromMap(i);
   });
 });
 
@@ -673,6 +673,7 @@ document.getElementById('dialogue-continue').addEventListener('click', ()=>{
 document.getElementById('restart-btn').addEventListener('click', ()=>{
   document.getElementById('win-screen').style.display='none';
   ISLANDS.forEach(i=>{ i.unlocked=false; i.restored=false; i.crystalCount=0; });
+  questStateMap = {};
   ISLANDS[0].unlocked=true;
   loadIsland(0); showHUD(true); state='playing';
 });
