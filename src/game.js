@@ -328,6 +328,29 @@ function drawCompass(island) {
   // Player dot
   ctx.beginPath(); ctx.arc(cx,cy,5,0,Math.PI*2);
   ctx.fillStyle = PALETTE.coralRed; ctx.fill();
+  // Shrine direction arrow (only when shrine not yet restored)
+  if (player && island && !island.restored) {
+    const pp = player.pos;
+    const dx = island.shrinePos.x - pp.x;
+    const dz = island.shrinePos.z - pp.z;
+    // Isometric camera faces (1,0,1) direction, so map world→compass:
+    // compass-right = world +X, compass-up = world -Z
+    const angle = Math.atan2(dx, -dz);
+    const arrowLen = r * 0.55;
+    const ax = cx + Math.sin(angle) * arrowLen;
+    const ay = cy - Math.cos(angle) * arrowLen;
+    ctx.save();
+    ctx.strokeStyle = PALETTE.goldenYellow; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ax, ay); ctx.stroke();
+    // Arrowhead
+    ctx.fillStyle = PALETTE.goldenYellow;
+    ctx.translate(ax, ay); ctx.rotate(angle);
+    ctx.beginPath(); ctx.moveTo(0,-6); ctx.lineTo(4,2); ctx.lineTo(-4,2); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    // Shrine star label
+    ctx.font = 'bold 9px Nunito,sans-serif'; ctx.fillStyle = PALETTE.goldenYellow;
+    ctx.textAlign = 'center'; ctx.fillText('✦', ax, ay - 8);
+  }
 }
 
 // ── World Map Screen ──────────────────────────────────────────
@@ -678,6 +701,8 @@ function loop(ts) {
     }
     // Pulse reveal timer
     if (pulseRevealTimer > 0) pulseRevealTimer -= dt;
+    // Redraw compass every frame so shrine arrow tracks player position
+    drawCompass(getIsland(currentIslandId));
     // Ability cooldown HUD
     const cdSprint = document.querySelector('#ab-sprint .ability-cooldown');
     if (cdSprint) cdSprint.style.transform = `scaleY(${Math.max(0, player.sprintCooldown/4)})`;
