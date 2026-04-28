@@ -34,7 +34,12 @@ camera.lookAt(0, 0, 0);
 // ── Scene objects ─────────────────────────────────────────────
 let player, particles, islandMeshes = [], crystalMeshes = [], npcMeshes = [], shrineMesh;
 let crystalOrbits = [], shadowCreep, shadowCreepMesh;
-let questState = { find_cat: false, fetch_water: false };
+let questStateMap = {};
+function getQuestState(id) {
+  if (!questStateMap[id]) questStateMap[id] = { find_cat: false, fetch_water: false };
+  return questStateMap[id];
+}
+let questState = getQuestState(0);
 let inventoryItems = [];
 let pulseRevealTimer = 0;
 
@@ -603,7 +608,7 @@ function selectIslandFromMap(islandId) {
 // ── Island Navigation ─────────────────────────────────────────
 function loadIsland(id) {
   currentIslandId = id;
-  questState = { find_cat: false, fetch_water: false };
+  questState = getQuestState(id);
   player.pos.set(0, 0, 2);
   buildIsland(id);
   updateAbilityBar();
