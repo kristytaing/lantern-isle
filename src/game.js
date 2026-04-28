@@ -600,8 +600,8 @@ function setupMobile() {
     const angle = Math.atan2(dy, dx);
     knob.style.transform = `translate(calc(-50% + ${Math.cos(angle)*dist}px), calc(-50% + ${Math.sin(angle)*dist}px))`;
     // Isometric input mapping
-    joystickDir.x = (dx/40);
-    joystickDir.z = (dy/40);
+    joystickDir.x = ((dx - dy) / 40) * 0.7;
+    joystickDir.z = ((dx + dy) / 40) * 0.7;
   }, {passive:false});
   zone.addEventListener('touchend', () => {
     origin = null; joystickDir.x=0; joystickDir.z=0;
