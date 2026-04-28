@@ -178,11 +178,50 @@ export const ISLANDS = [
 function buildTiles(islandId) {
   const tiles = [];
   const size = 9;
+
+  // Each island has a unique shape function returning true if (x,z) is land
+  const shapes = [
+    // 0: Mossy Forest — classic rounded oval, gentle bumps
+    (x, z) => {
+      const dist = Math.sqrt(x*x*0.9 + z*z*1.1);
+      return dist <= size - Math.abs(Math.sin(x*0.7+z*0.5))*1.5;
+    },
+    // 1: Sunflower Beach — long east-west strip with sandy shoals
+    (x, z) => {
+      const dist = Math.sqrt(x*x*0.5 + z*z*1.8);
+      return dist <= size - Math.abs(Math.sin(x*0.4))*1.2;
+    },
+    // 2: Sakura Cove — crescent / C-shape opening to the east
+    (x, z) => {
+      const dist = Math.sqrt(x*x + z*z);
+      if (dist < 3 && x > 0) return false; // hollow the east center
+      return dist <= size - Math.abs(Math.sin(z*0.8))*2;
+    },
+    // 3: Cozy Village — fat roughly square landmass, very walkable
+    (x, z) => {
+      const ax = Math.abs(x), az = Math.abs(z);
+      return ax <= 7.5 && az <= 7.5 && (ax+az) <= 10.5;
+    },
+    // 4: Crystal Cave — compact jagged circle, cave-like indentations
+    (x, z) => {
+      const dist = Math.sqrt(x*x + z*z);
+      const jag = Math.abs(Math.sin(Math.atan2(z,x)*4)) * 1.8;
+      return dist <= 7 - jag;
+    },
+    // 5: Lavender Highlands — tall north-south ridge, narrow and elevated
+    (x, z) => {
+      const dist = Math.sqrt(x*x*1.9 + z*z*0.55);
+      return dist <= size - Math.abs(Math.sin(z*0.5+x*0.3))*1.8;
+    },
+  ];
+
+  const shapeFn = shapes[islandId] || shapes[0];
+
   for (let x = -size; x <= size; x++) {
     for (let z = -size; z <= size; z++) {
-      const dist = Math.sqrt(x*x + z*z);
-      if (dist <= size - Math.abs(Math.sin(x*0.7+z*0.5))*1.5) {
-        tiles.push({x, z, type: dist > size-2 ? 'water' : 'ground'});
+      if (shapeFn(x, z)) {
+        const dist = Math.sqrt(x*x + z*z);
+        tiles.push({ x, z, type: dist > size-2 ? 'water' : 'ground' });
       }
     }
   }
