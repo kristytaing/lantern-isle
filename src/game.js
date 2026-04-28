@@ -397,6 +397,39 @@ function drawWorldMap() {
   });
   ctx.setLineDash([]); ctx.globalAlpha=1;
 
+  // Per-island map shape drawing helper
+  function islandPath(ctx, idx, px, py) {
+    ctx.beginPath();
+    if (idx === 0) {
+      // Mossy Forest: rounded blob (irregular circle)
+      ctx.ellipse(px-2, py+2, 44, 36, 0.3, 0, Math.PI*2);
+    } else if (idx === 1) {
+      // Sunflower Beach: long horizontal strip
+      ctx.ellipse(px, py, 58, 22, 0, 0, Math.PI*2);
+    } else if (idx === 2) {
+      // Sakura Cove: crescent — full circle minus inner bite
+      ctx.arc(px, py, 40, 0, Math.PI*2);
+    } else if (idx === 3) {
+      // Cozy Village: diamond/square rotated 45°
+      ctx.moveTo(px, py-38); ctx.lineTo(px+38, py);
+      ctx.lineTo(px, py+38); ctx.lineTo(px-38, py);
+      ctx.closePath();
+    } else if (idx === 4) {
+      // Crystal Cave: jagged star-ish polygon
+      const spikes = 7, outer = 40, inner = 26;
+      for (let s = 0; s < spikes*2; s++) {
+        const r2 = s%2===0 ? outer : inner;
+        const a = (s/spikes/2)*Math.PI*2 - Math.PI/2;
+        s===0 ? ctx.moveTo(px+Math.cos(a)*r2, py+Math.sin(a)*r2)
+              : ctx.lineTo(px+Math.cos(a)*r2, py+Math.sin(a)*r2);
+      }
+      ctx.closePath();
+    } else {
+      // Lavender Highlands: tall ridge ellipse
+      ctx.ellipse(px, py, 26, 50, 0.2, 0, Math.PI*2);
+    }
+  }
+
   // Draw islands
   ISLANDS.forEach((island, i) => {
     const px = island.mapPos.x * W, py = island.mapPos.y * H;
@@ -406,8 +439,8 @@ function drawWorldMap() {
     ctx.save();
     if (!unlocked) ctx.globalAlpha = 0.38;
 
-    // Island blob
-    ctx.beginPath(); ctx.ellipse(px,py,46,34,0,0,Math.PI*2);
+    // Island blob — distinct shape per biome
+    islandPath(ctx, i, px, py);
     ctx.fillStyle = restored ? new THREE.Color(island.groundColor).getStyle() : '#9B9AE2';
     ctx.fill();
     ctx.strokeStyle = restored ? PALETTE.goldenYellow : PALETTE.softLavender; ctx.lineWidth = 2; ctx.stroke();
@@ -415,7 +448,7 @@ function drawWorldMap() {
     // Glow if restored
     if (restored) {
       ctx.shadowColor = PALETTE.goldenYellow; ctx.shadowBlur = 14;
-      ctx.beginPath(); ctx.ellipse(px,py,46,34,0,0,Math.PI*2);
+      islandPath(ctx, i, px, py);
       ctx.strokeStyle = PALETTE.goldenYellow; ctx.lineWidth=2; ctx.stroke();
       ctx.shadowBlur = 0;
     }
