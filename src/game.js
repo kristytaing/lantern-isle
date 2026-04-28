@@ -422,6 +422,7 @@ window.addEventListener('keydown', e => {
   if (state === 'playing') {
     if (!wasDown && (k === 'm' || k === 'tab')) { e.preventDefault(); openMap(); return; }
     if (!wasDown && k === 'e') { handleInteract(); }
+    if (!wasDown && k === 'q') { activatePulseAbility(); }
     if (!wasDown && k === 'shift') { if(player) player.activateSprint(); }
   }
   if (state === 'map') {
@@ -456,14 +457,17 @@ function handleInteract() {
     if (d < 1.0) { collectCrystal(cm); return; }
   }
 
-  // Lantern pulse
-  if (player.abilities.pulse) {
-    if (player.activatePulse()) {
-      sfxLanternPulse();
-      particles.addBurst(pp.x, 0.5, pp.z, PALETTE.goldenYellowN, 20);
-      particles.addPulseRing(pp.x, 0, pp.z);
-      pulseRevealTimer = 3;
-    }
+  activatePulseAbility();
+}
+
+function activatePulseAbility() {
+  if (!player || !player.abilities.pulse) return;
+  const pp = player.pos;
+  if (player.activatePulse()) {
+    sfxLanternPulse();
+    particles.addBurst(pp.x, 0.5, pp.z, PALETTE.goldenYellowN, 20);
+    particles.addPulseRing(pp.x, 0, pp.z);
+    pulseRevealTimer = 3;
   }
 }
 
@@ -674,12 +678,11 @@ function loop(ts) {
     }
     // Pulse reveal timer
     if (pulseRevealTimer > 0) pulseRevealTimer -= dt;
-    // Sprint cooldown HUD
-    const abSprint = document.getElementById('ab-sprint');
-    if (abSprint && player.abilities.sprint) {
-      const cd = document.querySelector('#ab-sprint .ability-cooldown');
-      if (cd) cd.style.transform = `scaleY(${Math.max(0, player.sprintCooldown/4)})`;
-    }
+    // Ability cooldown HUD
+    const cdSprint = document.querySelector('#ab-sprint .ability-cooldown');
+    if (cdSprint) cdSprint.style.transform = `scaleY(${Math.max(0, player.sprintCooldown/4)})`;
+    const cdPulse = document.querySelector('#ab-pulse .ability-cooldown');
+    if (cdPulse) cdPulse.style.transform = `scaleY(${Math.max(0, player.pulseCooldown/5)})`;
   }
 
   // Proximity prompt (crystals / NPCs / shrine)
