@@ -694,10 +694,25 @@ function loop(ts) {
       shrineMesh.rotation.y += dt * 0.4;
       shrineMesh.position.y = 0.3 + Math.sin(time*1.4)*0.03;
     }
-    // Shadow creep
+    // Shadow creep — grows over time, slows & darkens screen when player inside
     if (shadowCreepMesh && shadowCreepMesh.userData.growing) {
       shadowCreepMesh.userData.radius = Math.min(shadowCreepMesh.userData.radius + dt*0.04, 4);
       shadowCreepMesh.scale.setScalar(shadowCreepMesh.userData.radius / 1.5);
+    }
+    if (shadowCreepMesh && player) {
+      const scPos = shadowCreepMesh.position;
+      const distToCreep = Math.sqrt((player.pos.x-scPos.x)**2+(player.pos.z-scPos.z)**2);
+      const inShadow = distToCreep < shadowCreepMesh.userData.radius;
+      player.shadowSlow = inShadow;
+      // Vignette overlay
+      let vig = document.getElementById('shadow-vignette');
+      if (!vig) {
+        vig = document.createElement('div');
+        vig.id = 'shadow-vignette';
+        vig.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9;transition:opacity 0.8s;background:radial-gradient(ellipse at center,transparent 40%,rgba(30,10,50,0.7) 100%);opacity:0;';
+        document.body.appendChild(vig);
+      }
+      vig.style.opacity = inShadow ? '1' : '0';
     }
     // Pulse reveal timer
     if (pulseRevealTimer > 0) pulseRevealTimer -= dt;
