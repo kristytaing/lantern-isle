@@ -26,7 +26,7 @@ export const ISLANDS = [
     mapPos: { x: 0.5, y: 0.22 },
     mechanic: 'shadow',
     tiles: buildTiles(0),
-    crystalPositions: [{x:-6,z:-5},{x:6,z:2},{x:-2,z:6},{x:7,z:-5},{x:-7,z:3}],
+    crystalPositions: [{x:-5,z:-4},{x:5,z:2},{x:-2,z:5},{x:4,z:-5},{x:-4,z:4}],
     shrinePos: {x:0,z:0},
     npcs: [
       { name:'Elder Moss', x:2, z:-1, color:0x6F7E4A,
