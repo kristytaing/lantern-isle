@@ -490,8 +490,9 @@ window.addEventListener('keydown', e => {
   if (state === 'title') return;
   if (state === 'dialogue') {
     if (!wasDown && (k === 'e' || k === ' ' || k === 'enter')) {
-      if (typewriterTimer) { clearInterval(typewriterTimer); dialogueText.textContent = currentLine; dialogueContinue.style.display='block'; return; }
-      advanceDialogue();
+      e.preventDefault();
+      if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; dialogueText.textContent = currentLine; dialogueContinue.style.display='block'; return; }
+      if (dialogueContinue.style.display !== 'none') advanceDialogue();
     }
     return;
   }
@@ -676,6 +677,18 @@ document.getElementById('restart-btn').addEventListener('click', ()=>{
   questStateMap = {};
   ISLANDS[0].unlocked=true;
   loadIsland(0); showHUD(true); state='playing';
+});
+
+// ── Dev mode ──────────────────────────────────────────────────
+document.getElementById('dev-btn').addEventListener('click', () => {
+  ISLANDS.forEach(i=>{ i.unlocked=true; i.restored=false; i.crystalCount=0; });
+  questStateMap = {};
+  document.getElementById('title-screen').style.display='none';
+  initAudio(); audioReady=true;
+  startExploreMusic();
+  showHUD(true); state='playing';
+  buildIsland(0);
+  setTimeout(()=>showDialogue('🛠️ Dev Mode', ['All islands unlocked. Use the map (M) to jump to any island.'], null), 500);
 });
 
 // ── Title screen reset ────────────────────────────────────────
