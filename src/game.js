@@ -2132,10 +2132,10 @@ function setupMobile() {
   const JOY_DEAD = 6;
   const joyEl = document.createElement('div');
   joyEl.id = 'joy-ring';
-  joyEl.style.cssText = `position:fixed;bottom:32px;left:36px;width:${JOY_R*2}px;height:${JOY_R*2}px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.07);pointer-events:none;z-index:15;touch-action:none;`;
+  joyEl.style.cssText = `position:fixed;bottom:32px;left:36px;width:${JOY_R*2}px;height:${JOY_R*2}px;border-radius:50%;border:3px solid rgba(255,255,255,0.55);background:rgba(255,255,255,0.13);pointer-events:none;z-index:15;touch-action:none;`;
   const joyDot = document.createElement('div');
   const DOT = 26;
-  joyDot.style.cssText = `position:absolute;width:${DOT}px;height:${DOT}px;border-radius:50%;background:rgba(255,255,255,0.4);top:50%;left:50%;transform:translate(-50%,-50%);transition:transform 0.05s;`;
+  joyDot.style.cssText = `position:absolute;width:${DOT}px;height:${DOT}px;border-radius:50%;background:rgba(255,255,255,0.7);top:50%;left:50%;transform:translate(-50%,-50%);transition:transform 0.05s;`;
   joyEl.appendChild(joyDot);
   document.body.appendChild(joyEl);
 
@@ -2146,18 +2146,20 @@ function setupMobile() {
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   }
 
-  renderer.domElement.addEventListener('touchstart', e => {
-    if (e.target !== renderer.domElement) return;
-    e.preventDefault();
+  document.addEventListener('touchstart', e => {
+    if (state !== 'playing') return;
     const t = e.touches[0];
     const c = getJoyCenter();
     const dx = t.clientX - c.x, dy = t.clientY - c.y;
-    if (Math.sqrt(dx*dx + dy*dy) < JOY_R + 20) joyActive = true;
+    if (Math.sqrt(dx*dx + dy*dy) < JOY_R + 20) {
+      joyActive = true;
+      e.preventDefault();
+    }
   }, { passive: false });
 
-  renderer.domElement.addEventListener('touchmove', e => {
-    e.preventDefault();
+  document.addEventListener('touchmove', e => {
     if (!joyActive) return;
+    e.preventDefault();
     const t = e.touches[0];
     const c = getJoyCenter();
     const dx = t.clientX - c.x, dy = t.clientY - c.y;
@@ -2170,14 +2172,12 @@ function setupMobile() {
     joystickDir.z = (dx + dy) / dist * scale;
   }, { passive: false });
 
-  renderer.domElement.addEventListener('touchend', e => {
-    e.preventDefault();
+  document.addEventListener('touchend', e => {
+    if (!joyActive) return;
     joyActive = false;
     joystickDir.x = 0; joystickDir.z = 0;
     joyDot.style.transform = 'translate(-50%,-50%)';
   }, { passive: false });
-
-  window._touchTarget = () => null;
 }
 
 // ── Map click handling ────────────────────────────────────────
