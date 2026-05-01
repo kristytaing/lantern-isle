@@ -12,145 +12,240 @@
     body{background:#1a1228;overflow:hidden;font-family:'Nunito',sans-serif;width:100vw;height:100vh;}
     canvas{display:block;}
     #ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;}
-    #hud-crystals{position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:6px;
-      background:rgba(240,222,194,0.82);border:1.5px solid #4F4261;border-radius:20px;
-      padding:6px 12px;pointer-events:auto;}
-    .gem{width:22px;height:26px;position:relative;}
+
+    /* ── Crystal Status Bar ── */
+    #hud-crystals{
+      position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:5px;
+      background:rgba(26,18,40,0.62);border:1.5px solid rgba(155,154,226,0.35);
+      border-radius:24px;padding:6px 13px 6px 10px;pointer-events:auto;
+      backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    }
+    .gem{width:18px;height:18px;display:flex;align-items:center;justify-content:center;opacity:0.28;transition:opacity 0.35s,filter 0.35s;}
+    .gem.lit{opacity:1;filter:drop-shadow(0 0 4px rgba(155,154,226,0.9));}
     .gem svg{width:100%;height:100%;}
-    #crystal-label{font-size:12px;font-weight:700;color:#4F4261;margin-left:4px;}
+    #crystal-label{font-size:11px;font-weight:700;color:#C6C3DC;margin-left:5px;letter-spacing:0.3px;}
+
+    /* ── HUD Buttons (sound + map) ── */
+    .hud-btn{
+      position:absolute;top:14px;
+      background:rgba(26,18,40,0.62);border:1.5px solid rgba(155,154,226,0.35);
+      border-radius:20px;padding:6px 12px;cursor:pointer;pointer-events:auto;
+      display:flex;align-items:center;gap:6px;
+      font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;color:#C6C3DC;
+      backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+      transition:background 0.2s,border-color 0.2s;
+    }
+    .hud-btn:hover{background:rgba(79,66,97,0.7);border-color:rgba(155,154,226,0.6);}
+    .hud-btn svg{flex-shrink:0;}
+    #sound-toggle{right:14px;}
+    #map-btn{left:50%;transform:translateX(-50%);}
     #hud-compass{display:none!important;}
-    #inventory{position:absolute;right:12px;top:50%;transform:translateY(-50%);
+
+    /* ── Inventory ── */
+    #inventory{position:absolute;right:14px;top:50%;transform:translateY(-50%);
       display:flex;flex-direction:column;gap:6px;pointer-events:auto;}
-    .inv-slot{width:44px;height:44px;background:rgba(240,222,194,0.8);
-      border:1.5px solid #4F4261;border-radius:6px;display:flex;align-items:center;
-      justify-content:center;font-size:18px;}
-    #dialogue-box{position:absolute;bottom:0;left:0;width:100%;height:22%;
-      background:#F0DEC2;border-top:3px solid #EB6259;display:none;pointer-events:auto;
-      box-shadow:0 -4px 18px rgba(79,66,97,0.18);}
-    #dialogue-floral-left{position:absolute;top:-18px;left:10px;font-size:28px;color:#EB6259;}
-    #dialogue-floral-right{position:absolute;top:-18px;right:10px;font-size:28px;color:#EB6259;}
-    #dialogue-speaker{position:absolute;top:-14px;left:20px;background:#EB6259;
-      color:#F0DEC2;font-weight:700;font-size:12px;padding:3px 12px;border-radius:12px;
-      box-shadow:0 2px 6px rgba(79,66,97,0.25);}
-    #dialogue-text{padding:20px 60px 14px 20px;font-size:14px;line-height:1.7;color:#4F4261;}
-    #dialogue-continue{position:absolute;bottom:12px;right:18px;font-size:18px;
-      color:#EB6259;cursor:pointer;animation:bob 0.6s ease-in-out infinite alternate;}
-    @keyframes bob{from{transform:translateY(0)}to{transform:translateY(5px)}}
-    #map-screen{position:absolute;inset:0;background:rgba(240,222,194,0.97);
+    .inv-slot{width:44px;height:44px;
+      background:rgba(26,18,40,0.62);border:1.5px solid rgba(155,154,226,0.35);
+      border-radius:10px;display:flex;align-items:center;justify-content:center;
+      backdrop-filter:blur(6px);}
+    .inv-slot svg{width:24px;height:24px;}
+
+    /* ── Quest Tracker ── */
+    #quest-tracker{position:absolute;left:14px;top:50%;transform:translateY(-50%);
+      background:rgba(26,18,40,0.62);border:1.5px solid rgba(155,154,226,0.28);
+      border-radius:14px;padding:10px 14px;min-width:150px;max-width:200px;
+      display:none;pointer-events:none;backdrop-filter:blur(6px);}
+    #quest-tracker h4{font-size:10px;font-weight:800;color:#EBB21A;text-transform:uppercase;
+      letter-spacing:0.8px;margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+    #quest-tracker ul{list-style:none;padding:0;margin:0;}
+    #quest-tracker li{font-size:11px;color:#C6C3DC;font-weight:600;padding:3px 0;
+      display:flex;align-items:center;gap:5px;}
+    #quest-tracker li::before{content:'';width:5px;height:5px;border-radius:50%;background:#9B9AE2;flex-shrink:0;}
+    #quest-tracker li.done{opacity:0.38;text-decoration:line-through;}
+    #quest-tracker li.done::before{background:#4F4261;}
+
+    /* ── Dialogue Box ── */
+    #dialogue-box{
+      position:absolute;bottom:0;left:0;width:100%;
+      background:rgba(26,18,40,0.93);border-top:2px solid rgba(155,154,226,0.4);
+      display:none;pointer-events:auto;
+      padding:0 0 16px 0;
+      backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    }
+    #dialogue-header{
+      display:flex;align-items:center;gap:8px;
+      padding:10px 18px 8px 18px;
+      border-bottom:1px solid rgba(155,154,226,0.15);
+    }
+    #dialogue-speaker-icon{
+      width:28px;height:28px;border-radius:50%;
+      background:rgba(155,154,226,0.2);border:1.5px solid rgba(155,154,226,0.4);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    #dialogue-speaker-icon svg{width:15px;height:15px;}
+    #dialogue-speaker{
+      font-size:12px;font-weight:800;color:#EBB21A;letter-spacing:0.3px;
+    }
+    #dialogue-body{
+      padding:12px 48px 4px 18px;
+      font-size:15px;line-height:1.65;color:#F0DEC2;
+    }
+    #dialogue-continue{
+      position:absolute;bottom:14px;right:18px;
+      width:22px;height:22px;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;animation:bob 0.65s ease-in-out infinite alternate;
+    }
+    #dialogue-continue svg{width:14px;height:14px;}
+    @keyframes bob{from{transform:translateY(0)}to{transform:translateY(4px)}}
+
+    /* ── Ability Bar ── */
+    #ability-bar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+      display:flex;gap:8px;pointer-events:none;}
+    .ability-slot{
+      width:40px;height:40px;
+      background:rgba(26,18,40,0.72);border:1.5px solid rgba(155,154,226,0.35);
+      border-radius:10px;display:flex;align-items:center;justify-content:center;
+      position:relative;overflow:hidden;backdrop-filter:blur(4px);
+    }
+    .ability-slot svg{width:20px;height:20px;position:relative;z-index:1;}
+    .ability-key{
+      position:absolute;bottom:2px;right:3px;font-size:8px;font-weight:800;
+      color:rgba(198,195,220,0.6);z-index:2;
+    }
+    .ability-cooldown{position:absolute;inset:0;background:rgba(79,66,97,0.6);
+      border-radius:9px;transform-origin:bottom;transition:transform 0.1s;}
+
+    /* ── Map Screen ── */
+    #map-screen{position:absolute;inset:0;
+      background:rgba(26,18,40,0.96);
       display:none;flex-direction:column;align-items:center;justify-content:center;
-      pointer-events:auto;z-index:20;}
-    #map-title{font-size:36px;font-weight:800;color:#4F4261;margin-bottom:20px;
-      text-shadow:2px 2px 0 rgba(240,222,194,0.8);}
-    #map-canvas{border:4px solid #D4836A;border-radius:18px;background:#F0DEC2;}
-    #close-map{margin-top:14px;background:#EB6259;color:#F0DEC2;border:none;
-      font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;
-      padding:8px 28px;border-radius:12px;cursor:pointer;pointer-events:auto;}
+      pointer-events:auto;z-index:20;backdrop-filter:blur(8px);}
+    #map-title{
+      font-size:22px;font-weight:800;color:#F0DEC2;margin-bottom:16px;
+      letter-spacing:0.5px;display:flex;align-items:center;gap:8px;
+    }
+    #map-title svg{width:20px;height:20px;}
+    #map-canvas{border:2px solid rgba(155,154,226,0.4);border-radius:14px;background:#120d1e;}
+    #close-map{
+      margin-top:14px;background:rgba(155,154,226,0.18);color:#C6C3DC;
+      border:1.5px solid rgba(155,154,226,0.4);
+      font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
+      padding:8px 28px;border-radius:12px;cursor:pointer;pointer-events:auto;
+      transition:background 0.2s;
+    }
+    #close-map:hover{background:rgba(155,154,226,0.3);}
+
+    /* ── Title Screen ── */
     #title-screen{position:absolute;inset:0;
-      background:linear-gradient(180deg,#2A1A4A 0%,#4F3A7A 40%,#9B9AE2 80%,#F0DEC2 100%);
+      background:linear-gradient(180deg,#0e0818 0%,#2A1A4A 40%,#4F3A7A 80%,#3a2860 100%);
       transition:opacity 0.35s ease;display:flex;flex-direction:column;align-items:center;
       justify-content:center;z-index:30;pointer-events:auto;overflow:hidden;}
-    #title-lantern{font-size:56px;animation:lanternFloat 2.5s ease-in-out infinite alternate;
-      filter:drop-shadow(0 0 18px rgba(235,178,26,0.8));margin-bottom:8px;}
+    #title-lantern{
+      width:64px;height:64px;margin-bottom:10px;
+      animation:lanternFloat 2.5s ease-in-out infinite alternate;
+      filter:drop-shadow(0 0 20px rgba(235,178,26,0.9));
+    }
     @keyframes lanternFloat{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-12px) rotate(4deg)}}
-    #title-screen h1{font-size:42px;font-weight:800;color:#F0DEC2;text-align:center;
-      line-height:1.2;text-shadow:0 0 24px rgba(235,178,26,0.6),0 2px 8px rgba(0,0,0,0.4);}
-    #title-tagline{color:#EBB21A;font-size:14px;margin-top:6px;font-weight:600;
-      letter-spacing:1.5px;text-transform:uppercase;opacity:0.9;}
-    #title-screen p{color:#C6C3DC;font-size:14px;margin-top:10px;opacity:0.85;
-      max-width:320px;text-align:center;line-height:1.6;}
+    #title-screen h1{font-size:40px;font-weight:800;color:#F0DEC2;text-align:center;
+      line-height:1.2;text-shadow:0 0 24px rgba(235,178,26,0.5),0 2px 8px rgba(0,0,0,0.5);}
+    #title-tagline{color:#EBB21A;font-size:13px;margin-top:7px;font-weight:700;
+      letter-spacing:2px;text-transform:uppercase;opacity:0.9;}
+    #title-screen p{color:#9B9AE2;font-size:14px;margin-top:12px;opacity:0.85;
+      max-width:300px;text-align:center;line-height:1.65;}
     #start-btn{margin-top:28px;background:linear-gradient(135deg,#EBB21A,#EB6259);color:#1a1228;border:none;
-      font-family:'Nunito',sans-serif;font-size:17px;font-weight:800;
+      font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;
       padding:13px 42px;border-radius:14px;cursor:pointer;
-      box-shadow:0 4px 20px rgba(235,178,26,0.5);transition:transform 0.15s,box-shadow 0.15s;}
-    #start-btn:hover{transform:scale(1.06);box-shadow:0 6px 28px rgba(235,178,26,0.7);}
-    #reset-btn{margin-top:12px;background:transparent;color:#4F4261;border:1.5px solid #4F4261;
-      font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;
-      padding:7px 22px;border-radius:10px;cursor:pointer;opacity:0.7;}
-    #reset-btn:hover{opacity:1;background:rgba(79,66,97,0.08);}
-    #dev-btn{margin-top:6px;background:transparent;color:#9B9AE2;border:1.5px dashed #9B9AE2;
+      box-shadow:0 4px 20px rgba(235,178,26,0.45);transition:transform 0.15s,box-shadow 0.15s;}
+    #start-btn:hover{transform:scale(1.05);box-shadow:0 6px 28px rgba(235,178,26,0.65);}
+    #reset-btn{margin-top:10px;background:transparent;color:#4F4261;border:1.5px solid rgba(79,66,97,0.5);
+      font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;
+      padding:6px 20px;border-radius:10px;cursor:pointer;opacity:0.7;}
+    #reset-btn:hover{opacity:1;background:rgba(79,66,97,0.12);}
+    #dev-btn{margin-top:6px;background:transparent;color:#9B9AE2;border:1.5px dashed rgba(155,154,226,0.4);
       font-family:'Nunito',sans-serif;font-size:11px;font-weight:600;
-      padding:5px 16px;border-radius:10px;cursor:pointer;opacity:0.5;}
+      padding:5px 14px;border-radius:10px;cursor:pointer;opacity:0.45;}
     #dev-btn:hover{opacity:1;}
-    #sound-toggle{position:absolute;top:12px;right:12px;background:rgba(240,222,194,0.82);
-      border:1.5px solid #4F4261;border-radius:20px;padding:6px 10px;
-      cursor:pointer;pointer-events:auto;font-size:18px;}
-    #ability-bar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
-      display:flex;gap:8px;pointer-events:none;}
-    .ability-slot{width:38px;height:38px;background:rgba(240,222,194,0.82);
-      border:1.5px solid #4F4261;border-radius:8px;display:flex;align-items:center;
-      justify-content:center;font-size:16px;position:relative;}
-    .ability-cooldown{position:absolute;inset:0;background:rgba(79,66,97,0.5);
-      border-radius:7px;transform-origin:bottom;transition:transform 0.1s;}
-    #win-screen{position:absolute;inset:0;background:radial-gradient(ellipse at center,#2A1A4A 0%,#1a1228 100%);
+
+    /* ── Island Banner ── */
+    #island-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.88);
+      background:rgba(26,18,40,0.92);border:1.5px solid rgba(155,154,226,0.4);
+      border-radius:18px;padding:16px 38px;text-align:center;pointer-events:none;z-index:36;
+      opacity:0;transition:opacity 0.3s ease,transform 0.3s ease;
+      box-shadow:0 8px 32px rgba(0,0,0,0.45);backdrop-filter:blur(10px);}
+    #island-banner.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+    #island-banner h2{font-size:24px;font-weight:800;color:#F0DEC2;margin:0;}
+    #island-banner p{font-size:12px;color:#EBB21A;font-weight:700;margin-top:5px;letter-spacing:0.5px;}
+
+    /* ── Interact Prompt ── */
+    #interact-prompt{
+      position:absolute;display:none;pointer-events:none;
+      background:rgba(26,18,40,0.82);color:#C6C3DC;
+      font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;
+      padding:4px 10px 4px 8px;border-radius:20px;
+      border:1px solid rgba(155,154,226,0.3);white-space:nowrap;
+      transform:translate(-50%,-100%);
+      box-shadow:0 2px 10px rgba(0,0,0,0.3);letter-spacing:0.2px;
+      display:flex;align-items:center;gap:5px;
+      animation:promptbob 0.8s ease-in-out infinite alternate;
+    }
+    #interact-key{
+      background:rgba(155,154,226,0.25);border:1px solid rgba(155,154,226,0.4);
+      border-radius:4px;padding:1px 5px;font-size:10px;font-weight:800;color:#9B9AE2;
+    }
+    @keyframes promptbob{from{transform:translate(-50%,-100%) translateY(0)}to{transform:translate(-50%,-100%) translateY(-3px)}}
+
+    /* ── Win Screen ── */
+    #win-screen{position:absolute;inset:0;background:radial-gradient(ellipse at center,#1e1040 0%,#0e0818 100%);
       display:none;flex-direction:column;align-items:center;justify-content:center;
       z-index:40;pointer-events:auto;overflow:hidden;}
     #win-stars{position:absolute;inset:0;pointer-events:none;}
     #win-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;
       padding:20px;text-align:center;}
-    #win-screen h1{font-size:38px;font-weight:800;color:#EBB21A;text-align:center;
-      text-shadow:0 0 30px rgba(235,178,26,0.8),0 2px 4px rgba(0,0,0,0.5);line-height:1.3;}
-    #win-screen p{color:#F0DEC2;margin-top:14px;font-size:15px;max-width:480px;
-      line-height:1.9;text-shadow:0 1px 3px rgba(0,0,0,0.5);}
+    #win-screen h1{font-size:34px;font-weight:800;color:#EBB21A;text-align:center;
+      text-shadow:0 0 30px rgba(235,178,26,0.7),0 2px 4px rgba(0,0,0,0.5);line-height:1.35;}
+    #win-screen p{color:#C6C3DC;margin-top:14px;font-size:15px;max-width:440px;
+      line-height:1.85;text-shadow:0 1px 3px rgba(0,0,0,0.5);}
     #restart-btn{margin-top:28px;background:linear-gradient(135deg,#EBB21A,#EB6259);color:#1a1228;
       border:none;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;
-      padding:12px 36px;border-radius:14px;cursor:pointer;box-shadow:0 4px 20px rgba(235,178,26,0.5);}
+      padding:12px 36px;border-radius:14px;cursor:pointer;box-shadow:0 4px 20px rgba(235,178,26,0.4);}
     #restart-btn:hover{transform:scale(1.05);}
+
+    /* ── Misc ── */
     #restore-flash{position:fixed;inset:0;background:white;opacity:0;pointer-events:none;z-index:45;
       transition:opacity 0.12s ease;}
-    #grain{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:0.09;
+    #grain{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:0.08;
       background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       background-size:200px 200px;}
+    #transition-overlay{position:fixed;inset:0;background:#0e0818;opacity:0;pointer-events:none;
+      z-index:35;transition:opacity 0.35s ease;}
+    .thought-bubble{pointer-events:none;}
+
+    /* ── Mobile Controls ── */
     #mobile-controls{position:absolute;bottom:0;left:0;width:100%;height:200px;
       display:none;pointer-events:auto;}
     #joystick-zone{position:absolute;bottom:20px;left:20px;width:120px;height:120px;
-      border-radius:50%;background:rgba(240,222,194,0.2);border:2px solid rgba(240,222,194,0.4);}
-    #joystick-knob{position:absolute;width:50px;height:50px;border-radius:50%;
-      background:rgba(235,98,89,0.6);top:50%;left:50%;transform:translate(-50%,-50%);}
-    #action-btn{position:absolute;bottom:30px;right:30px;width:70px;height:70px;
-      border-radius:50%;background:rgba(235,98,89,0.7);border:2px solid #F0DEC2;
+      border-radius:50%;background:rgba(155,154,226,0.1);border:1.5px solid rgba(155,154,226,0.25);}
+    #joystick-knob{position:absolute;width:48px;height:48px;border-radius:50%;
+      background:rgba(235,98,89,0.55);border:1.5px solid rgba(240,222,194,0.4);
+      top:50%;left:50%;transform:translate(-50%,-50%);}
+    #action-btn{position:absolute;bottom:30px;right:30px;width:68px;height:68px;
+      border-radius:50%;background:rgba(235,98,89,0.6);border:1.5px solid rgba(240,222,194,0.4);
       display:flex;align-items:center;justify-content:center;
-      font-size:24px;color:#F0DEC2;font-weight:700;}
-    #map-btn{position:absolute;top:12px;left:50%;transform:translateX(-50%);
-      background:rgba(240,222,194,0.82);border:1.5px solid #4F4261;border-radius:20px;
-      padding:6px 16px;cursor:pointer;pointer-events:auto;font-size:13px;
-      font-family:'Nunito',sans-serif;font-weight:700;color:#4F4261;}
+      font-size:15px;font-weight:800;color:#F0DEC2;letter-spacing:0.5px;}
+
     @media(max-width:480px){
-      #hud-crystals{top:8px;left:8px;padding:4px 8px;gap:4px;}
-      .gem{width:16px;height:20px;}
+      #hud-crystals{top:10px;left:10px;padding:5px 10px 5px 8px;gap:4px;}
+      .gem{width:15px;height:15px;}
       #crystal-label{font-size:10px;}
-      #sound-toggle{top:8px;right:12px;padding:4px 8px;font-size:14px;}
-      #map-btn{top:8px;left:50%;font-size:11px;padding:4px 10px;}
+      #sound-toggle{top:10px;right:10px;padding:5px 10px;}
+      #map-btn{top:10px;font-size:11px;padding:5px 10px;}
       #mobile-controls{height:180px;}
       #joystick-zone{width:100px;height:100px;bottom:16px;left:16px;}
       #joystick-knob{width:40px;height:40px;}
-      #action-btn{width:58px;height:58px;font-size:20px;bottom:24px;right:24px;}
+      #action-btn{width:58px;height:58px;font-size:13px;bottom:24px;right:24px;}
+      #dialogue-body{font-size:14px;padding:10px 44px 4px 16px;}
     }
-    #interact-prompt{position:absolute;display:none;pointer-events:none;
-      background:rgba(240,222,194,0.92);color:#4F4261;font-family:'Nunito',sans-serif;
-      font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;
-      border:1px solid rgba(79,66,97,0.25);white-space:nowrap;transform:translate(-50%,-100%);
-      box-shadow:0 2px 8px rgba(79,66,97,0.15);letter-spacing:0.2px;
-      animation:promptbob 0.8s ease-in-out infinite alternate;}
-    @keyframes promptbob{from{transform:translate(-50%,-100%) translateY(0)}to{transform:translate(-50%,-100%) translateY(-3px)}}
-    .thought-bubble{pointer-events:none;}
-    #transition-overlay{position:fixed;inset:0;background:#1a1228;opacity:0;pointer-events:none;
-      z-index:35;transition:opacity 0.35s ease;}
-    #island-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.85);
-      background:rgba(240,222,194,0.95);border:3px solid #EBB21A;border-radius:20px;
-      padding:18px 40px;text-align:center;pointer-events:none;z-index:36;
-      opacity:0;transition:opacity 0.3s ease,transform 0.3s ease;box-shadow:0 8px 32px rgba(79,66,97,0.35);}
-    #island-banner.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
-    #island-banner h2{font-size:26px;font-weight:800;color:#4F4261;margin:0;}
-    #island-banner p{font-size:13px;color:#EB6259;font-weight:600;margin-top:4px;}
-    #quest-tracker{position:absolute;left:12px;top:50%;transform:translateY(-50%);
-      background:rgba(240,222,194,0.88);border:1.5px solid #4F4261;border-radius:14px;
-      padding:10px 14px;min-width:150px;max-width:200px;display:none;pointer-events:none;}
-    #quest-tracker h4{font-size:11px;font-weight:800;color:#EB6259;text-transform:uppercase;
-      letter-spacing:0.5px;margin-bottom:6px;}
-    #quest-tracker ul{list-style:none;padding:0;margin:0;}
-    #quest-tracker li{font-size:11px;color:#4F4261;font-weight:600;padding:2px 0;
-      display:flex;align-items:center;gap:4px;}
-    #quest-tracker li.done{opacity:0.45;text-decoration:line-through;}
   </style>
 </head>
 <body>
@@ -159,62 +254,165 @@
 <div id="transition-overlay"></div>
 <div id="island-banner"><h2 id="island-banner-name"></h2><p id="island-banner-sub"></p></div>
 <div id="ui">
+  <!-- Title Screen -->
   <div id="title-screen">
-    <div id="title-lantern">🏮</div>
+    <!-- Lantern SVG -->
+    <svg id="title-lantern" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="22" y="18" width="20" height="28" rx="4" fill="#EBB21A" opacity="0.9"/>
+      <rect x="26" y="14" width="12" height="6" rx="2" fill="#D4836A"/>
+      <rect x="30" y="10" width="4" height="6" rx="1" fill="#4F4261"/>
+      <ellipse cx="32" cy="32" rx="7" ry="9" fill="#FFF8DC" opacity="0.6"/>
+      <rect x="22" y="44" width="20" height="4" rx="2" fill="#D4836A"/>
+      <line x1="32" y1="48" x2="32" y2="54" stroke="#4F4261" stroke-width="2" stroke-linecap="round"/>
+    </svg>
     <h1>Lantern Isle<br>Guardian Star</h1>
     <div id="title-tagline">A Cozy Island Adventure</div>
     <p>Six islands. Six shrines. One lantern bearer.<br>Can you reawaken the Guardian Star?</p>
-    <button id="start-btn">✨ Begin Adventure</button>
+    <button id="start-btn">Begin Adventure</button>
     <button id="reset-btn">Start Over</button>
-    <button id="dev-btn">🛠️ Dev Mode</button>
+    <button id="dev-btn">Dev Mode</button>
   </div>
+
+  <!-- Crystal Status Bar -->
   <div id="hud-crystals" style="display:none;">
-    <div class="gem" id="gem0"></div>
-    <div class="gem" id="gem1"></div>
-    <div class="gem" id="gem2"></div>
-    <div class="gem" id="gem3"></div>
-    <div class="gem" id="gem4"></div>
-    <span id="crystal-label">Crystals 0/5</span>
+    <div class="gem" id="gem0">
+      <svg viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/><polygon points="9,2 15,7 9,7" fill="#C6C3DC" opacity="0.5"/></svg>
+    </div>
+    <div class="gem" id="gem1">
+      <svg viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/><polygon points="9,2 15,7 9,7" fill="#C6C3DC" opacity="0.5"/></svg>
+    </div>
+    <div class="gem" id="gem2">
+      <svg viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/><polygon points="9,2 15,7 9,7" fill="#C6C3DC" opacity="0.5"/></svg>
+    </div>
+    <div class="gem" id="gem3">
+      <svg viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/><polygon points="9,2 15,7 9,7" fill="#C6C3DC" opacity="0.5"/></svg>
+    </div>
+    <div class="gem" id="gem4">
+      <svg viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/><polygon points="9,2 15,7 9,7" fill="#C6C3DC" opacity="0.5"/></svg>
+    </div>
+    <span id="crystal-label">0 / 5</span>
   </div>
-  <button id="sound-toggle" style="display:none;">🔊</button>
-  <button id="map-btn" style="display:none;">🗺️ Map</button>
+
+  <!-- Sound Toggle -->
+  <button id="sound-toggle" class="hud-btn" style="display:none;">
+    <svg id="sound-icon" viewBox="0 0 20 20" fill="none" width="16" height="16">
+      <path d="M4 7h3l4-3v12l-4-3H4V7z" fill="#C6C3DC"/>
+      <path id="sound-waves" d="M13 7.5a3 3 0 010 5M15 5.5a6 6 0 010 9" stroke="#C6C3DC" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </button>
+
+  <!-- Map Button -->
+  <button id="map-btn" class="hud-btn" style="display:none;">
+    <svg viewBox="0 0 20 20" fill="none" width="14" height="14">
+      <path d="M2 4l5 2 6-2 5 2v12l-5-2-6 2-5-2V4z" stroke="#C6C3DC" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M7 6v12M13 4v12" stroke="#C6C3DC" stroke-width="1" opacity="0.5"/>
+    </svg>
+    Map
+  </button>
+
   <div id="hud-compass" style="display:none;"><canvas id="compass-canvas" width="82" height="82"></canvas></div>
+
+  <!-- Inventory -->
   <div id="inventory" style="display:none;">
-    <div class="inv-slot">🏮</div>
+    <div class="inv-slot">
+      <!-- Lantern icon -->
+      <svg viewBox="0 0 24 24" fill="none">
+        <rect x="7" y="7" width="10" height="12" rx="2" fill="#EBB21A" opacity="0.85"/>
+        <rect x="9" y="5" width="6" height="3" rx="1" fill="#D4836A"/>
+        <rect x="11" y="3" width="2" height="3" rx="0.5" fill="#4F4261"/>
+        <ellipse cx="12" cy="13" rx="3" ry="4" fill="#FFF8DC" opacity="0.55"/>
+        <rect x="7" y="17" width="10" height="2" rx="1" fill="#D4836A"/>
+      </svg>
+    </div>
     <div class="inv-slot" id="inv1"></div>
     <div class="inv-slot" id="inv2"></div>
   </div>
+
+  <!-- Quest Tracker -->
   <div id="quest-tracker">
-    <h4>📜 Quests</h4>
+    <h4>
+      <svg viewBox="0 0 14 14" fill="none" width="11" height="11">
+        <rect x="2" y="1" width="10" height="12" rx="1.5" fill="none" stroke="#EBB21A" stroke-width="1.2"/>
+        <line x1="4" y1="5" x2="10" y2="5" stroke="#EBB21A" stroke-width="1"/>
+        <line x1="4" y1="7.5" x2="10" y2="7.5" stroke="#EBB21A" stroke-width="1"/>
+        <line x1="4" y1="10" x2="7" y2="10" stroke="#EBB21A" stroke-width="1"/>
+      </svg>
+      Quests
+    </h4>
     <ul id="quest-list"></ul>
   </div>
+
+  <!-- Ability Bar -->
   <div id="ability-bar" style="display:none;">
-    <div class="ability-slot" id="ab-pulse" title="Lantern Pulse [Q]" style="display:none;">💫<div class="ability-cooldown" style="transform:scaleY(0);"></div></div>
-    <div class="ability-slot" id="ab-sprint" title="Sprint [Shift]" style="display:none;">💨<div class="ability-cooldown" style="transform:scaleY(0);"></div></div>
+    <div class="ability-slot" id="ab-pulse" title="Lantern Pulse [Space]" style="display:none;">
+      <!-- pulse/radiate icon -->
+      <svg viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="3" fill="#EBB21A"/>
+        <circle cx="10" cy="10" r="6" stroke="#EBB21A" stroke-width="1" opacity="0.4"/>
+        <circle cx="10" cy="10" r="9" stroke="#EBB21A" stroke-width="1" opacity="0.2"/>
+      </svg>
+      <span class="ability-key">Spc</span>
+      <div class="ability-cooldown" style="transform:scaleY(0);"></div>
+    </div>
+    <div class="ability-slot" id="ab-sprint" title="Sprint [Shift]" style="display:none;">
+      <!-- wind/sprint icon -->
+      <svg viewBox="0 0 20 20" fill="none">
+        <path d="M4 10h12M4 7h8M4 13h8" stroke="#9B9AE2" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M14 7l3 3-3 3" stroke="#9B9AE2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="ability-key">Sft</span>
+      <div class="ability-cooldown" style="transform:scaleY(0);"></div>
+    </div>
   </div>
+
+  <!-- Dialogue Box -->
   <div id="dialogue-box">
-    <div id="dialogue-floral-left">❀</div>
-    <div id="dialogue-floral-right">❀</div>
-    <div id="dialogue-speaker">???</div>
-    <div id="dialogue-text"></div>
-    <div id="dialogue-continue">▼</div>
+    <div id="dialogue-header">
+      <div id="dialogue-speaker-icon">
+        <svg viewBox="0 0 15 15" fill="none">
+          <circle cx="7.5" cy="5" r="3" fill="#C6C3DC"/>
+          <path d="M2 13c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="#C6C3DC" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span id="dialogue-speaker">???</span>
+    </div>
+    <div id="dialogue-body" id="dialogue-text"></div>
+    <div id="dialogue-continue">
+      <svg viewBox="0 0 14 14" fill="none">
+        <path d="M2 4l5 6 5-6" stroke="#EBB21A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
   </div>
+
+  <!-- Map Screen -->
   <div id="map-screen">
-    <div id="map-title">✨ World Map ✨</div>
+    <div id="map-title">
+      <svg viewBox="0 0 20 20" fill="none" width="20" height="20">
+        <path d="M2 4l5 2 6-2 5 2v12l-5-2-6 2-5-2V4z" stroke="#F0DEC2" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M7 6v12M13 4v12" stroke="#F0DEC2" stroke-width="1" opacity="0.4"/>
+      </svg>
+      World Map
+    </div>
     <canvas id="map-canvas" width="640" height="400"></canvas>
-    <button id="close-map">Close Map</button>
+    <button id="close-map">Close</button>
   </div>
-  <div id="interact-prompt">Press E</div>
+
+  <!-- Interact Prompt -->
+  <div id="interact-prompt"><span id="interact-key">E</span><span id="interact-label">Interact</span></div>
+
+  <!-- Win Screen -->
   <div id="win-screen">
     <canvas id="win-stars"></canvas>
     <div id="win-content">
-      <h1>✨ The Guardian Star<br>is Reawakened! ✨</h1>
+      <h1>The Guardian Star<br>is Reawakened</h1>
       <p id="win-epilogue"></p>
       <button id="restart-btn">Play Again</button>
     </div>
   </div>
+
   <div id="restore-flash"></div>
 </div>
+
 <div id="mobile-controls" style="display:none;">
   <div id="joystick-zone"><div id="joystick-knob"></div></div>
   <div id="action-btn">E</div>

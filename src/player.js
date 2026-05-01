@@ -18,7 +18,7 @@ export class Player {
     this.hairLag = [];
     // Abilities
     this.abilities = { pulse: false, sprint: false, heatWard: false, whistle: false, sonar: false };
-    this.shadowSlow = false;
+
     this.sprintCooldown = 0; this.sprintActive = false; this.sprintTimer = 0;
     this.pulseCooldown = 0;
     this.pulseActive = false; this.pulseRadius = 0;
@@ -155,8 +155,7 @@ export class Player {
     this.isMoving = dx !== 0 || dz !== 0;
 
     let spd = this.speed;
-    if (this.sprintActive && !this.shadowSlow) spd *= 1.7;
-    if (this.shadowSlow) spd *= 0.45;
+    if (this.sprintActive) spd *= 1.7;
 
     if (this.isMoving) {
       const len = Math.sqrt(dx*dx+dz*dz);

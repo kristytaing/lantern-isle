@@ -35,7 +35,7 @@ camera.lookAt(0, 0, 0);
 
 // ── Scene objects ─────────────────────────────────────────────
 let player, particles, islandMeshes = [], crystalMeshes = [], npcMeshes = [], shrineMesh;
-let crystalOrbits = [], shadowCreep, shadowCreepMesh;
+let crystalOrbits = [];
 let questStateMap = {};
 function getQuestState(id) {
   if (!questStateMap[id]) questStateMap[id] = { find_cat: false, fetch_water: false };
@@ -47,7 +47,7 @@ let pulseRevealTimer = 0;
 
 // ── Dialogue ──────────────────────────────────────────────────
 const dialogueBox  = document.getElementById('dialogue-box');
-const dialogueText = document.getElementById('dialogue-text');
+const dialogueText = document.getElementById('dialogue-body');
 const dialogueSpeaker = document.getElementById('dialogue-speaker');
 const dialogueContinue = document.getElementById('dialogue-continue');
 let dialogueQueue = [], dialogueCallback = null, typewriterTimer = null, currentLine = '', currentFullLine = '';
@@ -58,11 +58,10 @@ function updateCrystalHUD() {
   const count = island.crystalCount;
   for (let i = 0; i < 5; i++) {
     const gem = document.getElementById('gem'+i);
-    gem.innerHTML = count > i
-      ? `<svg viewBox="0 0 22 26"><polygon points="11,1 21,8 21,18 11,25 1,18 1,8" fill="#9B9AE2" stroke="#4F4261" stroke-width="1.2"/><polygon points="11,1 17,7 11,12 5,7" fill="#C6C3DC" opacity="0.7"/><circle cx="7" cy="5" r="2" fill="white" opacity="0.5"/></svg>`
-      : `<svg viewBox="0 0 22 26"><polygon points="11,1 21,8 21,18 11,25 1,18 1,8" fill="none" stroke="#C6C3DC" stroke-width="1.5"/></svg>`;
+    gem.innerHTML = `<svg viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/><polygon points="9,2 15,7 9,7" fill="#C6C3DC" opacity="0.5"/></svg>`;
+    gem.classList.toggle('lit', count > i);
   }
-  document.getElementById('crystal-label').textContent = `Crystals ${count}/5`;
+  document.getElementById('crystal-label').textContent = `${count} / 5`;
 }
 
 function showHUD(show) {
@@ -81,7 +80,7 @@ function buildIsland(islandId) {
   crystalMeshes.forEach(m => scene.remove(m));
   npcMeshes.forEach(m => scene.remove(m));
   if (shrineMesh) scene.remove(shrineMesh);
-  if (shadowCreepMesh) scene.remove(shadowCreepMesh);
+
   if (particles) particles.clearAll();
   crystalOrbits = [];
   islandMeshes = []; crystalMeshes = []; npcMeshes = [];
@@ -878,15 +877,6 @@ function buildIsland(islandId) {
     // (simplified — shown in dialogue only)
   });
 
-  // Shadow Creep
-  const scGeo = new THREE.CircleGeometry(1.5, 20);
-  const scMat = new THREE.MeshBasicMaterial({ color: PALETTE.deepPlumN, transparent: true, opacity: 0.22, depthWrite: false });
-  shadowCreepMesh = new THREE.Mesh(scGeo, scMat);
-  shadowCreepMesh.rotation.x = -Math.PI/2;
-  shadowCreepMesh.position.set(-6, 0.05, -6);
-  shadowCreepMesh.userData = { radius: 1.5, growing: !island.restored };
-  scene.add(shadowCreepMesh);
-
   // Particles per biome
   particles.addAmbientMotes(isMobile ? 60 : 120);
   if (islandId === 0) particles.addFireflies(isMobile ? 15 : 30); // Mossy Forest fireflies
@@ -1033,8 +1023,7 @@ function activateShrine() {
   }
   // Light up shrine
   if (shrineMesh) { shrineMesh.material.emissiveIntensity = 0.9; }
-  // Stop shadow creep
-  if (shadowCreepMesh) shadowCreepMesh.userData.growing = false;
+
 
   // Grant ability
   const abilityMap = ['pulse','sprint','heatWard','whistle','sonar'];
@@ -1566,7 +1555,8 @@ document.getElementById('close-map').addEventListener('click', ()=>{ sfxClick();
 document.getElementById('map-btn').addEventListener('click', ()=>{ if(state==='playing'||state==='dialogue') openMap(); });
 document.getElementById('sound-toggle').addEventListener('click', ()=>{
   const m = toggleMute();
-  document.getElementById('sound-toggle').textContent = m ? '🔇' : '🔊';
+  const waves = document.getElementById('sound-waves');
+  if (waves) waves.style.display = m ? 'none' : '';
 });
 document.getElementById('dialogue-continue').addEventListener('click', e=>{
   e.stopPropagation();
@@ -1728,27 +1718,6 @@ function loop(ts) {
     if (shrineBeamLight) {
       shrineBeamLight.intensity = 2.0 + Math.sin(time * 3) * 0.8;
     }
-    // Shadow creep — grows over time, slows & darkens screen when player inside
-    if (shadowCreepMesh && shadowCreepMesh.userData.growing) {
-      shadowCreepMesh.userData.radius = Math.min(shadowCreepMesh.userData.radius + dt*0.04, 4);
-      shadowCreepMesh.scale.setScalar(shadowCreepMesh.userData.radius / 1.5);
-    }
-    if (shadowCreepMesh && player) {
-      const scPos = shadowCreepMesh.position;
-      const distToCreep = Math.sqrt((player.pos.x-scPos.x)**2+(player.pos.z-scPos.z)**2);
-      const inShadow = distToCreep < shadowCreepMesh.userData.radius;
-      player.shadowSlow = inShadow;
-      // Vignette overlay
-      let vig = document.getElementById('shadow-vignette');
-      if (!vig) {
-        vig = document.createElement('div');
-        vig.id = 'shadow-vignette';
-        vig.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9;transition:opacity 0.8s;background:radial-gradient(ellipse at center,transparent 40%,rgba(30,10,50,0.7) 100%);opacity:0;';
-        document.body.appendChild(vig);
-      }
-      const nearShadow = !inShadow && distToCreep < shadowCreepMesh.userData.radius + 1.2;
-      vig.style.opacity = inShadow ? '1' : nearShadow ? (0.35 + Math.sin(time*3)*0.2).toString() : '0';
-    }
     // Pulse reveal timer
     if (pulseRevealTimer > 0) pulseRevealTimer -= dt;
     // compass removed
@@ -1781,8 +1750,8 @@ function loop(ts) {
       const sy = (-worldPos.y * 0.5 + 0.5) * window.innerHeight;
       promptEl.style.left = sx + 'px';
       promptEl.style.top = sy + 'px';
-      promptEl.textContent = promptLabel;
-      promptEl.style.display = 'block';
+      document.getElementById('interact-label').textContent = promptLabel;
+      promptEl.style.display = 'flex';
     } else {
       promptEl.style.display = 'none';
     }
