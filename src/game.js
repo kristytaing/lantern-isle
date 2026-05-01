@@ -1757,7 +1757,7 @@ function drawWorldMap() {
 
     // Sky gradient
     const sky=ctx.createLinearGradient(px,py-R,px,py+R);
-    if (i===4) { sky.addColorStop(0,'#1a1040'); sky.addColorStop(1,'#2a1860'); }
+    if (i===3) { sky.addColorStop(0,'#1a1040'); sky.addColorStop(1,'#2a1860'); }
     else { sky.addColorStop(0,'#e8f4ff'); sky.addColorStop(1,bc.base); }
     ctx.fillStyle=sky; ctx.fillRect(px-R,py-R,R*2,R*2);
 
@@ -1791,17 +1791,6 @@ function drawWorldMap() {
         ctx.ellipse(bx,by,4,2.5,Math.random()*Math.PI,0,Math.PI*2); ctx.fill();
       });
     } else if (i===3) {
-      // Cozy Village: house shapes
-      [[px-12,py+2],[px+10,py+4]].forEach(([hx,hy])=>{
-        ctx.fillStyle='#f0e0c8'; ctx.fillRect(hx-6,hy-6,12,10);
-        ctx.fillStyle='#c07858'; ctx.beginPath();
-        ctx.moveTo(hx-8,hy-6); ctx.lineTo(hx,hy-14); ctx.lineTo(hx+8,hy-6); ctx.fill();
-      });
-      // Path
-      ctx.strokeStyle='#d4b890'; ctx.lineWidth=2.5; ctx.setLineDash([3,4]);
-      ctx.beginPath(); ctx.moveTo(px-12,py+14); ctx.lineTo(px+12,py+14); ctx.stroke();
-      ctx.setLineDash([]);
-    } else if (i===4) {
       // Crystal Cave: dark cave + glowing crystals
       ctx.fillStyle='#180e30';
       ctx.beginPath(); ctx.arc(px,py,R,0,Math.PI*2); ctx.fill();
@@ -1814,12 +1803,11 @@ function drawWorldMap() {
         ctx.fill(); ctx.shadowBlur=0;
       });
     } else {
-      // Lavender Highlands: hills + windmill dots
+      // Lavender Highlands: hills + lavender dots
       ctx.fillStyle='#c8b0e0';
       ctx.beginPath(); ctx.ellipse(px-10,py+8,22,16,0,0,Math.PI*2); ctx.fill();
       ctx.fillStyle='#b898d0';
       ctx.beginPath(); ctx.ellipse(px+14,py+12,18,13,0,0,Math.PI*2); ctx.fill();
-      // Lavender dots
       [[px-14,py],[px-6,py-4],[px+2,py-2],[px+10,py-6]].forEach(([lx,ly])=>{
         ctx.fillStyle='#9070c0'; ctx.beginPath(); ctx.arc(lx,ly,2.5,0,Math.PI*2); ctx.fill();
         ctx.fillStyle='#b090e0'; ctx.beginPath(); ctx.arc(lx,ly-4,2,0,Math.PI*2); ctx.fill();
@@ -2137,59 +2125,40 @@ function setupMobile() {
     }
   }, { passive: false });
 
-  // Virtual joystick: touch anywhere to anchor, drag to steer
-  // Isometric mapping: screen right (+dx) = world +X-Z, screen down (+dy) = world +X+Z
-  let joyOrigin = null;
-  const JOY_MAX = 60; // px radius for full speed
-  const JOY_DEAD = 8;
+  // Tap-to-move: touch sets world target, character walks toward it
+  // Hold to keep walking, drag to update target, release to stop
+  let touchActive = false;
 
-  // Show joystick ring on screen
-  const joyEl = document.createElement('div');
-  joyEl.id = 'joy-ring';
-  joyEl.style.cssText = 'position:fixed;width:80px;height:80px;border-radius:50%;border:2px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.08);pointer-events:none;display:none;transform:translate(-50%,-50%);z-index:5;';
-  const joyDot = document.createElement('div');
-  joyDot.style.cssText = 'position:absolute;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.45);top:50%;left:50%;transform:translate(-50%,-50%);';
-  joyEl.appendChild(joyDot);
-  document.body.appendChild(joyEl);
-
-  function showJoy(cx, cy, dx, dy) {
-    joyEl.style.display = 'block';
-    joyEl.style.left = cx + 'px';
-    joyEl.style.top = cy + 'px';
-    const clamp = Math.min(Math.sqrt(dx*dx+dy*dy), JOY_MAX);
-    const angle = Math.atan2(dy, dx);
-    joyDot.style.transform = `translate(calc(-50% + ${Math.cos(angle)*clamp}px), calc(-50% + ${Math.sin(angle)*clamp}px))`;
+  function screenToWorldDir(clientX, clientY) {
+    // Convert screen touch to isometric world direction relative to player
+    const sw = window.innerWidth, sh = window.innerHeight;
+    // Screen center is where the player roughly appears (isometric projection)
+    const dx = clientX - sw / 2;
+    const dy = clientY - sh / 2;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 12) return; // tap too close to center = no move
+    // Isometric: screen +x = world +X-Z, screen +y = world +X+Z
+    joystickDir.x = (dx - dy) / dist;
+    joystickDir.z = (dx + dy) / dist;
   }
 
   renderer.domElement.addEventListener('touchstart', e => {
     if (e.target !== renderer.domElement) return;
     e.preventDefault();
-    const t = e.touches[0];
-    joyOrigin = { x: t.clientX, y: t.clientY };
-    joystickDir.x = 0; joystickDir.z = 0;
-    showJoy(t.clientX, t.clientY, 0, 0);
+    touchActive = true;
+    screenToWorldDir(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: false });
 
   renderer.domElement.addEventListener('touchmove', e => {
     e.preventDefault();
-    if (!joyOrigin) return;
-    const t = e.touches[0];
-    const dx = t.clientX - joyOrigin.x;
-    const dy = t.clientY - joyOrigin.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    showJoy(joyOrigin.x, joyOrigin.y, dx, dy);
-    if (dist < JOY_DEAD) { joystickDir.x = 0; joystickDir.z = 0; return; }
-    const scale = Math.min(dist, JOY_MAX) / JOY_MAX;
-    // Isometric: screen right/left = +X-Z / -X+Z, screen down/up = +X+Z / -X-Z
-    joystickDir.x = (dx - dy) / dist * scale;
-    joystickDir.z = (dx + dy) / dist * scale;
+    if (!touchActive) return;
+    screenToWorldDir(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: false });
 
   renderer.domElement.addEventListener('touchend', e => {
     e.preventDefault();
-    joyOrigin = null;
+    touchActive = false;
     joystickDir.x = 0; joystickDir.z = 0;
-    joyEl.style.display = 'none';
   }, { passive: false });
 
   window._touchTarget = () => null;
