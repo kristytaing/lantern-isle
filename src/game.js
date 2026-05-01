@@ -2037,22 +2037,6 @@ function loop(ts) {
     crystalMeshes.forEach(cm => {
       if (pp.distanceTo(cm.position) < 1.0) { promptTarget = cm; promptLabel = '✦ Crystal'; }
     });
-    const promptEl = document.getElementById('interact-prompt');
-    if (promptTarget) {
-      const worldPos = promptTarget.position.clone();
-      worldPos.y += 0.7;
-      worldPos.project(camera);
-      const sx = (worldPos.x * 0.5 + 0.5) * window.innerWidth;
-      const sy = (-worldPos.y * 0.5 + 0.5) * window.innerHeight;
-      promptEl.style.left = sx + 'px';
-      promptEl.style.top = sy + 'px';
-      document.getElementById('interact-label').textContent = '';
-      promptEl.style.display = 'flex';
-    } else {
-      promptEl.style.display = 'none';
-    }
-  } else {
-    document.getElementById('interact-prompt').style.display = 'none';
   }
 
   particles.update(dt);
