@@ -73,7 +73,6 @@ function updateCrystalHUD() {
 function showHUD(show) {
   document.getElementById('hud-crystals').style.display = show ? 'flex' : 'none';
   // compass removed
-  document.getElementById('inventory').style.display = show ? 'flex' : 'none';
   document.getElementById('sound-toggle').style.display = show ? 'block' : 'none';
   document.getElementById('map-btn').style.display = show ? 'block' : 'none';
 }
@@ -2112,82 +2111,9 @@ function loadIsland(id) {
 }
 
 function updateInventoryUI() {
-  const ITEM_ICONS = {
-    mochi_cat:      `<text y="17" x="12" text-anchor="middle" font-size="15">🐱</text>`,
-    water_jar:      `<text y="17" x="12" text-anchor="middle" font-size="15">🫙</text>`,
-    shell:          `<text y="17" x="12" text-anchor="middle" font-size="15">🐚</text>`,
-    driftwood_note: `<text y="17" x="12" text-anchor="middle" font-size="15">📜</text>`,
-    petal_bundle:   `<text y="17" x="12" text-anchor="middle" font-size="15">🌸</text>`,
-    spring_water:   `<text y="17" x="12" text-anchor="middle" font-size="15">💧</text>`,
-    glowstone:      `<text y="17" x="12" text-anchor="middle" font-size="15">🔮</text>`,
-    crystal_dust:   `<text y="17" x="12" text-anchor="middle" font-size="15">✨</text>`,
-    wind_chime:     `<text y="17" x="12" text-anchor="middle" font-size="15">🎐</text>`,
-    highland_flower:`<text y="17" x="12" text-anchor="middle" font-size="15">💜</text>`,
-  };
-  for (let i = 0; i < 6; i++) {
-    const sl = document.getElementById(`inv${i}`);
-    if (!sl) continue;
-    const item = inventoryItems[i];
-    if (!item) {
-      sl.innerHTML = '';
-      sl.title = '';
-      sl.classList.remove('filled');
-      continue;
-    }
-    const island = getIsland(currentIslandId);
-    const col = (island.collectibles||[]).find(c=>c.type===item);
-    sl.title = col ? col.label : item;
-    sl.classList.add('filled');
-    const icon = ITEM_ICONS[item] || `<circle cx="12" cy="12" r="6" fill="#EBB21A" opacity="0.9"/><circle cx="12" cy="12" r="3" fill="#F0DEC2"/>`;
-    sl.innerHTML = `<svg viewBox="0 0 24 24" fill="none">${icon}</svg>`;
-  }
 }
 
-function updateQuestTracker(islandId) {
-  const island = getIsland(islandId);
-  const tracker = document.getElementById('quest-tracker');
-  const list = document.getElementById('quest-list');
-  if (!island || !island.npcs) { tracker.style.display = 'none'; return; }
-  const quests = island.npcs.filter(n => n.quest).map(n => n.quest);
-  if (!quests.length) { tracker.style.display = 'none'; return; }
-  const qs = getQuestState(islandId);
-  const anyStarted = quests.some(q => qs[q.type] || q.done || qs[q.type + '_started']);
-  if (!anyStarted) {
-    list.innerHTML = '';
-    tracker.style.display = 'block'; return;
-  }
-  const QUEST_THEMES = {
-    find_firefly:      'Find the lost firefly',
-    find_shell:        'Collect a spiral shell',
-    fetch_note:        'Retrieve the drifting note',
-    beach_elder:       'Reunite the beach elder',
-    gather_petals:     'Gather fallen petals',
-    fetch_spring:      'Fetch spring water',
-    sakura_elder:      'Aid the sakura elder',
-    find_cat:          'Find Mochi the cat',
-    fetch_water:       'Fill the water jar',
-    elder_final:       'Help the village elder',
-    fetch_glowstone:   'Find the glowstone',
-    use_dust:          'Collect crystal dust',
-    cave_elder:        'Aid the cave elder',
-    find_chime:        'Retrieve the wind chime',
-    offer_flower:      'Offer a highland flower',
-    highlands_elder:   'Aid the highlands elder',
-  };
-  list.innerHTML = '';
-  island.npcs.filter(n=>n.quest).forEach(npc => {
-    const q = npc.quest;
-    const done = qs[q.type] || q.done;
-    // For proximity quests, only show once started
-    // firefly quest always visible on island 0
-    const li = document.createElement('li');
-    li.textContent = QUEST_THEMES[q.type] || q.type.replace(/_/g,' ');
-    if (done) li.classList.add('done');
-    else if (q.type === 'find_firefly' && qs['find_firefly_started']) li.style.color = '#E8B830';
-    list.appendChild(li);
-  });
-  tracker.style.display = 'block';
-}
+function updateQuestTracker() {}
 
 // ── Mobile Controls ───────────────────────────────────────────
 function setupMobile() {

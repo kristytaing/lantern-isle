@@ -44,37 +44,7 @@
     #map-btn{left:50%;transform:translateX(-50%);}
     #hud-compass{display:none!important;}
 
-    /* ── Inventory ── */
-    #inventory{position:absolute;right:14px;top:50%;transform:translateY(-50%);
-      display:flex;flex-direction:column;gap:5px;pointer-events:auto;
-      background:rgba(245,240,228,0.72);border:1.5px solid rgba(180,160,120,0.35);
-      border-radius:18px;padding:8px 7px;
-      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-      box-shadow:0 4px 18px rgba(220,140,180,0.15);}
-    #inventory-label{font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:600;
-      color:rgba(155,106,176,0.7);text-align:center;letter-spacing:0.8px;
-      text-transform:uppercase;margin-bottom:2px;}
-    .inv-slot{width:46px;height:46px;
-      background:rgba(255,252,245,0.80);border:1.5px solid rgba(180,160,120,0.35);
-      border-radius:12px;display:flex;align-items:center;justify-content:center;
-      transition:border-color 0.2s,box-shadow 0.2s;}
-    .inv-slot.filled{border-color:rgba(155,106,176,0.5);box-shadow:0 0 8px rgba(155,106,176,0.18);}
-    .inv-slot svg{width:26px;height:26px;}
 
-    /* ── Quest Tracker ── */
-    #quest-tracker{position:absolute;left:14px;top:50%;transform:translateY(-50%);
-      background:rgba(245,240,228,0.90);border:1.5px solid rgba(180,160,120,0.35);
-      border-radius:18px;padding:11px 15px;min-width:150px;max-width:200px;
-      display:none;pointer-events:none;
-      backdrop-filter:blur(10px);box-shadow:0 4px 18px rgba(220,140,180,0.2);}
-    #quest-tracker h4{font-size:13.5px;font-weight:700;color:#C4709A;text-transform:uppercase;
-      letter-spacing:0.8px;margin-bottom:7px;display:flex;align-items:center;gap:5px;}
-    #quest-tracker ul{list-style:none;padding:0;margin:0;}
-    #quest-tracker li{font-size:14.9px;color:#7A5A7A;font-weight:600;padding:3px 0;
-      display:flex;align-items:center;gap:5px;}
-    #quest-tracker li::before{content:'';width:5px;height:5px;border-radius:50%;background:#D4A0C0;flex-shrink:0;}
-    #quest-tracker li.done{opacity:0.38;text-decoration:line-through;}
-    #quest-tracker li.done::before{background:#D4B8C8;}
 
     /* ── Dialogue Box ── */
     #dialogue-box{
@@ -418,7 +388,7 @@
       #sound-toggle{top:10px;right:10px;padding:5px 10px;}
       #map-btn{top:10px;font-size:14.9px;padding:5px 10px;}
       #dialogue-body{font-size:18.9px;padding:10px 44px 4px 16px;}
-      #mood-hint,#quest-tracker,#inventory{display:none!important;}
+      #mood-hint{display:none!important;}
     }
   </style>
 </head>
@@ -601,30 +571,6 @@
 
   <div id="hud-compass" style="display:none;"><canvas id="compass-canvas" width="82" height="82"></canvas></div>
 
-  <!-- Inventory -->
-  <div id="inventory" style="display:none;">
-    <div id="inventory-label">Items</div>
-    <div class="inv-slot" id="inv0"></div>
-    <div class="inv-slot" id="inv1"></div>
-    <div class="inv-slot" id="inv2"></div>
-    <div class="inv-slot" id="inv3"></div>
-    <div class="inv-slot" id="inv4"></div>
-    <div class="inv-slot" id="inv5"></div>
-  </div>
-
-  <!-- Quest Tracker -->
-  <div id="quest-tracker">
-    <h4>
-      <svg viewBox="0 0 14 14" fill="none" width="11" height="11">
-        <rect x="2" y="1" width="10" height="12" rx="1.5" fill="none" stroke="#C4709A" stroke-width="1.2"/>
-        <line x1="4" y1="5" x2="10" y2="5" stroke="#C4709A" stroke-width="1"/>
-        <line x1="4" y1="7.5" x2="10" y2="7.5" stroke="#C4709A" stroke-width="1"/>
-        <line x1="4" y1="10" x2="7" y2="10" stroke="#C4709A" stroke-width="1"/>
-      </svg>
-      Quests
-    </h4>
-    <ul id="quest-list"></ul>
-  </div>
 
   <!-- Ability Bar -->
   <div id="ability-bar" style="display:none;">
