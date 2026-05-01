@@ -811,14 +811,20 @@ document.getElementById('map-canvas').addEventListener('click', e => {
 });
 
 document.getElementById('close-map').addEventListener('click', ()=>{ sfxClick(); closeMap(); });
-document.getElementById('map-btn').addEventListener('click', ()=>{ if(state==='playing') openMap(); });
+document.getElementById('map-btn').addEventListener('click', ()=>{ if(state==='playing'||state==='dialogue') openMap(); });
 document.getElementById('sound-toggle').addEventListener('click', ()=>{
   const m = toggleMute();
   document.getElementById('sound-toggle').textContent = m ? '🔇' : '🔊';
 });
-document.getElementById('dialogue-continue').addEventListener('click', ()=>{
+document.getElementById('dialogue-continue').addEventListener('click', e=>{
+  e.stopPropagation();
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; dialogueText.textContent=currentLine; dialogueContinue.style.display='block'; return; }
   advanceDialogue();
+});
+document.getElementById('dialogue-box').addEventListener('click', ()=>{
+  if (state !== 'dialogue') return;
+  if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; dialogueText.textContent=currentLine; dialogueContinue.style.display='block'; return; }
+  if (dialogueContinue.style.display !== 'none') advanceDialogue();
 });
 document.getElementById('restart-btn').addEventListener('click', ()=>{
   document.getElementById('win-screen').style.display='none';
