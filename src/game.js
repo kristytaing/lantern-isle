@@ -1361,42 +1361,42 @@ function drawWorldMap() {
   wBlob(W*0.35,H*0.3,100,70,'#f8e0b0',0.14);
   wBlob(W*0.7,H*0.65,110,80,'#d0f0d8',0.14);
 
-  // Rounded border
+  // ── Sequential curving path ────────────────────────────────
+  const pts = ISLANDS.map(il=>({x:il.mapPos.x*W, y:il.mapPos.y*H}));
+
+  // Draw bezier rope path (shadow first, then dash)
   ctx.save();
-  ctx.strokeStyle='rgba(220,150,190,0.45)'; ctx.lineWidth=3;
-  const br=16;
-  ctx.beginPath(); ctx.roundRect(6,6,W-12,H-12,br); ctx.stroke();
-  ctx.strokeStyle='rgba(220,150,190,0.2)'; ctx.lineWidth=1.5;
-  ctx.beginPath(); ctx.roundRect(11,11,W-22,H-22,br-3); ctx.stroke();
-  ctx.restore();
-
-  // Title
-  ctx.font = '700 20px Quicksand,sans-serif';
-  ctx.fillStyle = '#7A3D6A'; ctx.textAlign='center';
-  ctx.fillText('World Map', W/2, 34);
-
-  // ── Sequential path ────────────────────────────────────────
-  const pts = ISLANDS.map(i=>({x:i.mapPos.x*W, y:i.mapPos.y*H}));
-
-  // Dotted path connecting 0→1→2→3→4→5
-  ctx.save();
-  ctx.setLineDash([5,9]); ctx.lineCap='round';
+  ctx.lineCap='round'; ctx.lineJoin='round';
   for (let i=0;i<pts.length-1;i++) {
     const a=pts[i], b=pts[i+1];
     const unlocked = ISLANDS[i+1].unlocked;
-    ctx.strokeStyle = unlocked ? 'rgba(196,112,154,0.55)' : 'rgba(196,112,154,0.22)';
+    // Control points: midpoint offset perpendicular to segment
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const len=Math.sqrt(dx*dx+dy*dy)||1;
+    // Perpendicular nudge alternates side
+    const nudge = (i%2===0?1:-1)*22;
+    const cpx=mx - (dy/len)*nudge, cpy=my + (dx/len)*nudge;
+    // Shadow
+    ctx.setLineDash([]);
+    ctx.strokeStyle='rgba(180,100,140,0.12)'; ctx.lineWidth=5;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.quadraticCurveTo(cpx,cpy,b.x,b.y); ctx.stroke();
+    // Dashed rope
+    ctx.setLineDash([5,8]);
+    ctx.strokeStyle = unlocked ? 'rgba(196,112,154,0.65)' : 'rgba(196,112,154,0.22)';
     ctx.lineWidth=2.5;
-    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.quadraticCurveTo(cpx,cpy,b.x,b.y); ctx.stroke();
   }
+  ctx.setLineDash([]);
   ctx.restore();
 
   // ── Biome mini-scenes ──────────────────────────────────────
   const R = 38; // island circle radius
   const biomeColors = [
     { base:'#b8e8c0', mid:'#88c898', dark:'#5a9a6a' }, // Mossy Forest
-    { base:'#f8e8a0', mid:'#f0c860', dark:'#d4a030' }, // Sunflower Beach
+    { base:'#fdf5d0', mid:'#f8e498', dark:'#e8c860' }, // Sunflower Beach
     { base:'#f8c8d8', mid:'#e8a0b8', dark:'#c07090' }, // Sakura Cove
-    { base:'#f0d8b0', mid:'#d8b880', dark:'#b09060' }, // Cozy Village
+    { base:'#faecd8', mid:'#f0d8b0', dark:'#d4b888' }, // Cozy Village
     { base:'#c8d8f8', mid:'#a0b8f0', dark:'#7090d8' }, // Crystal Cave
     { base:'#d8c8f0', mid:'#b8a0e0', dark:'#9070c8' }, // Lavender Highlands
   ];
