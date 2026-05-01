@@ -1166,10 +1166,12 @@ function showWisdomOverlay(islandId) {
     el = document.createElement('div');
     el.id = 'wisdom-overlay';
     el.style.cssText = `position:fixed;bottom:96px;left:50%;transform:translateX(-50%);
-      font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;
-      color:rgba(240,222,194,0.92);text-align:center;pointer-events:none;z-index:300;
-      text-shadow:0 1px 8px rgba(0,0,0,0.7);transition:opacity 0.8s ease;opacity:0;
-      letter-spacing:0.5px;max-width:380px;line-height:1.5;`;
+      font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;font-weight:600;
+      color:#FFF8EC;text-align:center;pointer-events:none;z-index:300;
+      background:rgba(40,20,55,0.78);border-radius:24px;padding:8px 20px;
+      box-shadow:0 2px 16px rgba(0,0,0,0.5);
+      text-shadow:0 1px 4px rgba(0,0,0,0.9);transition:opacity 0.8s ease;opacity:0;
+      letter-spacing:0.4px;max-width:400px;line-height:1.5;`;
     document.body.appendChild(el);
   }
   el.textContent = `✦ ${text} ✦`;
@@ -1265,12 +1267,22 @@ function spawnFireflyTarget() {
 
 function spawnQuestCrystal(npcX, npcZ) {
   const island = getIsland(currentIslandId);
-  // Place crystal in front of the NPC (toward island center) at safe distance
+  // Find a spot at least 2.8 units from the NPC and 2.0 from other NPCs/shrine
   const toCenter = new THREE.Vector2(-npcX, -npcZ);
   const len = toCenter.length();
-  const dir = len > 0.01 ? toCenter.normalize() : new THREE.Vector2(0, 1);
-  const cx = npcX + dir.x * 2.2 + (Math.random() - 0.5) * 0.4;
-  const cz = npcZ + dir.y * 2.2 + (Math.random() - 0.5) * 0.4;
+  const dir = len > 0.01 ? toCenter.clone().normalize() : new THREE.Vector2(0, 1);
+  let cx, cz, attempts = 0;
+  do {
+    const spread = (Math.random() - 0.5) * 0.8;
+    const perpDir = new THREE.Vector2(-dir.y, dir.x);
+    cx = npcX + dir.x * (2.8 + Math.random() * 0.6) + perpDir.x * spread;
+    cz = npcZ + dir.y * (2.8 + Math.random() * 0.6) + perpDir.y * spread;
+    attempts++;
+    // Check clearance from all NPCs and shrine
+    const tooClose = island.npcs.some(n => Math.hypot(cx - n.x, cz - n.z) < 1.8)
+      || Math.hypot(cx - island.shrinePos.x, cz - island.shrinePos.z) < 1.8;
+    if (!tooClose) break;
+  } while (attempts < 12);
   const geo = new THREE.SphereGeometry(0.14, 10, 8);
   const mat = new THREE.MeshLambertMaterial({ color: PALETTE.softPinkN, emissive: PALETTE.softPurpleN, emissiveIntensity: 0.5 });
   const mesh = new THREE.Mesh(geo, mat);

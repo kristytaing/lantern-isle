@@ -4,6 +4,8 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { PALETTE } from './world.js';
 
+const PI = Math.PI;
+
 export class Player {
   constructor(scene) {
     this.scene = scene;
@@ -26,295 +28,294 @@ export class Player {
   _build() {
     const g = this.group;
 
+    // ── SHADOW ───────────────────────────────────────────────
+    const shadowGeo = new THREE.CircleGeometry(0.22, 12);
+    const shadowMat = new THREE.MeshBasicMaterial({ color: 0x2A1A3A, transparent: true, opacity: 0.22, depthWrite: false });
+    this.shadow = new THREE.Mesh(shadowGeo, shadowMat);
+    this.shadow.rotation.x = -PI / 2;
+    this.shadow.position.y = 0.01;
+    g.add(this.shadow);
+
     // ── LEGS ─────────────────────────────────────────────────
     const trouserMat = new THREE.MeshLambertMaterial({ color: 0x4A6741 });
     const legGeo = new THREE.CylinderGeometry(0.055, 0.05, 0.18, 8);
     this.legL = new THREE.Mesh(legGeo, trouserMat);
-    this.legR = new THREE.Mesh(legGeo.clone(), trouserMat);
+    this.legR = new THREE.Mesh(legGeo, trouserMat);
     this.legL.position.set(-0.07, 0.09, 0);
     this.legR.position.set(0.07, 0.09, 0);
-    g.add(this.legL); g.add(this.legR);
+    g.add(this.legL, this.legR);
 
     // ── BOOTS ────────────────────────────────────────────────
     const bootMat = new THREE.MeshLambertMaterial({ color: 0x5C3A1E });
     const bootGeo = new THREE.CylinderGeometry(0.062, 0.058, 0.1, 10);
     this.bootL = new THREE.Mesh(bootGeo, bootMat);
-    this.bootR = new THREE.Mesh(bootGeo.clone(), bootMat);
+    this.bootR = new THREE.Mesh(bootGeo, bootMat);
     this.bootL.position.set(-0.07, 0.05, 0.01);
     this.bootR.position.set(0.07, 0.05, 0.01);
-    g.add(this.bootL); g.add(this.bootR);
+    g.add(this.bootL, this.bootR);
     const cuffMat = new THREE.MeshLambertMaterial({ color: 0x7A5030 });
     const cuffGeo = new THREE.CylinderGeometry(0.066, 0.062, 0.025, 10);
-    const cuffL = new THREE.Mesh(cuffGeo, cuffMat);
-    const cuffR = new THREE.Mesh(cuffGeo.clone(), cuffMat);
-    cuffL.position.set(-0.07, 0.1, 0.01);
-    cuffR.position.set(0.07, 0.1, 0.01);
-    g.add(cuffL); g.add(cuffR);
+    const cuffL = new THREE.Mesh(cuffGeo, cuffMat); cuffL.position.set(-0.07, 0.1, 0.01);
+    const cuffR = new THREE.Mesh(cuffGeo, cuffMat); cuffR.position.set(0.07, 0.1, 0.01);
+    g.add(cuffL, cuffR);
 
-    // ── BODY — explorer jacket ───────────────────────────────
-    const jacketMat = new THREE.MeshLambertMaterial({ color: 0x7A5228 });
-    const bodyGeo = new THREE.CylinderGeometry(0.145, 0.16, 0.3, 12);
-    this.body = new THREE.Mesh(bodyGeo, jacketMat);
-    this.body.position.y = 0.33;
-    g.add(this.body);
-    // Jacket front panel
-    const frontPanelGeo = new THREE.PlaneGeometry(0.1, 0.26);
-    const frontPanelMat = new THREE.MeshLambertMaterial({ color: 0x9A6838, side: THREE.DoubleSide });
-    const frontPanel = new THREE.Mesh(frontPanelGeo, frontPanelMat);
-    frontPanel.position.set(0, 0.33, 0.146);
-    g.add(frontPanel);
-    // Belt
-    const beltMat = new THREE.MeshLambertMaterial({ color: 0x2E1C0A });
-    const beltGeo = new THREE.CylinderGeometry(0.152, 0.152, 0.035, 12);
-    const belt = new THREE.Mesh(beltGeo, beltMat);
-    belt.position.y = 0.21;
+    // ── BODY — cream dress / explorer coat ──────────────────
+    // Base dress shape: wider at bottom, slimmer top
+    const dressBot = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.17, 0.20, 0.22, 12),
+      new THREE.MeshLambertMaterial({ color: 0xF5EDDC })
+    );
+    dressBot.position.y = 0.22;
+    g.add(dressBot);
+
+    const dressTop = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.13, 0.17, 0.18, 12),
+      new THREE.MeshLambertMaterial({ color: 0xF0E4CC })
+    );
+    dressTop.position.y = 0.40;
+    g.add(dressTop);
+
+    // Thin tan belt
+    const beltMat = new THREE.MeshLambertMaterial({ color: 0x9A7040 });
+    const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.145, 0.028, 12), beltMat);
+    belt.position.y = 0.31;
     g.add(belt);
-    const buckleGeo = new THREE.BoxGeometry(0.055, 0.04, 0.02);
-    const buckleMat = new THREE.MeshLambertMaterial({ color: 0xC8A040 });
-    const buckle = new THREE.Mesh(buckleGeo, buckleMat);
-    buckle.position.set(0, 0.21, 0.156);
-    g.add(buckle);
-    // Collar
-    const collarGeo = new THREE.TorusGeometry(0.1, 0.022, 6, 12, Math.PI);
-    const collarMat = new THREE.MeshLambertMaterial({ color: 0xF0E0C0 });
-    const collar = new THREE.Mesh(collarGeo, collarMat);
-    collar.position.set(0, 0.46, 0.0);
-    collar.rotation.x = -0.4;
-    g.add(collar);
 
     // ── ARMS ─────────────────────────────────────────────────
-    const armMat = new THREE.MeshLambertMaterial({ color: 0x7A5228 });
-    const armGeo = new THREE.CylinderGeometry(0.042, 0.048, 0.24, 8);
-    armGeo.translate(0, -0.12, 0);
-    this.armL = new THREE.Mesh(armGeo, armMat);
-    this.armR = new THREE.Mesh(armGeo.clone(), armMat);
-    this.armL.position.set(-0.185, 0.42, 0);
-    this.armR.position.set(0.185, 0.42, 0);
-    g.add(this.armL); g.add(this.armR);
-    const sleeveCuffGeo = new THREE.CylinderGeometry(0.048, 0.044, 0.028, 8);
-    const sleeveCuffMat = new THREE.MeshLambertMaterial({ color: 0xF0E0C0 });
-    const sleeveL = new THREE.Mesh(sleeveCuffGeo, sleeveCuffMat);
-    const sleeveR = new THREE.Mesh(sleeveCuffGeo.clone(), sleeveCuffMat);
-    sleeveL.position.set(-0.185, 0.22, 0);
-    sleeveR.position.set(0.185, 0.22, 0);
-    g.add(sleeveL); g.add(sleeveR);
+    const sleeveMat = new THREE.MeshLambertMaterial({ color: 0xF0E4CC });
+    const armGeo = new THREE.CylinderGeometry(0.042, 0.038, 0.22, 8);
+    this.armL = new THREE.Mesh(armGeo, sleeveMat);
+    this.armR = new THREE.Mesh(armGeo, sleeveMat);
+    this.armL.position.set(-0.185, 0.40, 0);
+    this.armR.position.set(0.185, 0.40, 0);
+    this.armL.rotation.z =  0.3;
+    this.armR.rotation.z = -0.3;
+    g.add(this.armL, this.armR);
 
-    // ── BACKPACK — rounded, teal/jade color ──────────────────
-    const packMat = new THREE.MeshLambertMaterial({ color: 0x2E7A6A }); // jade teal — distinct from brown jacket
-    // Main rounded pack body
-    const packGeo = new THREE.SphereGeometry(0.11, 10, 8);
+    // Hands
+    const handMat = new THREE.MeshLambertMaterial({ color: 0xF5C9A0 });
+    const handGeo = new THREE.SphereGeometry(0.042, 7, 6);
+    const handL = new THREE.Mesh(handGeo, handMat); handL.position.set(-0.22, 0.30, 0);
+    const handR = new THREE.Mesh(handGeo, handMat); handR.position.set(0.22, 0.30, 0);
+    g.add(handL, handR);
+
+    // ── ROUNDED BACKPACK ────────────────────────────────────
+    const packMat = new THREE.MeshLambertMaterial({ color: 0x2E7A6A });
+    const packGeo = new THREE.SphereGeometry(0.11, 10, 9);
     const pack = new THREE.Mesh(packGeo, packMat);
-    pack.scale.set(0.9, 1.1, 0.75);
-    pack.position.set(0, 0.34, -0.2);
+    pack.scale.set(0.85, 1.05, 0.72);
+    pack.position.set(0, 0.40, -0.13);
     g.add(pack);
-    // Small front pocket
-    const pocketGeo = new THREE.SphereGeometry(0.055, 8, 6);
     const pocketMat = new THREE.MeshLambertMaterial({ color: 0x246058 });
-    const pocket = new THREE.Mesh(pocketGeo, pocketMat);
-    pocket.scale.set(0.85, 0.7, 0.5);
-    pocket.position.set(0, 0.24, -0.23);
+    const pocket = new THREE.Mesh(new THREE.SphereGeometry(0.054, 8, 7), pocketMat);
+    pocket.scale.set(0.9, 0.85, 0.6);
+    pocket.position.set(0, 0.30, -0.165);
     g.add(pocket);
-    // Straps
+    // Gold straps
     const strapMat = new THREE.MeshLambertMaterial({ color: 0xC8A040 });
-    const strapGeo = new THREE.BoxGeometry(0.014, 0.22, 0.012);
-    const strapL = new THREE.Mesh(strapGeo, strapMat); strapL.position.set(-0.06, 0.35, -0.1);
-    const strapR = new THREE.Mesh(strapGeo.clone(), strapMat); strapR.position.set(0.06, 0.35, -0.1);
-    g.add(strapL); g.add(strapR);
+    const strapGeo = new THREE.BoxGeometry(0.018, 0.18, 0.012);
+    const strapL = new THREE.Mesh(strapGeo, strapMat); strapL.position.set(-0.07, 0.37, -0.05);
+    const strapR = new THREE.Mesh(strapGeo, strapMat); strapR.position.set(0.07, 0.37, -0.05);
+    g.add(strapL, strapR);
 
     // ── HEAD ─────────────────────────────────────────────────
-    const skinMat = new THREE.MeshLambertMaterial({ color: 0xF5D5A8 });
-    const headGeo = new THREE.SphereGeometry(0.21, 14, 12);
+    // Slightly rounder, bigger head like mock
+    const skinMat = new THREE.MeshLambertMaterial({ color: 0xF5C9A0 });
+    const headGeo = new THREE.SphereGeometry(0.215, 14, 12);
     this.head = new THREE.Mesh(headGeo, skinMat);
-    this.head.position.y = 0.72;
+    this.head.scale.set(1.0, 1.05, 0.96);
+    this.head.position.y = 0.73;
     g.add(this.head);
 
-    // Cheek blush
-    const blushMat = new THREE.MeshLambertMaterial({ color: 0xF09878, transparent: true, opacity: 0.42 });
-    const blushGeo = new THREE.SphereGeometry(0.065, 6, 5);
-    const blushL = new THREE.Mesh(blushGeo, blushMat);
-    const blushR = new THREE.Mesh(blushGeo, blushMat);
-    blushL.position.set(-0.13, 0.695, 0.16); blushL.scale.set(1, 0.5, 0.38);
-    blushR.position.set(0.13, 0.695, 0.16);  blushR.scale.set(1, 0.5, 0.38);
-    g.add(blushL); g.add(blushR);
+    // Cheek blush (subtle)
+    const blushMat = new THREE.MeshLambertMaterial({ color: 0xF2A0A0, transparent: true, opacity: 0.35 });
+    const blushGeo = new THREE.SphereGeometry(0.055, 7, 6);
+    const blushL = new THREE.Mesh(blushGeo, blushMat); blushL.scale.set(1.2, 0.6, 0.5); blushL.position.set(-0.12, 0.72, 0.175);
+    const blushR = new THREE.Mesh(blushGeo, blushMat); blushR.scale.set(1.2, 0.6, 0.5); blushR.position.set(0.12, 0.72, 0.175);
+    g.add(blushL, blushR);
 
-    // Nose
-    const noseGeo = new THREE.SphereGeometry(0.02, 5, 4);
-    const noseMat = new THREE.MeshLambertMaterial({ color: 0xE8B090 });
-    const nose = new THREE.Mesh(noseGeo, noseMat);
-    nose.position.set(0, 0.712, 0.212);
+    // Eyes — larger, more expressive like mock
+    const eyeWhiteMat = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+    const pupilMat = new THREE.MeshLambertMaterial({ color: 0x2A1A10 });
+    const shineMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
+    const eyeGeo = new THREE.SphereGeometry(0.045, 8, 7);
+    const pupilGeo = new THREE.SphereGeometry(0.028, 7, 6);
+    const shineGeo = new THREE.SphereGeometry(0.012, 5, 4);
+    const eyeL = new THREE.Mesh(eyeGeo, eyeWhiteMat);
+    const eyeR = new THREE.Mesh(eyeGeo, eyeWhiteMat);
+    eyeL.position.set(-0.075, 0.745, 0.18); eyeL.renderOrder = 1;
+    eyeR.position.set(0.075, 0.745, 0.18); eyeR.renderOrder = 1;
+    const pupilL = new THREE.Mesh(pupilGeo, pupilMat);
+    const pupilR = new THREE.Mesh(pupilGeo, pupilMat);
+    pupilL.position.set(-0.075, 0.742, 0.205); pupilL.renderOrder = 2;
+    pupilR.position.set(0.075, 0.742, 0.205); pupilR.renderOrder = 2;
+    const shineL = new THREE.Mesh(shineGeo, shineMat);
+    const shineR = new THREE.Mesh(shineGeo, shineMat);
+    shineL.position.set(-0.062, 0.755, 0.212); shineL.renderOrder = 3;
+    shineR.position.set(0.088, 0.755, 0.212); shineR.renderOrder = 3;
+    // Store for head-turn
+    this.eyeL = eyeL; this.eyeR = eyeR;
+    this.pupilL = pupilL; this.pupilR = pupilR;
+    g.add(eyeL, eyeR, pupilL, pupilR, shineL, shineR);
+
+    // Small dot nose
+    const noseMat = new THREE.MeshLambertMaterial({ color: 0xD4906A });
+    const nose = new THREE.Mesh(new THREE.SphereGeometry(0.016, 5, 4), noseMat);
+    nose.position.set(0, 0.718, 0.208);
     g.add(nose);
 
-    // Eye whites
-    const eyeWhiteGeo = new THREE.SphereGeometry(0.044, 8, 7);
-    const eyeWhiteMat = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
-    const ewL = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
-    const ewR = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
-    ewL.position.set(-0.083, 0.732, 0.179);
-    ewR.position.set(0.083, 0.732, 0.179);
-    g.add(ewL); g.add(ewR);
-    // Pupils
-    const eyeGeo = new THREE.SphereGeometry(0.032, 7, 7);
-    const eyeMat = new THREE.MeshLambertMaterial({ color: 0x1A0A04 });
-    this.eyeL = new THREE.Mesh(eyeGeo, eyeMat);
-    this.eyeR = new THREE.Mesh(eyeGeo, eyeMat);
-    this.eyeL.position.set(-0.083, 0.733, 0.192);
-    this.eyeR.position.set(0.083, 0.733, 0.192);
-    g.add(this.eyeL); g.add(this.eyeR);
-    // Shine
-    const shineGeo = new THREE.SphereGeometry(0.011, 4, 4);
-    const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const shL = new THREE.Mesh(shineGeo, shineMat);
-    const shR = new THREE.Mesh(shineGeo, shineMat);
-    shL.position.set(-0.073, 0.743, 0.218);
-    shR.position.set(0.093, 0.743, 0.218);
-    g.add(shL); g.add(shR);
+    // Mouth — small curved smile
+    const mouthMat = new THREE.MeshLambertMaterial({ color: 0xC07060 });
+    const mouthGeo = new THREE.TorusGeometry(0.028, 0.009, 4, 8, PI * 0.6);
+    const mouth = new THREE.Mesh(mouthGeo, mouthMat);
+    mouth.position.set(0, 0.693, 0.208);
+    mouth.rotation.z = PI;
+    g.add(mouth);
 
-    // Eyebrows
-    const browMat = new THREE.MeshLambertMaterial({ color: 0x4A2808 });
-    const browGeo = new THREE.BoxGeometry(0.068, 0.013, 0.01);
-    const browL = new THREE.Mesh(browGeo, browMat);
-    const browR = new THREE.Mesh(browGeo.clone(), browMat);
-    browL.position.set(-0.083, 0.772, 0.198); browL.rotation.z = 0.14;
-    browR.position.set(0.083, 0.772, 0.198);  browR.rotation.z = -0.14;
-    g.add(browL); g.add(browR);
-
-    // ── HAIR — long flowing brown, stays behind face ──────────
+    // ── HAIR — long flowing brown, behind face ───────────────
+    const hairMat = new THREE.MeshLambertMaterial({ color: 0x5C3010 });
+    const hairDarkMat = new THREE.MeshLambertMaterial({ color: 0x3E2008 });
     this.hairGroup = new THREE.Group();
-    const hairMat    = new THREE.MeshLambertMaterial({ color: 0x6B3A18 }); // chestnut brown
-    const hairDkMat  = new THREE.MeshLambertMaterial({ color: 0x4A2510 }); // darker under-layer
-    const hairHiMat  = new THREE.MeshLambertMaterial({ color: 0x8C5028 }); // warm highlight
 
-    // Top cap — covers only top of skull, not sides/front.
-    // phiLength = PI*0.5 means top hemisphere only, stopping well above ears
-    const capGeo = new THREE.SphereGeometry(0.222, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.52);
+    // Scalp cap — top only, doesn't drape over face
+    const capGeo = new THREE.SphereGeometry(0.222, 14, 10, 0, PI * 2, 0, PI * 0.50);
     this.hairCap = new THREE.Mesh(capGeo, hairMat);
     this.hairCap.position.y = 0.725;
     this.hairGroup.add(this.hairCap);
 
-    // Side curtains — hang down from temples, positioned BEHIND face (negative Z offset)
-    // Left side
-    const sideL_geo = new THREE.CylinderGeometry(0.055, 0.035, 0.42, 7);
-    const sideL = new THREE.Mesh(sideL_geo, hairMat);
-    sideL.position.set(-0.2, 0.56, -0.05);
-    sideL.rotation.z = 0.12;
-    this.hairGroup.add(sideL);
-    // Right side
-    const sideR_geo = new THREE.CylinderGeometry(0.055, 0.035, 0.42, 7);
-    const sideR = new THREE.Mesh(sideR_geo, hairMat);
-    sideR.position.set(0.2, 0.56, -0.05);
-    sideR.rotation.z = -0.12;
-    this.hairGroup.add(sideR);
+    // Side curtains — clearly behind the face (negative Z = behind)
+    for (let s = -1; s <= 1; s += 2) {
+      const curtainGeo = new THREE.CapsuleGeometry(0.045, 0.26, 5, 8);
+      const curtain = new THREE.Mesh(curtainGeo, hairMat);
+      curtain.position.set(s * 0.185, 0.60, -0.06);
+      curtain.rotation.z = s * 0.15;
+      this.hairGroup.add(curtain);
+      // Extra volume layer
+      const volGeo = new THREE.CapsuleGeometry(0.038, 0.20, 5, 8);
+      const vol = new THREE.Mesh(volGeo, hairMat);
+      vol.position.set(s * 0.21, 0.55, -0.08);
+      vol.rotation.z = s * 0.22;
+      this.hairGroup.add(vol);
+    }
 
-    // Side volume spheres to close gap between cap and side curtains (no scalp showing)
-    const sVolGeo = new THREE.SphereGeometry(0.14, 8, 7);
-    const sVolL = new THREE.Mesh(sVolGeo, hairMat);
-    const sVolR = new THREE.Mesh(sVolGeo.clone(), hairMat);
-    sVolL.position.set(-0.2, 0.69, -0.04); sVolL.scale.set(0.6, 0.72, 0.7);
-    sVolR.position.set(0.2, 0.69, -0.04);  sVolR.scale.set(0.6, 0.72, 0.7);
-    this.hairGroup.add(sVolL); this.hairGroup.add(sVolR);
-
-    // Bangs — only 2 short clumps at the very top of the forehead.
-    // Z position kept shallow so they don't slide down over eyes.
-    const bangData = [
-      { x: -0.09, y: 0.82, z: 0.13, rz:  0.18, sx: 0.7, sy: 0.5 },
-      { x:  0.09, y: 0.82, z: 0.13, rz: -0.18, sx: 0.7, sy: 0.5 },
+    // 2 small forehead bangs — only at top of forehead, NOT over eyes
+    const bangPositions = [
+      { x: -0.08, y: 0.865, z: 0.15 },
+      {  x: 0.07, y: 0.870, z: 0.14 },
     ];
-    bangData.forEach(b => {
-      const bGeo = new THREE.SphereGeometry(0.07, 7, 6);
-      const bang = new THREE.Mesh(bGeo, hairDkMat);
-      bang.position.set(b.x, b.y, b.z);
-      bang.rotation.z = b.rz;
-      bang.scale.set(b.sx, b.sy, 0.55);
+    bangPositions.forEach(bp => {
+      const bangGeo = new THREE.SphereGeometry(0.058, 7, 6);
+      const bang = new THREE.Mesh(bangGeo, hairMat);
+      bang.scale.set(1.1, 0.72, 0.65);
+      bang.position.set(bp.x, bp.y, bp.z);
       this.hairGroup.add(bang);
     });
 
-    // Back volume — large rounded mass behind head
-    const backVolGeo = new THREE.SphereGeometry(0.21, 10, 9, 0, Math.PI * 2, Math.PI * 0.28, Math.PI * 0.62);
+    // Long back — main flowing mass
+    const backVolGeo = new THREE.CapsuleGeometry(0.09, 0.38, 6, 10);
     this.hairBack = new THREE.Mesh(backVolGeo, hairMat);
-    this.hairBack.position.y = 0.72;
+    this.hairBack.position.set(0, 0.60, -0.14);
     this.hairGroup.add(this.hairBack);
 
-    // Long flowing trails — 3 strands hanging behind
+    // Flowing trails (long strands)
     const trailData = [
-      { x: -0.09, y: 0.42, z: -0.22, rx: 0.25, rz:  0.08, h: 0.44, r: 0.038 },
-      { x:  0.00, y: 0.38, z: -0.24, rx: 0.32, rz:  0.00, h: 0.52, r: 0.048 },
-      { x:  0.09, y: 0.42, z: -0.22, rx: 0.25, rz: -0.08, h: 0.44, r: 0.038 },
+      { x: -0.09, y: 0.44, z: -0.12, rx: 0.25, len: 0.30 },
+      {  x: 0.00, y: 0.40, z: -0.13, rx: 0.32, len: 0.34 },
+      {  x: 0.08, y: 0.44, z: -0.11, rx: 0.20, len: 0.28 },
     ];
-    trailData.forEach((t, i) => {
-      const tGeo = new THREE.CylinderGeometry(t.r, t.r * 0.4, t.h, 7);
-      const trail = new THREE.Mesh(tGeo, i === 1 ? hairMat : hairDkMat);
-      trail.position.set(t.x, t.y, t.z);
-      trail.rotation.x = t.rx;
-      trail.rotation.z = t.rz;
+    trailData.forEach((td, i) => {
+      const trailGeo = new THREE.CapsuleGeometry(0.038, td.len, 5, 8);
+      const trail = new THREE.Mesh(trailGeo, i === 1 ? hairDarkMat : hairMat);
+      trail.position.set(td.x, td.y, td.z);
+      trail.rotation.x = td.rx;
       if (i === 1) this.hairTrail = trail;
       this.hairGroup.add(trail);
     });
 
-    // Highlight streak on top
-    const hlGeo = new THREE.SphereGeometry(0.065, 6, 5);
-    const hl = new THREE.Mesh(hlGeo, hairHiMat);
-    hl.position.set(0.05, 0.88, 0.06); hl.scale.set(0.55, 0.35, 0.5);
+    // Hair highlight streak
+    const hlGeo = new THREE.CapsuleGeometry(0.018, 0.18, 4, 6);
+    const hlMat = new THREE.MeshLambertMaterial({ color: 0x8A5828 });
+    const hl = new THREE.Mesh(hlGeo, hlMat);
+    hl.position.set(-0.04, 0.68, -0.10);
+    hl.rotation.x = 0.2;
     this.hairGroup.add(hl);
 
     g.add(this.hairGroup);
 
-    // ── SCARF ────────────────────────────────────────────────
-    const scarfGeo = new THREE.TorusGeometry(0.115, 0.032, 7, 14);
+    // ── RED SCARF (matches mock) ──────────────────────────────
     const scarfMat = new THREE.MeshLambertMaterial({ color: 0xCC3030 });
+    const scarfGeo = new THREE.TorusGeometry(0.115, 0.032, 7, 14);
     this.scarf = new THREE.Mesh(scarfGeo, scarfMat);
-    this.scarf.position.y = 0.5;
-    this.scarf.rotation.x = Math.PI / 2;
+    this.scarf.position.y = 0.50;
+    this.scarf.rotation.x = PI / 2;
     g.add(this.scarf);
+    // Scarf tail that sways when moving
     const tailGeo = new THREE.BoxGeometry(0.038, 0.16, 0.038);
     this.scarfTail = new THREE.Mesh(tailGeo, scarfMat);
     this.scarfTail.position.set(0.11, 0.40, 0.07);
     g.add(this.scarfTail);
 
-    // ── LANTERN ──────────────────────────────────────────────
+    // ── LANTERN (held in right hand) ─────────────────────────
     this.lanternGroup = new THREE.Group();
     this.lanternGroup.position.set(0.26, 0.38, 0.1);
+
     const metalMat = new THREE.MeshLambertMaterial({ color: 0xB08820 });
-    const chainGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.1, 5);
     const chainMat = new THREE.MeshLambertMaterial({ color: 0xA08030 });
-    this.lanternGroup.add(Object.assign(new THREE.Mesh(chainGeo, chainMat), { position: new THREE.Vector3(0, 0.16, 0) }));
+
+    // Chain link (fixed — no Object.assign)
+    const chainMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.1, 5), chainMat);
+    chainMesh.position.y = 0.16;
+    this.lanternGroup.add(chainMesh);
+
     const topCap = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.07, 0.04, 8), metalMat);
     topCap.position.y = 0.12;
     this.lanternGroup.add(topCap);
+
     const finial = new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.065, 6), metalMat);
     finial.position.y = 0.16;
     this.lanternGroup.add(finial);
-    // Glass body
+
     const glassMat = new THREE.MeshLambertMaterial({ color: 0xFFEE88, transparent: true, opacity: 0.35, emissive: 0xFFCC44, emissiveIntensity: 0.5 });
     this.lanternGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.13, 6), glassMat));
-    // Cage bars
+
     for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2;
+      const a = (i / 6) * PI * 2;
       const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.14, 4), metalMat);
       bar.position.set(Math.cos(a) * 0.07, 0, Math.sin(a) * 0.07);
       this.lanternGroup.add(bar);
     }
     for (let ri = 0; ri < 3; ri++) {
       const ring = new THREE.Mesh(new THREE.TorusGeometry(0.072, 0.007, 5, 6), metalMat);
-      ring.position.y = -0.06 + ri * 0.06; ring.rotation.x = Math.PI / 2;
+      ring.position.y = -0.06 + ri * 0.06;
+      ring.rotation.x = PI / 2;
       this.lanternGroup.add(ring);
     }
+
     const coreMat = new THREE.MeshLambertMaterial({ color: 0xFFDD44, emissive: 0xFFAA00, emissiveIntensity: 1.0 });
     this.lanternCore = new THREE.Mesh(new THREE.SphereGeometry(0.042, 8, 8), coreMat);
     this.lanternGroup.add(this.lanternCore);
+
     const botCap = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.045, 0.035, 8), metalMat);
     botCap.position.y = -0.085;
     this.lanternGroup.add(botCap);
+
     this.lanternLight = new THREE.PointLight(0xFFCC44, 1.0, 5);
     this.lanternGroup.add(this.lanternLight);
     g.add(this.lanternGroup);
+  }
 
-    // ── SHADOW ───────────────────────────────────────────────
-    const shadowGeo = new THREE.CircleGeometry(0.22, 12);
-    const shadowMat = new THREE.MeshBasicMaterial({ color: PALETTE.deepPlumN, transparent: true, opacity: 0.22, depthWrite: false });
-    this.shadow = new THREE.Mesh(shadowGeo, shadowMat);
-    this.shadow.rotation.x = -Math.PI / 2;
-    this.shadow.position.y = 0.01;
-    g.add(this.shadow);
+  grantAbility(key) { this.abilities[key] = true; }
+
+  activatePulse() {
+    if (!this.abilities.pulse || this.pulseCooldown > 0) return false;
+    this.pulseActive = true; this.pulseRadius = 0; this.pulseCooldown = 5;
+    return true;
+  }
+
+  activateSprint() {
+    if (!this.abilities.sprint || this.sprintCooldown > 0 || this.sprintActive) return false;
+    this.sprintActive = true; this.sprintTimer = 2.5;
+    return true;
   }
 
   update(dt, keys, isoDir, tiles) {
@@ -328,18 +329,17 @@ export class Player {
     this.isMoving = dx !== 0 || dz !== 0;
 
     let spd = this.speed;
-    if (this.sprintActive) spd *= 1.7;
+    if (this.sprintActive) spd *= 1.9;
 
     if (this.isMoving) {
       const len = Math.sqrt(dx*dx+dz*dz);
-      const nx = this.pos.x + (dx/len) * spd * dt;
-      const nz = this.pos.z + (dz/len) * spd * dt;
-      if (!tiles || this._onGround(nx, nz, tiles)) {
+      dx /= len; dz /= len;
+      const nx = this.pos.x + dx * spd * dt;
+      const nz = this.pos.z + dz * spd * dt;
+      if (this._onGround(nx, nz, tiles)) {
         this.pos.x = nx; this.pos.z = nz;
-      } else {
-        if (this._onGround(nx, this.pos.z, tiles)) { this.pos.x = nx; }
+      } else if (this._onGround(nx, this.pos.z, tiles)) { this.pos.x = nx; }
         else if (this._onGround(this.pos.x, nz, tiles)) { this.pos.z = nz; }
-      }
       this.facing = Math.atan2(dx, dz);
       this.footstepTimer -= dt;
     }
@@ -359,7 +359,8 @@ export class Player {
     this.group.position.copy(this.pos);
     this.group.position.y = 0.08 + bob;
     this.group.rotation.y = this.facing;
-    // Gentle hair sway — Z axis only, keeps hair behind head
+
+    // Hair sway — gentle Z axis
     this.hairGroup.rotation.z = Math.sin(this.bobTime * 1.1) * 0.025;
     if (this.isMoving) {
       this.hairBack.rotation.x = 0.18;
@@ -369,6 +370,7 @@ export class Player {
       if (this.hairTrail) this.hairTrail.rotation.x = 0.32;
     }
     this.scarfTail.rotation.z = this.isMoving ? 0.35 : 0.0;
+
     const walkBob = this.isMoving ? Math.sin(this.bobTime * 6) * 0.045 : 0;
     this.legL.position.y = 0.09 + walkBob;
     this.legR.position.y = 0.09 - walkBob;
@@ -378,27 +380,13 @@ export class Player {
     this.armL.rotation.x = -armSwing;
     this.armR.rotation.x = armSwing;
     this.lanternLight.intensity = 1.0 + Math.sin(this.bobTime * 1.3) * 0.25;
-    this.lanternGroup.position.y = 0.38 + Math.sin(this.bobTime * 3) * 0.025;
-    this.lanternGroup.rotation.z = Math.sin(this.bobTime * 2) * 0.08;
-    this.lanternCore.material.emissiveIntensity = 0.9 + Math.sin(this.bobTime * 2.1) * 0.4;
   }
 
-  activatePulse() {
-    if (!this.abilities.pulse || this.pulseCooldown > 0) return false;
-    this.pulseActive = true; this.pulseRadius = 0; this.pulseCooldown = 5;
-    return true;
-  }
-  activateSprint() {
-    if (!this.abilities.sprint || this.sprintCooldown > 0 || this.sprintActive) return false;
-    this.sprintActive = true; this.sprintTimer = 3;
-    return true;
-  }
-  grantAbility(name) { this.abilities[name] = true; }
   _onGround(x, z, tiles) {
-    const tx = Math.round(x), tz = Math.round(z);
-    for (let i = 0; i < tiles.length; i++) {
-      const t = tiles[i];
-      if (t.type === 'ground' && t.x === tx && t.z === tz) return true;
+    if (!tiles) return true;
+    for (const t of tiles) {
+      if (t.type === 'water') continue;
+      if (Math.abs(x - t.x) < 0.62 && Math.abs(z - t.z) < 0.62) return true;
     }
     return false;
   }
