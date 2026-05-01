@@ -91,6 +91,8 @@ function buildIsland(islandId) {
   if (particles) particles.clearAll();
   crystalOrbits = [];
   islandMeshes = []; crystalMeshes = []; npcMeshes = [];
+  // Reset per-visit auto-trigger flags
+  if (typeof ISLANDS !== 'undefined') ISLANDS.forEach(il => { il._shrineAutoTriggered = false; });
   shrinBeamMesh = null; shrineBeamLight = null;
 
   const island = getIsland(islandId);
@@ -1530,6 +1532,11 @@ function drawCompass(island) {
 // ── World Map Screen ──────────────────────────────────────────
 function drawWorldMap() {
   const mc = document.getElementById('map-canvas');
+  // Fit canvas to modal width with 16:6 aspect ratio
+  const modal = document.getElementById('map-modal');
+  const availW = Math.min(modal.clientWidth - 32, 820);
+  const availH = Math.round(availW * 6 / 16);
+  mc.width = availW; mc.height = availH;
   const ctx = mc.getContext('2d');
   const W = mc.width, H = mc.height;
   ctx.clearRect(0,0,W,H);
@@ -1733,8 +1740,8 @@ window.addEventListener('keydown', e => {
     return;
   }
   if (state === 'playing') {
-    if (!wasDown && (k === 'm' || k === 'tab')) { e.preventDefault(); openMap(); return; }
-    if (!wasDown && (k === ' ' || k === 'enter' || k === 'e')) { e.preventDefault(); handleInteract(); }
+    if (!wasDown && k === 'tab') { e.preventDefault(); openMap(); return; }
+    // interact keys removed — proximity auto-triggers
     if (!wasDown && k === 'q') { activatePulseAbility(); }
     if (!wasDown && k === 'shift') { if(player && player.activateSprint()) { const pp=player.pos; particles.addBurst(pp.x,0.5,pp.z,0xEBB21A,12); particles.addPulseRing(pp.x,0,pp.z); } }
   }
@@ -2045,47 +2052,58 @@ function updateQuestTracker(islandId) {
 // ── Mobile Controls ───────────────────────────────────────────
 function setupMobile() {
   if (!isMobile) return;
-  document.getElementById('mobile-controls').style.display = 'block';
-  const zone = document.getElementById('joystick-zone');
-  const knob = document.getElementById('joystick-knob');
-  const actionBtn = document.getElementById('action-btn');
-  let origin = null;
-  zone.addEventListener('touchstart', e => {
+  // Touch-drag movement: touch anywhere on renderer canvas
+  let touchOrigin = null;
+  const DEAD = 8; // px dead zone
+  renderer.domElement.addEventListener('touchstart', e => {
+    // Ignore touches that start on UI elements
+    if (e.target !== renderer.domElement) return;
     e.preventDefault();
     const t = e.touches[0];
-    origin = {x:t.clientX, y:t.clientY};
-  }, {passive:false});
-  zone.addEventListener('touchmove', e => {
+    touchOrigin = { x: t.clientX, y: t.clientY };
+    joystickDir.x = 0; joystickDir.z = 0;
+  }, { passive: false });
+  renderer.domElement.addEventListener('touchmove', e => {
     e.preventDefault();
-    if (!origin) return;
+    if (!touchOrigin) return;
     const t = e.touches[0];
-    const dx = t.clientX - origin.x, dy = t.clientY - origin.y;
-    const dist = Math.min(Math.sqrt(dx*dx+dy*dy), 40);
-    const angle = Math.atan2(dy, dx);
-    knob.style.transform = `translate(calc(-50% + ${Math.cos(angle)*dist}px), calc(-50% + ${Math.sin(angle)*dist}px))`;
-    // Isometric input mapping
-    // Isometric camera faces +X+Z. Screen right = world +X-Z, screen down = world +X+Z
-    joystickDir.x = (dx - dy) / 40;
-    joystickDir.z = (dx + dy) / 40;
-  }, {passive:false});
-  zone.addEventListener('touchend', () => {
-    origin = null; joystickDir.x=0; joystickDir.z=0;
-    knob.style.transform = 'translate(-50%,-50%)';
-  });
-  actionBtn.addEventListener('touchstart', e=>{ e.preventDefault(); handleInteract(); }, {passive:false});
+    const dx = t.clientX - touchOrigin.x;
+    const dy = t.clientY - touchOrigin.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < DEAD) { joystickDir.x = 0; joystickDir.z = 0; return; }
+    // Normalise and scale — isometric: screen right = +X-Z, screen down = +X+Z
+    const scale = Math.min(dist, 80) / 80;
+    joystickDir.x = (dx - dy) / dist * scale;
+    joystickDir.z = (dx + dy) / dist * scale;
+  }, { passive: false });
+  renderer.domElement.addEventListener('touchend', e => {
+    e.preventDefault();
+    touchOrigin = null;
+    joystickDir.x = 0; joystickDir.z = 0;
+
+  }, { passive: false });
+
 }
 
 // ── Map click handling ────────────────────────────────────────
-document.getElementById('map-canvas').addEventListener('click', e => {
+function handleMapTap(clientX, clientY, target) {
   if (state !== 'map') return;
-  const rect = e.target.getBoundingClientRect();
-  const mx = (e.clientX - rect.left) / rect.width;
-  const my = (e.clientY - rect.top) / rect.height;
+  const rect = target.getBoundingClientRect();
+  const mx = (clientX - rect.left) / rect.width;
+  const my = (clientY - rect.top) / rect.height;
   ISLANDS.forEach((island, i) => {
     const dx = mx - island.mapPos.x, dy = my - island.mapPos.y;
-    if (Math.sqrt(dx*dx+dy*dy) < 0.15 && island.unlocked) selectIslandFromMap(i);
+    if (Math.sqrt(dx*dx+dy*dy) < 0.12 && island.unlocked) selectIslandFromMap(i);
   });
+}
+document.getElementById('map-canvas').addEventListener('click', e => {
+  handleMapTap(e.clientX, e.clientY, e.target);
 });
+document.getElementById('map-canvas').addEventListener('touchend', e => {
+  e.preventDefault();
+  const t = e.changedTouches[0];
+  handleMapTap(t.clientX, t.clientY, e.target);
+}, { passive: false });
 
 document.getElementById('close-map').addEventListener('click', ()=>{ sfxClick(); closeMap(); });
 document.getElementById('map-btn').addEventListener('click', ()=>{ if(state==='playing'||state==='dialogue') openMap(); });
@@ -2121,7 +2139,7 @@ document.getElementById('dev-btn').addEventListener('click', () => {
   buildIsland(0);
   document.getElementById('title-screen').style.display='none';
   showHUD(true); state='playing';
-  setTimeout(()=>showDialogue('🗺️ Explore Mode', ['All islands unlocked. Use the map (M) to jump anywhere.'], null), 500);
+  setTimeout(()=>showDialogue('🗺️ Explore Mode', ['All islands unlocked. Open the map to jump anywhere.'], null), 500);
 });
 
 // ── Start ─────────────────────────────────────────────────────
@@ -2138,7 +2156,6 @@ document.getElementById('start-btn').addEventListener('click', () => {
   setTimeout(()=>showDialogue('✨ Lantern Bearer', [
     'Your golden lantern glows as you step onto the Mossy Forest…',
     'Five crystal shards hide on this island. Find them, then bring them to the shrine!',
-    'Press Space near objects to interact. M to open your map. Good luck!'
   ], null), 350);
 });
 
@@ -2367,19 +2384,51 @@ function loop(ts) {
     }
   }
 
-  // Proximity prompt (crystals / NPCs / shrine)
+  // ── Auto-proximity interactions ──────────────────────────────
   if (state === 'playing' && player) {
     const pp = player.pos;
-    let promptTarget = null, promptLabel = 'Space';
     const island = getIsland(currentIslandId);
-    const sd = Math.sqrt((pp.x-island.shrinePos.x)**2+(pp.z-island.shrinePos.z)**2);
-    if (sd < 1.2) { promptTarget = shrineMesh; promptLabel = island.restored ? 'Shrine ✦' : 'Shrine'; }
+
+    // Crystals: auto-collect
+    for (let i = crystalMeshes.length - 1; i >= 0; i--) {
+      if (pp.distanceTo(crystalMeshes[i].position) < 1.0) {
+        collectCrystal(crystalMeshes[i]); break;
+      }
+    }
+
+    // Collectibles: auto-pickup
+    for (let i = islandMeshes.length - 1; i >= 0; i--) {
+      const m = islandMeshes[i];
+      if (!m.userData.collectibleType) continue;
+      if (pp.distanceTo(m.position) < 1.2) {
+        const ctype = m.userData.collectibleType;
+        if (!inventoryItems.includes(ctype)) {
+          inventoryItems.push(ctype);
+          const col = (island.collectibles || []).find(c => c.type === ctype);
+          const label = col ? col.label : ctype;
+          showDialogue('Found', [`You picked up: ${label}. Bring it to the right person.`], null);
+          scene.remove(m); islandMeshes.splice(i, 1);
+          updateInventoryUI();
+        }
+        break;
+      }
+    }
+
+    // NPCs: auto-dialogue on approach (once per visit, resets on island reload)
     npcMeshes.forEach((nm, ni) => {
-      if (pp.distanceTo(nm.position) < 1.4) { promptTarget = nm; promptLabel = island.npcs[ni].name; }
+      if (pp.distanceTo(nm.position) < 1.4 && !nm.userData.autoTriggered && state === 'playing') {
+        nm.userData.autoTriggered = true;
+        nm.userData.metPlayer = true;
+        handleNPCInteract(island.npcs[ni], ni);
+      }
     });
-    crystalMeshes.forEach(cm => {
-      if (pp.distanceTo(cm.position) < 1.0) { promptTarget = cm; promptLabel = '✦ Crystal'; }
-    });
+
+    // Shrine: auto-activate on approach
+    const sd = Math.sqrt((pp.x - island.shrinePos.x) ** 2 + (pp.z - island.shrinePos.z) ** 2);
+    if (sd < 1.2 && !island._shrineAutoTriggered && state === 'playing') {
+      island._shrineAutoTriggered = true;
+      activateShrine();
+    }
   }
 
   particles.update(dt);
