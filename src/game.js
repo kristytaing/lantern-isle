@@ -2401,9 +2401,10 @@ function loop(ts) {
     const pp = player.pos;
     const island = getIsland(currentIslandId);
 
-    // Crystals: auto-collect
+    // Crystals: auto-collect (XZ distance only — crystals float above y=0)
     for (let i = crystalMeshes.length - 1; i >= 0; i--) {
-      if (pp.distanceTo(crystalMeshes[i].position) < 0.35) {
+      const cp = crystalMeshes[i].position;
+      if (Math.hypot(pp.x - cp.x, pp.z - cp.z) < 0.35) {
         collectCrystal(crystalMeshes[i]); break;
       }
     }
@@ -2412,7 +2413,7 @@ function loop(ts) {
     for (let i = islandMeshes.length - 1; i >= 0; i--) {
       const m = islandMeshes[i];
       if (!m.userData.collectibleType) continue;
-      if (pp.distanceTo(m.position) < 0.35) {
+      if (Math.hypot(pp.x - m.position.x, pp.z - m.position.z) < 0.35) {
         const ctype = m.userData.collectibleType;
         if (!inventoryItems.includes(ctype)) {
           inventoryItems.push(ctype);
@@ -2428,7 +2429,7 @@ function loop(ts) {
 
     // NPCs: auto-dialogue on approach; resets when player walks away so re-trigger works
     npcMeshes.forEach((nm, ni) => {
-      const dist = pp.distanceTo(nm.position);
+      const dist = Math.hypot(pp.x - nm.position.x, pp.z - nm.position.z);
       if (dist < 0.38 && !nm.userData.autoTriggered && state === 'playing') {
         nm.userData.autoTriggered = true;
         handleNPCInteract(island.npcs[ni], ni);
