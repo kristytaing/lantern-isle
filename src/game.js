@@ -2433,10 +2433,10 @@ function loop(ts) {
     // NPCs: auto-dialogue on approach; resets when player walks away so re-trigger works
     npcMeshes.forEach((nm, ni) => {
       const dist = Math.hypot(pp.x - nm.position.x, pp.z - nm.position.z);
-      if (dist < 0.38 && !nm.userData.autoTriggered && state === 'playing') {
+      if (dist < 0.7 && !nm.userData.autoTriggered && state === 'playing') {
         nm.userData.autoTriggered = true;
         handleNPCInteract(island.npcs[ni], ni);
-      } else if (dist > 0.75) {
+      } else if (dist > 1.0) {
         nm.userData.autoTriggered = false;
       }
     });
