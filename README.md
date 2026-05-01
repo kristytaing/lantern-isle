@@ -1,6 +1,6 @@
 # Lantern Isle: Guardian Star
 
-> *A cozy isometric adventure — made for VibeJam 2026*
+> *A hand-crafted cozy adventure where kindness is the key — help six islands of charming characters earn back their crystal shards, restore ancient shrines, and piece together the bittersweet mystery of why the Guardian Star went dark. Made for VibeJam 2026*
 
 [![Play Now](https://img.shields.io/badge/Play%20Now-Live%20Game-9B9AE2?style=for-the-badge&logo=github)](https://ktaing.com/lantern-isle/)
 
