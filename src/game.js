@@ -105,6 +105,151 @@ function buildIsland(islandId) {
 
   // Terrain tiles
   const tileGeo = new THREE.BoxGeometry(0.95, 0.3, 0.95);
+
+  // Collect occupied positions (NPCs + shrine + crystals) to avoid decoration overlap
+  const occupiedKeys = new Set();
+  island.npcs.forEach(n => occupiedKeys.add(`${n.x},${n.z}`));
+  occupiedKeys.add(`${island.shrinePos.x},${island.shrinePos.z}`);
+  island.crystalPositions.forEach(cp => occupiedKeys.add(`${cp.x},${cp.z}`));
+
+  // Biome decoration helpers
+  function addTree(x, z) {
+    // trunk
+    const trunkGeo = new THREE.CylinderGeometry(0.07, 0.09, 0.45, 6);
+    const trunkMat = new THREE.MeshLambertMaterial({ color: 0x6B4226 });
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+    trunk.position.set(x, 0.225, z);
+    scene.add(trunk); islandMeshes.push(trunk);
+    // canopy
+    const canopyGeo = new THREE.SphereGeometry(0.28+Math.random()*0.1, 7, 6);
+    const canopyMat = new THREE.MeshLambertMaterial({ color: island.groundColor });
+    const canopy = new THREE.Mesh(canopyGeo, canopyMat);
+    canopy.position.set(x, 0.62+Math.random()*0.08, z);
+    canopy.userData = { bobOffset: Math.random()*Math.PI*2, bobBase: canopy.position.y };
+    scene.add(canopy); islandMeshes.push(canopy);
+  }
+
+  function addRock(x, z) {
+    const rGeo = new THREE.DodecahedronGeometry(0.13+Math.random()*0.08, 0);
+    const rMat = new THREE.MeshLambertMaterial({ color: 0x8E8E8E });
+    const r = new THREE.Mesh(rGeo, rMat);
+    r.position.set(x+(Math.random()-0.5)*0.3, 0.13, z+(Math.random()-0.5)*0.3);
+    r.rotation.y = Math.random()*Math.PI;
+    scene.add(r); islandMeshes.push(r);
+  }
+
+  function addFlower(x, z, col) {
+    const stemGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.22, 4);
+    const stemMat = new THREE.MeshLambertMaterial({ color: 0x5A8A3A });
+    const stem = new THREE.Mesh(stemGeo, stemMat);
+    stem.position.set(x, 0.11, z);
+    scene.add(stem); islandMeshes.push(stem);
+    const headGeo = new THREE.SphereGeometry(0.07, 6, 5);
+    const headMat = new THREE.MeshLambertMaterial({ color: col });
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.set(x, 0.27, z);
+    head.userData = { bobOffset: Math.random()*Math.PI*2, bobBase: head.position.y };
+    scene.add(head); islandMeshes.push(head);
+  }
+
+  function addMushroom(x, z) {
+    const stemGeo = new THREE.CylinderGeometry(0.05, 0.06, 0.18, 6);
+    const stemMat = new THREE.MeshLambertMaterial({ color: 0xF0E6D0 });
+    const stem = new THREE.Mesh(stemGeo, stemMat);
+    stem.position.set(x, 0.09, z);
+    scene.add(stem); islandMeshes.push(stem);
+    const capGeo = new THREE.SphereGeometry(0.14, 8, 5);
+    capGeo.scale(1, 0.55, 1);
+    const capMat = new THREE.MeshLambertMaterial({ color: 0xC0392B });
+    const cap = new THREE.Mesh(capGeo, capMat);
+    cap.position.set(x, 0.22, z);
+    scene.add(cap); islandMeshes.push(cap);
+  }
+
+  function addCactus(x, z) {
+    const bodyGeo = new THREE.CylinderGeometry(0.07, 0.08, 0.38, 6);
+    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x4A8A4A });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.set(x, 0.19, z);
+    scene.add(body); islandMeshes.push(body);
+    const armGeo = new THREE.CylinderGeometry(0.04, 0.05, 0.2, 5);
+    const arm = new THREE.Mesh(armGeo, bodyMat);
+    arm.rotation.z = Math.PI/2.5;
+    arm.position.set(x+0.14, 0.26, z);
+    scene.add(arm); islandMeshes.push(arm);
+  }
+
+  function addCrystalSpire(x, z, col) {
+    const spireGeo = new THREE.ConeGeometry(0.07, 0.35, 5);
+    const spireMat = new THREE.MeshLambertMaterial({ color: col, emissive: col, emissiveIntensity: 0.25 });
+    const spire = new THREE.Mesh(spireGeo, spireMat);
+    spire.position.set(x, 0.175, z);
+    spire.rotation.y = Math.random()*Math.PI;
+    spire.userData = { bobOffset: Math.random()*Math.PI*2, bobBase: spire.position.y };
+    scene.add(spire); islandMeshes.push(spire);
+  }
+
+  function addLantern(x, z) {
+    const poleGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.5, 5);
+    const poleMat = new THREE.MeshLambertMaterial({ color: 0x4F4261 });
+    const pole = new THREE.Mesh(poleGeo, poleMat);
+    pole.position.set(x, 0.25, z);
+    scene.add(pole); islandMeshes.push(pole);
+    const boxGeo = new THREE.BoxGeometry(0.13, 0.13, 0.13);
+    const boxMat = new THREE.MeshLambertMaterial({ color: 0xEBB21A, emissive: 0xEBB21A, emissiveIntensity: 0.5 });
+    const box = new THREE.Mesh(boxGeo, boxMat);
+    box.position.set(x, 0.57, z);
+    box.userData = { bobOffset: Math.random()*Math.PI*2, bobBase: box.position.y };
+    scene.add(box); islandMeshes.push(box);
+  }
+
+  // Biome decoration configs: [type, probability, color?]
+  const biomeDecorations = [
+    // 0 Mossy Forest: trees, mushrooms, rocks, flowers
+    (tx, tz, r) => {
+      if (r < 0.12) addTree(tx, tz);
+      else if (r < 0.20) addMushroom(tx, tz);
+      else if (r < 0.26) addRock(tx, tz);
+      else if (r < 0.30) addFlower(tx, tz, 0xC6C3DC);
+    },
+    // 1 Sunflower Beach: flowers, rocks, cacti
+    (tx, tz, r) => {
+      if (r < 0.14) addFlower(tx, tz, 0xEBB21A);
+      else if (r < 0.21) addRock(tx, tz);
+      else if (r < 0.26) addCactus(tx, tz);
+      else if (r < 0.30) addFlower(tx, tz, 0xF29FD7);
+    },
+    // 2 Sakura Cove: trees, flowers, lanterns, rocks
+    (tx, tz, r) => {
+      if (r < 0.11) addTree(tx, tz);
+      else if (r < 0.20) addFlower(tx, tz, 0xF29FD7);
+      else if (r < 0.24) addLantern(tx, tz);
+      else if (r < 0.28) addRock(tx, tz);
+    },
+    // 3 Cozy Village: flowers, lanterns, trees, mushrooms
+    (tx, tz, r) => {
+      if (r < 0.10) addLantern(tx, tz);
+      else if (r < 0.18) addFlower(tx, tz, 0xF29FD7);
+      else if (r < 0.24) addTree(tx, tz);
+      else if (r < 0.28) addMushroom(tx, tz);
+    },
+    // 4 Crystal Cave: crystal spires, rocks, mushrooms
+    (tx, tz, r) => {
+      if (r < 0.14) addCrystalSpire(tx, tz, 0x9B9AE2);
+      else if (r < 0.21) addRock(tx, tz);
+      else if (r < 0.27) addMushroom(tx, tz);
+      else if (r < 0.30) addCrystalSpire(tx, tz, 0xF29FD7);
+    },
+    // 5 Lavender Highlands: flowers, trees, rocks, crystal spires
+    (tx, tz, r) => {
+      if (r < 0.12) addFlower(tx, tz, 0x9B9AE2);
+      else if (r < 0.19) addTree(tx, tz);
+      else if (r < 0.24) addRock(tx, tz);
+      else if (r < 0.28) addCrystalSpire(tx, tz, 0xC6C3DC);
+    },
+  ];
+  const decorFn = biomeDecorations[islandId] || biomeDecorations[0];
+
   island.tiles.forEach(tile => {
     const isWater = tile.type === 'water';
     const color = isWater
@@ -115,16 +260,19 @@ function buildIsland(islandId) {
     mesh.position.set(tile.x, isWater ? -0.18 : 0, tile.z);
     scene.add(mesh); islandMeshes.push(mesh);
 
-    // Foliage on ground tiles
-    if (!isWater && Math.random() < 0.22 && (tile.x!==0||tile.z!==0)) {
-      const fh = 0.18+Math.random()*0.22;
-      const fGeo = new THREE.SphereGeometry(0.18+Math.random()*0.12, 6, 5);
-      const fCol = islandId===1?0x7EC87E:islandId===2?0xF29FD7:islandId===5?0x9B9AE2:island.groundColor;
-      const fMat = new THREE.MeshLambertMaterial({ color: fCol });
-      const fMesh = new THREE.Mesh(fGeo, fMat);
-      fMesh.position.set(tile.x+(Math.random()-0.5)*0.5, 0.3+fh*0.5, tile.z+(Math.random()-0.5)*0.5);
-      fMesh.userData = { bobOffset: Math.random()*Math.PI*2, bobBase: fMesh.position.y };
-      scene.add(fMesh); islandMeshes.push(fMesh);
+    // Terrain decorations — skip occupied tiles and centre
+    if (!isWater && (tile.x!==0||tile.z!==0)) {
+      const key = `${tile.x},${tile.z}`;
+      const r = Math.random();
+      if (occupiedKeys.has(key)) {
+        // Tile is shared with NPC/shrine/crystal — place a small offset flower only
+        if (r < 0.35) {
+          const ox = (Math.random()-0.5)*0.55, oz = (Math.random()-0.5)*0.55;
+          addFlower(tile.x+ox, tile.z+oz, island.accentColor);
+        }
+      } else {
+        decorFn(tile.x+(Math.random()-0.5)*0.45, tile.z+(Math.random()-0.5)*0.45, r);
+      }
     }
   });
 
@@ -217,6 +365,7 @@ function advanceDialogue() {
       if (ci % 8 === 0) sfxDialogue();
     } else {
       clearInterval(typewriterTimer);
+      typewriterTimer = null;
       dialogueContinue.style.display = 'block';
     }
   }, 28);
@@ -224,7 +373,7 @@ function advanceDialogue() {
 
 function closeDialogue() {
   dialogueBox.style.display = 'none';
-  if (typewriterTimer) clearInterval(typewriterTimer);
+  if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
   state = 'playing';
   if (dialogueCallback) { const cb = dialogueCallback; dialogueCallback = null; cb(); }
 }
@@ -498,7 +647,7 @@ window.addEventListener('keydown', e => {
   }
   if (state === 'playing') {
     if (!wasDown && (k === 'm' || k === 'tab')) { e.preventDefault(); openMap(); return; }
-    if (!wasDown && k === 'e') { handleInteract(); }
+    if (!wasDown && (k === ' ' || k === 'enter')) { e.preventDefault(); handleInteract(); }
     if (!wasDown && k === 'q') { activatePulseAbility(); }
     if (!wasDown && k === 'shift') { if(player && player.activateSprint()) { const pp=player.pos; particles.addBurst(pp.x,0.5,pp.z,0xEBB21A,12); particles.addPulseRing(pp.x,0,pp.z); } }
   }
@@ -668,7 +817,7 @@ document.getElementById('sound-toggle').addEventListener('click', ()=>{
   document.getElementById('sound-toggle').textContent = m ? '🔇' : '🔊';
 });
 document.getElementById('dialogue-continue').addEventListener('click', ()=>{
-  if (typewriterTimer) { clearInterval(typewriterTimer); dialogueText.textContent=currentLine; dialogueContinue.style.display='block'; return; }
+  if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; dialogueText.textContent=currentLine; dialogueContinue.style.display='block'; return; }
   advanceDialogue();
 });
 document.getElementById('restart-btn').addEventListener('click', ()=>{
