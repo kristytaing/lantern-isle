@@ -313,6 +313,22 @@ function buildIsland(islandId) {
     nMesh.position.set(npc.x, 0.36, npc.z);
     nMesh.userData = { npcIdx: ni, bobBase: 0.36, bobOffset: Math.random()*Math.PI*2 };
     scene.add(nMesh); npcMeshes.push(nMesh);
+    // Floating ! indicator
+    const excCanvas = document.createElement('canvas');
+    excCanvas.width = 32; excCanvas.height = 32;
+    const excCtx = excCanvas.getContext('2d');
+    excCtx.fillStyle = '#EBB21A';
+    excCtx.font = 'bold 24px sans-serif';
+    excCtx.textAlign = 'center';
+    excCtx.fillText('!', 16, 26);
+    const excTex = new THREE.CanvasTexture(excCanvas);
+    const excMat = new THREE.SpriteMaterial({ map: excTex, transparent: true, depthTest: false });
+    const excSprite = new THREE.Sprite(excMat);
+    excSprite.scale.set(0.35, 0.35, 1);
+    excSprite.position.set(npc.x, 1.15, npc.z);
+    excSprite.userData = { excBase: 1.15, excOffset: Math.random()*Math.PI*2 };
+    scene.add(excSprite); islandMeshes.push(excSprite);
+    nMesh.userData.excSprite = excSprite;
     // Name float indicator
     // (simplified — shown in dialogue only)
   });
@@ -919,9 +935,17 @@ function loop(ts) {
         m.position.y = m.userData.bobBase + Math.sin(time*1.5+(m.userData.bobOffset||0))*0.03;
       }
     });
-    // NPC bob
+    // NPC bob + sway
     npcMeshes.forEach(m=>{
-      m.position.y = m.userData.bobBase + Math.sin(time*1.8+m.userData.bobOffset)*0.04;
+      const t = time*1.8 + m.userData.bobOffset;
+      m.position.y = m.userData.bobBase + Math.sin(t)*0.06;
+      m.rotation.z = Math.sin(t*0.7)*0.12;
+      // Animate ! sprite
+      if (m.userData.excSprite) {
+        const sp = m.userData.excSprite;
+        sp.position.y = sp.userData.excBase + Math.sin(time*3 + sp.userData.excOffset)*0.07;
+        sp.material.opacity = 0.75 + Math.sin(time*3 + sp.userData.excOffset)*0.25;
+      }
     });
     // Crystal bob + glow pulse
     crystalMeshes.forEach(m=>{
