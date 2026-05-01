@@ -104,8 +104,12 @@ export const ISLANDS = [
     mapPos: { x: 0.38, y: 0.55 },
     mechanic: 'social',
     tiles: buildTiles(3),
-    crystalPositions: [{x:-5,z:-4},{x:5,z:3},{x:-4,z:5},{x:4,z:-4},{x:0,z:-6}],
+    crystalPositions: [{x:-5,z:-4},{x:5,z:3}],
     shrinePos: {x:0,z:0},
+    collectibles: [
+      { type:'mochi', x:4, z:-4, label:'🐱 Mochi' },
+      { type:'water_jar', x:-4, z:5, label:'💧 Water Jar' },
+    ],
     npcs: [
       { name:'Baker Bun', x:2, z:-2, color:0xF0DEC2,
         lines:["Oh dear! My little cat Mochi ran off again!","If you find Mochi, I'll give you the crystal shard I found!","Mochi has orange fur and loves sparkly things… hmm…"],

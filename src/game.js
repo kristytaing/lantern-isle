@@ -306,13 +306,152 @@ function buildIsland(islandId) {
   shrLight.position.set(island.shrinePos.x, 1, island.shrinePos.z);
   scene.add(shrLight); islandMeshes.push(shrLight);
 
+  // Collectibles (quest items)
+  if (island.collectibles) {
+    island.collectibles.forEach(col => {
+      if (questState[col.type]) return; // already collected
+      const group = new THREE.Group();
+      group.position.set(col.x, 0, col.z);
+      group.userData = { collectibleType: col.type, bobBase: 0, bobOffset: Math.random()*Math.PI*2 };
+      if (col.type === 'mochi') {
+        // Small orange cat shape: body + head + ears
+        const bodyGeo = new THREE.SphereGeometry(0.13, 8, 6);
+        const bodyMat = new THREE.MeshLambertMaterial({ color: 0xF07830 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.18; body.scale.set(1, 0.8, 1);
+        const headGeo = new THREE.SphereGeometry(0.1, 8, 6);
+        const head = new THREE.Mesh(headGeo, bodyMat);
+        head.position.y = 0.38;
+        const earGeo = new THREE.ConeGeometry(0.04, 0.08, 4);
+        const earL = new THREE.Mesh(earGeo, bodyMat); earL.position.set(-0.07, 0.48, 0); earL.rotation.z = 0.3;
+        const earR = new THREE.Mesh(earGeo, bodyMat); earR.position.set(0.07, 0.48, 0); earR.rotation.z = -0.3;
+        const tailGeo = new THREE.TorusGeometry(0.07, 0.025, 6, 8, Math.PI);
+        const tail = new THREE.Mesh(tailGeo, bodyMat); tail.position.set(0.13, 0.12, 0); tail.rotation.z = -Math.PI/2;
+        group.add(body, head, earL, earR, tail);
+      } else if (col.type === 'water_jar') {
+        // Blue ceramic jar
+        const jarGeo = new THREE.CylinderGeometry(0.07, 0.09, 0.22, 8);
+        const jarMat = new THREE.MeshLambertMaterial({ color: 0x4A90C4, emissive: 0x1A3060, emissiveIntensity: 0.2 });
+        const jar = new THREE.Mesh(jarGeo, jarMat); jar.position.y = 0.18;
+        const lidGeo = new THREE.CylinderGeometry(0.075, 0.075, 0.04, 8);
+        const lid = new THREE.Mesh(lidGeo, jarMat); lid.position.y = 0.31;
+        const handleGeo = new THREE.TorusGeometry(0.04, 0.015, 6, 8, Math.PI);
+        const handle = new THREE.Mesh(handleGeo, jarMat); handle.position.set(0.1, 0.2, 0); handle.rotation.y = Math.PI/2;
+        group.add(jar, lid, handle);
+      }
+      // Floating label sprite
+      const lCanvas = document.createElement('canvas'); lCanvas.width = 128; lCanvas.height = 32;
+      const lCtx = lCanvas.getContext('2d');
+      lCtx.fillStyle = 'rgba(0,0,0,0.55)'; lCtx.roundRect(2,2,124,28,6); lCtx.fill();
+      lCtx.fillStyle = '#fff'; lCtx.font = 'bold 14px sans-serif'; lCtx.textAlign = 'center';
+      lCtx.fillText(col.label, 64, 20);
+      const lTex = new THREE.CanvasTexture(lCanvas);
+      const lSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: lTex, transparent: true, depthTest: false }));
+      lSprite.scale.set(0.9, 0.22, 1); lSprite.position.y = 0.75;
+      group.add(lSprite);
+      scene.add(group); islandMeshes.push(group);
+    });
+  }
+
   // NPCs
   island.npcs.forEach((npc, ni) => {
-    const nGeo = new THREE.CapsuleGeometry(0.14, 0.22, 4, 8);
-    const nMat = new THREE.MeshLambertMaterial({ color: npc.color });
-    const nMesh = new THREE.Mesh(nGeo, nMat);
-    nMesh.position.set(npc.x, 0.36, npc.z);
-    nMesh.userData = { npcIdx: ni, bobBase: 0.36, bobOffset: Math.random()*Math.PI*2 };
+    const nGroup = new THREE.Group();
+    nGroup.position.set(npc.x, 0, npc.z);
+    nGroup.userData = { npcIdx: ni, bobBase: 0, bobOffset: Math.random()*Math.PI*2 };
+
+    if (npc.name === 'Baker Bun') {
+      // Round baker: cream body, white apron, chef hat, rosy cheeks
+      const bodyGeo = new THREE.SphereGeometry(0.22, 10, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xF5CBA7 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.28; body.scale.set(1, 0.9, 1);
+      const apronGeo = new THREE.PlaneGeometry(0.28, 0.3);
+      const apronMat = new THREE.MeshLambertMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+      const apron = new THREE.Mesh(apronGeo, apronMat); apron.position.set(0, 0.26, 0.2); apron.rotation.x = 0.2;
+      const headGeo = new THREE.SphereGeometry(0.16, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xFFDDB4 });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.6;
+      const hatGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.22, 10);
+      const hatMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+      const hat = new THREE.Mesh(hatGeo, hatMat); hat.position.y = 0.84;
+      const hatBrimGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.03, 10);
+      const hatBrim = new THREE.Mesh(hatBrimGeo, hatMat); hatBrim.position.y = 0.73;
+      const eyeGeo = new THREE.SphereGeometry(0.025, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x3A2010 });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.06, 0.63, 0.14);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.06, 0.63, 0.14);
+      const cheekGeo = new THREE.SphereGeometry(0.04, 5, 5);
+      const cheekMat = new THREE.MeshLambertMaterial({ color: 0xF4A0A0 });
+      const cheekL = new THREE.Mesh(cheekGeo, cheekMat); cheekL.position.set(-0.1, 0.59, 0.12);
+      const cheekR = new THREE.Mesh(cheekGeo, cheekMat); cheekR.position.set(0.1, 0.59, 0.12);
+      nGroup.add(body, apron, head, hat, hatBrim, eyeL, eyeR, cheekL, cheekR);
+
+    } else if (npc.name === 'Gardener') {
+      // Tall slim gardener: green overalls, wide straw hat, holding trowel
+      const bodyGeo = new THREE.CylinderGeometry(0.13, 0.15, 0.38, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0x5B8C3A });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.28;
+      const headGeo = new THREE.SphereGeometry(0.15, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xE8C99A });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.62;
+      const hatGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.14, 8);
+      const hatMat = new THREE.MeshLambertMaterial({ color: 0xC8A850 });
+      const hat = new THREE.Mesh(hatGeo, hatMat); hat.position.y = 0.82;
+      const brimGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.03, 12);
+      const brim = new THREE.Mesh(brimGeo, hatMat); brim.position.y = 0.76;
+      const eyeGeo = new THREE.SphereGeometry(0.025, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x2A4010 });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.06, 0.64, 0.13);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.06, 0.64, 0.13);
+      const armGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.22, 6);
+      const arm = new THREE.Mesh(armGeo, bodyMat); arm.position.set(0.18, 0.32, 0); arm.rotation.z = -0.8;
+      const trowelGeo = new THREE.BoxGeometry(0.04, 0.12, 0.06);
+      const trowelMat = new THREE.MeshLambertMaterial({ color: 0xA0A0A0 });
+      const trowel = new THREE.Mesh(trowelGeo, trowelMat); trowel.position.set(0.28, 0.22, 0); trowel.rotation.z = -0.5;
+      nGroup.add(body, head, hat, brim, eyeL, eyeR, arm, trowel);
+
+    } else if (npc.name === 'Elder Owl') {
+      // Owl: round body, big eyes, ear tufts, wing nubs, staff
+      const bodyGeo = new THREE.SphereGeometry(0.2, 10, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0x4F4261 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.28; body.scale.set(1, 1.1, 1);
+      const bellyGeo = new THREE.SphereGeometry(0.13, 8, 6);
+      const bellyMat = new THREE.MeshLambertMaterial({ color: 0xC6C3DC });
+      const belly = new THREE.Mesh(bellyGeo, bellyMat); belly.position.set(0, 0.26, 0.12); belly.scale.set(1, 0.9, 0.6);
+      const headGeo = new THREE.SphereGeometry(0.17, 10, 8);
+      const head = new THREE.Mesh(headGeo, bodyMat); head.position.y = 0.62;
+      const eyeGeo = new THREE.SphereGeometry(0.06, 8, 6);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0xEBB21A });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.08, 0.64, 0.12);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.08, 0.64, 0.12);
+      const pupilGeo = new THREE.SphereGeometry(0.03, 6, 5);
+      const pupilMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+      const pupilL = new THREE.Mesh(pupilGeo, pupilMat); pupilL.position.set(-0.08, 0.64, 0.17);
+      const pupilR = new THREE.Mesh(pupilGeo, pupilMat); pupilR.position.set(0.08, 0.64, 0.17);
+      const beakGeo = new THREE.ConeGeometry(0.035, 0.07, 5);
+      const beakMat = new THREE.MeshLambertMaterial({ color: 0xD4A020 });
+      const beak = new THREE.Mesh(beakGeo, beakMat); beak.position.set(0, 0.6, 0.17); beak.rotation.x = Math.PI/2;
+      const tuftGeo = new THREE.ConeGeometry(0.04, 0.1, 4);
+      const tuftMat = new THREE.MeshLambertMaterial({ color: 0x3A2E52 });
+      const tuftL = new THREE.Mesh(tuftGeo, tuftMat); tuftL.position.set(-0.1, 0.82, 0); tuftL.rotation.z = -0.3;
+      const tuftR = new THREE.Mesh(tuftGeo, tuftMat); tuftR.position.set(0.1, 0.82, 0); tuftR.rotation.z = 0.3;
+      const staffGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.7, 6);
+      const staffMat = new THREE.MeshLambertMaterial({ color: 0x8B6040 });
+      const staff = new THREE.Mesh(staffGeo, staffMat); staff.position.set(0.22, 0.35, 0);
+      const orbGeo = new THREE.SphereGeometry(0.055, 8, 6);
+      const orbMat = new THREE.MeshLambertMaterial({ color: 0x9B9AE2, emissive: 0x5555CC, emissiveIntensity: 0.5 });
+      const orb = new THREE.Mesh(orbGeo, orbMat); orb.position.set(0.22, 0.72, 0);
+      nGroup.add(body, belly, head, eyeL, eyeR, pupilL, pupilR, beak, tuftL, tuftR, staff, orb);
+
+    } else {
+      // Generic fallback NPC
+      const bodyGeo = new THREE.CapsuleGeometry(0.14, 0.22, 4, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: npc.color });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.36;
+      nGroup.add(body);
+    }
+
+    const nMesh = nGroup;
+    nMesh.userData = { npcIdx: ni, bobBase: 0, bobOffset: Math.random()*Math.PI*2 };
     scene.add(nMesh); npcMeshes.push(nMesh);
     // Floating ! indicator
     const excCanvas = document.createElement('canvas');
@@ -695,6 +834,24 @@ function handleInteract() {
     }
   }
 
+  // Check collectibles (quest items)
+  for (let i = islandMeshes.length-1; i >= 0; i--) {
+    const m = islandMeshes[i];
+    if (!m.userData.collectibleType) continue;
+    const d = pp.distanceTo(m.position);
+    if (d < 1.2) {
+      const ctype = m.userData.collectibleType;
+      if (!inventoryItems.includes(ctype)) {
+        inventoryItems.push(ctype);
+        const label = ctype === 'mochi' ? '🐱 Mochi' : '💧 Water Jar';
+        showDialogue('✨', [`You found ${label}! Bring it to the right person.`], null);
+        scene.remove(m);
+        islandMeshes.splice(i, 1);
+      }
+      return;
+    }
+  }
+
   // Check crystals
   for (let i = crystalMeshes.length-1; i >= 0; i--) {
     const cm = crystalMeshes[i];
@@ -722,27 +879,49 @@ function handleNPCInteract(npc, ni) {
 
   if (npc.quest) {
     const qt = npc.quest.type;
-    if (qt === 'find_cat' && !questState.find_cat) {
-      showDialogue(npc.name, npc.lines, ()=>{
-        showDialogue(npc.name, ["*gasp* There's Mochi! Thank you! Here, take this crystal shard!"], ()=>{
+    if (qt === 'find_cat') {
+      if (questState.find_cat) {
+        showDialogue(npc.name, ["Mochi is safe inside now. Thank you again!"], null);
+        return;
+      }
+      if (inventoryItems.includes('mochi')) {
+        showDialogue(npc.name, ["*gasp* You found Mochi! Oh thank you! Here, take this crystal shard I found!"], ()=>{
           questState.find_cat = true;
+          inventoryItems.splice(inventoryItems.indexOf('mochi'), 1);
           island.crystalCount++; updateCrystalHUD();
           sfxCrystalCollect();
         });
-      });
+      } else {
+        showDialogue(npc.name, npc.lines, null);
+      }
       return;
     }
-    if (qt === 'fetch_water' && !questState.fetch_water) {
-      showDialogue(npc.name, npc.lines, ()=>{
+    if (qt === 'fetch_water') {
+      if (questState.fetch_water) {
+        showDialogue(npc.name, ["My garden is blooming again, thanks to you!"], null);
+        return;
+      }
+      if (inventoryItems.includes('water_jar')) {
         showDialogue(npc.name, ["Oh, you brought me water! You're too kind! Take this shard I found!"], ()=>{
           questState.fetch_water = true;
+          inventoryItems.splice(inventoryItems.indexOf('water_jar'), 1);
           island.crystalCount++; updateCrystalHUD();
           sfxCrystalCollect();
         });
-      });
+      } else {
+        showDialogue(npc.name, npc.lines, null);
+      }
       return;
     }
-    if (qt === 'elder_final' && questState.find_cat && questState.fetch_water && !npc.quest.done) {
+    if (qt === 'elder_final') {
+      if (npc.quest.done) {
+        showDialogue(npc.name, ["Hoo hoo… The warmth is returning. Bless you, child."], null);
+        return;
+      }
+      if (!questState.find_cat || !questState.fetch_water) {
+        showDialogue(npc.name, ["Help the baker and the gardener first. Then return to me."], null);
+        return;
+      }
       showDialogue(npc.name, npc.lines, ()=>{
         npc.quest.done = true;
         island.crystalCount++; updateCrystalHUD();
