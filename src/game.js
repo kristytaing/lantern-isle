@@ -1186,6 +1186,7 @@ function showDialogue(speaker, lines, callback) {
     icon.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="${pColor}" opacity="0.85"/><text x="12" y="16" text-anchor="middle" font-size="11" font-family="Quicksand,sans-serif" fill="white" font-weight="700">${initial}</text></svg>`;
   }
   dialogueBox.style.display = 'block';
+  const jr = document.getElementById('joy-ring'); if (jr) jr.style.display = 'none';
   advanceDialogue();
 }
 
@@ -1222,6 +1223,7 @@ function advanceDialogue() {
 
 function closeDialogue() {
   dialogueBox.style.display = 'none';
+  const jr = document.getElementById('joy-ring'); if (jr) jr.style.display = '';
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
   Object.keys(keys).forEach(k => { keys[k] = false; });
   state = 'playing';
@@ -2130,7 +2132,7 @@ function setupMobile() {
   const JOY_DEAD = 6;
   const joyEl = document.createElement('div');
   joyEl.id = 'joy-ring';
-  joyEl.style.cssText = `position:fixed;bottom:32px;left:36px;width:${JOY_R*2}px;height:${JOY_R*2}px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.07);pointer-events:none;z-index:5;touch-action:none;`;
+  joyEl.style.cssText = `position:fixed;bottom:32px;left:36px;width:${JOY_R*2}px;height:${JOY_R*2}px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.07);pointer-events:none;z-index:15;touch-action:none;`;
   const joyDot = document.createElement('div');
   const DOT = 26;
   joyDot.style.cssText = `position:absolute;width:${DOT}px;height:${DOT}px;border-radius:50%;background:rgba(255,255,255,0.4);top:50%;left:50%;transform:translate(-50%,-50%);transition:transform 0.05s;`;
