@@ -1369,7 +1369,7 @@ function activateShrine() {
   showDialogue('Restoration!', restoreLines, () => {
     if (currentIslandId + 1 < ISLANDS.length) {
       ISLANDS[currentIslandId+1].unlocked = true;
-      showDialogue('Map Updated', [`New island unlocked: ${ISLANDS[currentIslandId+1].name}!`], null);
+      showDialogue('Map Updated', [`New island unlocked: ${ISLANDS[currentIslandId+1].name}!`], openMap);
     } else {
       triggerWin();
     }
