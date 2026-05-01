@@ -1224,107 +1224,216 @@ function drawWorldMap() {
   const ctx = mc.getContext('2d');
   const W = mc.width, H = mc.height;
   ctx.clearRect(0,0,W,H);
-  // Parchment background
-  ctx.fillStyle = PALETTE.warmCream; ctx.fillRect(0,0,W,H);
-  // Decorative border
-  ctx.strokeStyle = '#D4836A'; ctx.lineWidth = 6;
-  ctx.strokeRect(8,8,W-16,H-16);
-  ctx.strokeStyle = '#EB6259'; ctx.lineWidth = 2;
-  ctx.strokeRect(14,14,W-28,H-28);
-  // Title
-  ctx.font = 'bold 28px Nunito,sans-serif'; ctx.fillStyle = PALETTE.deepPlum;
-  ctx.textAlign = 'center'; ctx.fillText('✨ World Map ✨', W/2, 44);
 
-  // Draw connections (dotted paths)
-  const islandPositions = ISLANDS.map(i=>({x:i.mapPos.x*W, y:i.mapPos.y*H}));
-  const connections = [[0,1],[0,2],[1,3],[2,3],[3,4],[3,5],[4,5]];
-  ctx.setLineDash([4,8]); ctx.strokeStyle = PALETTE.deepPlum; ctx.lineWidth=1.5; ctx.globalAlpha=0.5;
-  connections.forEach(([a,b])=>{
-    ctx.beginPath();
-    ctx.moveTo(islandPositions[a].x, islandPositions[a].y);
-    ctx.lineTo(islandPositions[b].x, islandPositions[b].y);
-    ctx.stroke();
-  });
-  ctx.setLineDash([]); ctx.globalAlpha=1;
+  // ── Watercolor background ──────────────────────────────────
+  // Soft pink-cream gradient
+  const bg = ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0, '#fdf0f8');
+  bg.addColorStop(0.5, '#f8e8f4');
+  bg.addColorStop(1, '#f0e0f0');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
 
-  // Per-island map shape drawing helper
-  function islandPath(ctx, idx, px, py) {
-    ctx.beginPath();
-    if (idx === 0) {
-      // Mossy Forest: rounded blob (irregular circle)
-      ctx.ellipse(px-2, py+2, 44, 36, 0.3, 0, Math.PI*2);
-    } else if (idx === 1) {
-      // Sunflower Beach: long horizontal strip
-      ctx.ellipse(px, py, 58, 22, 0, 0, Math.PI*2);
-    } else if (idx === 2) {
-      // Sakura Cove: crescent — full circle minus inner bite
-      ctx.arc(px, py, 40, 0, Math.PI*2);
-    } else if (idx === 3) {
-      // Cozy Village: diamond/square rotated 45°
-      ctx.moveTo(px, py-38); ctx.lineTo(px+38, py);
-      ctx.lineTo(px, py+38); ctx.lineTo(px-38, py);
-      ctx.closePath();
-    } else if (idx === 4) {
-      // Crystal Cave: jagged star-ish polygon
-      const spikes = 7, outer = 40, inner = 26;
-      for (let s = 0; s < spikes*2; s++) {
-        const r2 = s%2===0 ? outer : inner;
-        const a = (s/spikes/2)*Math.PI*2 - Math.PI/2;
-        s===0 ? ctx.moveTo(px+Math.cos(a)*r2, py+Math.sin(a)*r2)
-              : ctx.lineTo(px+Math.cos(a)*r2, py+Math.sin(a)*r2);
-      }
-      ctx.closePath();
-    } else {
-      // Lavender Highlands: tall ridge ellipse
-      ctx.ellipse(px, py, 26, 50, 0.2, 0, Math.PI*2);
-    }
+  // Soft watercolor wash blobs
+  function wBlob(x,y,rx,ry,col,alpha=0.18) {
+    ctx.save(); ctx.globalAlpha=alpha;
+    const g=ctx.createRadialGradient(x,y,0,x,y,Math.max(rx,ry));
+    g.addColorStop(0,col); g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
   }
+  wBlob(W*0.15,H*0.45,120,90,'#f9b8d8',0.22);
+  wBlob(W*0.5,H*0.5,180,100,'#e8c8f0',0.18);
+  wBlob(W*0.85,H*0.55,130,95,'#c8d8f8',0.2);
+  wBlob(W*0.35,H*0.3,100,70,'#f8e0b0',0.14);
+  wBlob(W*0.7,H*0.65,110,80,'#d0f0d8',0.14);
 
-  // Draw islands
+  // Rounded border
+  ctx.save();
+  ctx.strokeStyle='rgba(220,150,190,0.45)'; ctx.lineWidth=3;
+  const br=16;
+  ctx.beginPath(); ctx.roundRect(6,6,W-12,H-12,br); ctx.stroke();
+  ctx.strokeStyle='rgba(220,150,190,0.2)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.roundRect(11,11,W-22,H-22,br-3); ctx.stroke();
+  ctx.restore();
+
+  // Title
+  ctx.font = '700 20px Quicksand,sans-serif';
+  ctx.fillStyle = '#7A3D6A'; ctx.textAlign='center';
+  ctx.fillText('World Map', W/2, 34);
+
+  // ── Sequential path ────────────────────────────────────────
+  const pts = ISLANDS.map(i=>({x:i.mapPos.x*W, y:i.mapPos.y*H}));
+
+  // Dotted path connecting 0→1→2→3→4→5
+  ctx.save();
+  ctx.setLineDash([5,9]); ctx.lineCap='round';
+  for (let i=0;i<pts.length-1;i++) {
+    const a=pts[i], b=pts[i+1];
+    const unlocked = ISLANDS[i+1].unlocked;
+    ctx.strokeStyle = unlocked ? 'rgba(196,112,154,0.55)' : 'rgba(196,112,154,0.22)';
+    ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── Biome mini-scenes ──────────────────────────────────────
+  const R = 38; // island circle radius
+  const biomeColors = [
+    { base:'#b8e8c0', mid:'#88c898', dark:'#5a9a6a' }, // Mossy Forest
+    { base:'#f8e8a0', mid:'#f0c860', dark:'#d4a030' }, // Sunflower Beach
+    { base:'#f8c8d8', mid:'#e8a0b8', dark:'#c07090' }, // Sakura Cove
+    { base:'#f0d8b0', mid:'#d8b880', dark:'#b09060' }, // Cozy Village
+    { base:'#c8d8f8', mid:'#a0b8f0', dark:'#7090d8' }, // Crystal Cave
+    { base:'#d8c8f0', mid:'#b8a0e0', dark:'#9070c8' }, // Lavender Highlands
+  ];
+
   ISLANDS.forEach((island, i) => {
-    const px = island.mapPos.x * W, py = island.mapPos.y * H;
-    const unlocked = island.unlocked;
-    const restored = island.restored;
-
+    const px=pts[i].x, py=pts[i].y;
+    const unlocked=island.unlocked, restored=island.restored;
+    const bc=biomeColors[i];
     ctx.save();
-    if (!unlocked) ctx.globalAlpha = 0.38;
+    if (!unlocked) ctx.globalAlpha=0.3;
 
-    // Island blob — distinct shape per biome
-    islandPath(ctx, i, px, py);
-    ctx.fillStyle = restored ? new THREE.Color(island.groundColor).getStyle() : '#9B9AE2';
-    ctx.fill();
-    ctx.strokeStyle = restored ? PALETTE.goldenYellow : PALETTE.softLavender; ctx.lineWidth = 2; ctx.stroke();
+    // Island circle clip
+    ctx.beginPath(); ctx.arc(px,py,R,0,Math.PI*2); ctx.clip();
 
-    // Glow if restored
+    // Sky gradient
+    const sky=ctx.createLinearGradient(px,py-R,px,py+R);
+    if (i===4) { sky.addColorStop(0,'#1a1040'); sky.addColorStop(1,'#2a1860'); }
+    else { sky.addColorStop(0,'#e8f4ff'); sky.addColorStop(1,bc.base); }
+    ctx.fillStyle=sky; ctx.fillRect(px-R,py-R,R*2,R*2);
+
+    // Ground
+    ctx.fillStyle=bc.mid;
+    ctx.beginPath(); ctx.ellipse(px,py+18,R,20,0,0,Math.PI*2); ctx.fill();
+
+    // Biome-specific details
+    if (i===0) {
+      // Mossy Forest: 3 green trees
+      [[px-14,py+4],[px,py-2],[px+14,py+6]].forEach(([tx,ty])=>{
+        ctx.fillStyle='#4a8a5a'; ctx.beginPath(); ctx.arc(tx,ty,9,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#3a7a4a'; ctx.beginPath(); ctx.arc(tx-1,ty-1,7,0,Math.PI*2); ctx.fill();
+      });
+    } else if (i===1) {
+      // Sunflower Beach: water + flowers
+      ctx.fillStyle='#88c8e8';
+      ctx.beginPath(); ctx.ellipse(px+16,py+10,18,12,0.2,0,Math.PI*2); ctx.fill();
+      [[px-18,py+5],[px-6,py+2],[px-24,py+10]].forEach(([fx,fy])=>{
+        ctx.fillStyle='#f0c020'; ctx.beginPath(); ctx.arc(fx,fy,5,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#e08010'; ctx.beginPath(); ctx.arc(fx,fy,2.5,0,Math.PI*2); ctx.fill();
+      });
+    } else if (i===2) {
+      // Sakura Cove: water + blossom petals
+      ctx.fillStyle='#90c8e8';
+      ctx.beginPath(); ctx.ellipse(px,py+12,28,15,0,0,Math.PI*2); ctx.fill();
+      // Petals drifting
+      [[px-12,py-8,'#f8b0c8'],[px+8,py-4,'#f8c8d8'],[px-4,py-14,'#e890b0'],
+       [px+16,py-10,'#f8b0c8'],[px-18,py+2,'#f8d0e0']].forEach(([bx,by,col])=>{
+        ctx.fillStyle=col; ctx.beginPath();
+        ctx.ellipse(bx,by,4,2.5,Math.random()*Math.PI,0,Math.PI*2); ctx.fill();
+      });
+    } else if (i===3) {
+      // Cozy Village: house shapes
+      [[px-12,py+2],[px+10,py+4]].forEach(([hx,hy])=>{
+        ctx.fillStyle='#f0e0c8'; ctx.fillRect(hx-6,hy-6,12,10);
+        ctx.fillStyle='#c07858'; ctx.beginPath();
+        ctx.moveTo(hx-8,hy-6); ctx.lineTo(hx,hy-14); ctx.lineTo(hx+8,hy-6); ctx.fill();
+      });
+      // Path
+      ctx.strokeStyle='#d4b890'; ctx.lineWidth=2.5; ctx.setLineDash([3,4]);
+      ctx.beginPath(); ctx.moveTo(px-12,py+14); ctx.lineTo(px+12,py+14); ctx.stroke();
+      ctx.setLineDash([]);
+    } else if (i===4) {
+      // Crystal Cave: dark cave + glowing crystals
+      ctx.fillStyle='#180e30';
+      ctx.beginPath(); ctx.arc(px,py,R,0,Math.PI*2); ctx.fill();
+      [[px-10,py+4,'#a0b8f8'],[px+4,py-4,'#c8a0f0'],[px+14,py+8,'#80a8e8'],
+       [px-2,py+10,'#e0c8ff'],[px-16,py-4,'#b0c0ff']].forEach(([cx2,cy2,col])=>{
+        ctx.fillStyle=col;
+        ctx.shadowColor=col; ctx.shadowBlur=8;
+        ctx.beginPath();
+        ctx.moveTo(cx2,cy2-7); ctx.lineTo(cx2+3,cy2+3); ctx.lineTo(cx2-3,cy2+3); ctx.closePath();
+        ctx.fill(); ctx.shadowBlur=0;
+      });
+    } else {
+      // Lavender Highlands: hills + windmill dots
+      ctx.fillStyle='#c8b0e0';
+      ctx.beginPath(); ctx.ellipse(px-10,py+8,22,16,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#b898d0';
+      ctx.beginPath(); ctx.ellipse(px+14,py+12,18,13,0,0,Math.PI*2); ctx.fill();
+      // Lavender dots
+      [[px-14,py],[px-6,py-4],[px+2,py-2],[px+10,py-6]].forEach(([lx,ly])=>{
+        ctx.fillStyle='#9070c0'; ctx.beginPath(); ctx.arc(lx,ly,2.5,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#b090e0'; ctx.beginPath(); ctx.arc(lx,ly-4,2,0,Math.PI*2); ctx.fill();
+      });
+    }
+
+    ctx.restore(); // end clip
+
+    // Circle border
+    ctx.save();
+    if (!unlocked) ctx.globalAlpha=0.35;
     if (restored) {
-      ctx.shadowColor = PALETTE.goldenYellow; ctx.shadowBlur = 14;
-      islandPath(ctx, i, px, py);
-      ctx.strokeStyle = PALETTE.goldenYellow; ctx.lineWidth=2; ctx.stroke();
-      ctx.shadowBlur = 0;
+      ctx.shadowColor='rgba(235,178,26,0.7)'; ctx.shadowBlur=12;
+      ctx.strokeStyle='rgba(235,178,26,0.9)'; ctx.lineWidth=2.5;
+    } else {
+      ctx.strokeStyle=unlocked?'rgba(196,112,154,0.7)':'rgba(196,112,154,0.3)';
+      ctx.lineWidth=2;
     }
-
-    // Lock icon if locked
-    if (!unlocked) {
-      ctx.font='18px sans-serif'; ctx.fillStyle=PALETTE.deepPlum; ctx.textAlign='center';
-      ctx.fillText('🔒',px,py+6);
-    }
+    ctx.beginPath(); ctx.arc(px,py,R,0,Math.PI*2); ctx.stroke();
+    ctx.shadowBlur=0;
     ctx.restore();
 
-    // Island name
-    ctx.font = 'bold 11px Nunito,sans-serif'; ctx.fillStyle = PALETTE.deepPlum;
-    ctx.textAlign='center'; ctx.globalAlpha = unlocked?1:0.4;
-    ctx.fillText(island.name, px, py+50);
-    ctx.globalAlpha=1;
+    // Current island indicator
+    if (i===currentIslandId) {
+      ctx.save();
+      ctx.strokeStyle='rgba(235,178,26,0.95)'; ctx.lineWidth=2.5;
+      ctx.setLineDash([4,3]);
+      ctx.beginPath(); ctx.arc(px,py,R+6,0,Math.PI*2); ctx.stroke();
+      ctx.restore();
+    }
+
+    // Lock icon
+    if (!unlocked) {
+      ctx.save(); ctx.globalAlpha=0.55;
+      ctx.font='16px sans-serif'; ctx.textAlign='center';
+      ctx.fillText('🔒',px,py+6);
+      ctx.restore();
+    }
+
+    // Island name label below circle
+    ctx.save();
+    ctx.globalAlpha = unlocked ? 1 : 0.35;
+    ctx.font = '600 10px Quicksand,sans-serif';
+    ctx.fillStyle = '#7A3D6A';
+    ctx.textAlign = 'center';
+    // Wrap long names
+    const words = island.name.split(' ');
+    if (words.length <= 2) {
+      ctx.fillText(island.name, px, py+R+14);
+    } else {
+      ctx.fillText(words.slice(0,2).join(' '), px, py+R+13);
+      ctx.fillText(words.slice(2).join(' '), px, py+R+24);
+    }
+    ctx.restore();
   });
 
-  // Compass rose (bottom-right)
-  const crx = W-52, cry = H-52;
-  ctx.font='bold 13px sans-serif'; ctx.fillStyle=PALETTE.goldenYellow;
-  ctx.textAlign='center';
-  ctx.fillText('✦',crx,cry);
-  ctx.font='bold 10px Nunito,sans-serif'; ctx.fillStyle=PALETTE.deepPlum;
-  ctx.fillText('N',crx,cry-18); ctx.fillText('S',crx,cry+22);
-  ctx.fillText('E',crx+20,cry+4); ctx.fillText('W',crx-20,cry+4);
+  // Step numbers on path
+  ISLANDS.forEach((island,i) => {
+    const px=pts[i].x, py=pts[i].y;
+    if (!island.unlocked) return;
+    ctx.save();
+    ctx.fillStyle='rgba(255,240,248,0.9)';
+    ctx.beginPath(); ctx.arc(px+R-4,py-R+4,9,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(196,112,154,0.5)'; ctx.lineWidth=1;
+    ctx.stroke();
+    ctx.font='700 9px Quicksand,sans-serif'; ctx.fillStyle='#C4709A';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(i+1, px+R-4, py-R+4);
+    ctx.textBaseline='alphabetic';
+    ctx.restore();
+  });
 }
 
 // ── Input ─────────────────────────────────────────────────────
@@ -1833,7 +1942,7 @@ function loop(ts) {
       const sy = (-worldPos.y * 0.5 + 0.5) * window.innerHeight;
       promptEl.style.left = sx + 'px';
       promptEl.style.top = sy + 'px';
-      document.getElementById('interact-label').textContent = promptLabel;
+      document.getElementById('interact-label').textContent = '';
       promptEl.style.display = 'flex';
     } else {
       promptEl.style.display = 'none';
