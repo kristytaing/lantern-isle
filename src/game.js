@@ -96,6 +96,8 @@ function buildIsland(islandId) {
   const island = getIsland(islandId);
   scene.background = new THREE.Color(island.skyTop);
   scene.fog = new THREE.Fog(island.fogColor, island.fogNear, island.fogFar);
+  // Spawn firefly at island load so it's visible before talking to elder
+  if (islandId === 0) { setTimeout(() => spawnFireflyTarget(), 100); }
 
   // Lighting
   scene.children.filter(c=>c.isLight).forEach(l=>scene.remove(l));
@@ -1784,24 +1786,6 @@ function handleInteract() {
     }
   }
 
-  // Check firefly proximity
-  if (fireflyTargetMesh && questState['find_firefly_started'] && !questState['find_firefly']) {
-    const ff = fireflyTargetMesh;
-    const fdx = player.pos.x - ff.position.x, fdz = player.pos.z - ff.position.z;
-    if (Math.sqrt(fdx*fdx + fdz*fdz) < 0.9) {
-      questState['find_firefly'] = true;
-      scene.remove(ff);
-      const fi = islandMeshes.indexOf(ff);
-      if (fi >= 0) islandMeshes.splice(fi, 1);
-      fireflyTargetMesh = null;
-      spawnQuestCrystal(0, 3);
-      updateQuestTracker(currentIslandId);
-      showDialogue('Firefly', ['✨ You found the lost firefly! It circles your lantern happily.'], null);
-      particles.addBurst(player.pos.x, 0.8, player.pos.z, 0xFFFF88, 30);
-      particles.addPulseRing(player.pos.x, 0.1, player.pos.z, 0xFFFF44, 1.2);
-    }
-  }
-
   // Check crystals — only collectible after all quests on this island are done
   const island2 = getIsland(currentIslandId);
   const islandQuests = island2.npcs.filter(n=>n.quest);
@@ -1900,13 +1884,12 @@ function handleNPCInteract(npc, ni) {
 
   // Proximity-find quests: talking starts the quest, player must walk to the target
   if (qt === 'find_firefly') {
-    if (!questState['find_firefly_started']) {
+    if (!questState['find_firefly']) {
       questState['find_firefly_started'] = true;
-      spawnFireflyTarget();
       updateQuestTracker(currentIslandId);
       showDialogue(npc.name, npc.lines, null);
     } else {
-      showDialogue(npc.name, ["Keep searching — the firefly is still out there. Follow the glow!"], null);
+      showDialogue(npc.name, [npc.restoredLine || "The firefly is safe now. Thank you!"], null);
     }
     return;
   }
@@ -2053,7 +2036,7 @@ function updateQuestTracker(islandId) {
     const q = npc.quest;
     const done = qs[q.type] || q.done;
     // For proximity quests, only show once started
-    if (q.type === 'find_firefly' && !qs['find_firefly_started'] && !done) return;
+    // firefly quest always visible on island 0
     const li = document.createElement('li');
     li.textContent = QUEST_THEMES[q.type] || q.type.replace(/_/g,' ');
     if (done) li.classList.add('done');
@@ -2367,6 +2350,25 @@ function loop(ts) {
     if (cdSprint) cdSprint.style.transform = `scaleY(${Math.max(0, player.sprintCooldown/4)})`;
     const cdPulse = document.querySelector('#ab-pulse .ability-cooldown');
     if (cdPulse) cdPulse.style.transform = `scaleY(${Math.max(0, player.pulseCooldown/5)})`;
+  }
+
+  // Firefly auto-collect on proximity (no button press needed)
+  if (state === 'playing' && player && fireflyTargetMesh && !questState['find_firefly']) {
+    const ff = fireflyTargetMesh;
+    const fdx = player.pos.x - ff.position.x, fdz = player.pos.z - ff.position.z;
+    if (Math.sqrt(fdx*fdx + fdz*fdz) < 1.4) {
+      questState['find_firefly'] = true;
+      questState['find_firefly_started'] = true;
+      scene.remove(ff);
+      const fi = islandMeshes.indexOf(ff);
+      if (fi >= 0) islandMeshes.splice(fi, 1);
+      fireflyTargetMesh = null;
+      spawnQuestCrystal(0, 3);
+      updateQuestTracker(currentIslandId);
+      showDialogue('Firefly', ['✨ The lost firefly drifts toward your lantern happily!'], null);
+      particles.addBurst(player.pos.x, 0.8, player.pos.z, 0xFFFF88, 30);
+      particles.addPulseRing(player.pos.x, 0.1, player.pos.z, 0xFFFF44, 1.2);
+    }
   }
 
   // Proximity prompt (crystals / NPCs / shrine)

@@ -30,7 +30,7 @@ export const ISLANDS = [
     shrinePos: {x:0,z:0},
     npcs: [
       { name:'Elder Moss', x:2, z:-1, color:0x6F7E4A,
-        lines:["The Guardian Star shattered long ago. Its shards fell across these islands as crystals.", "Walk close to the glowing crystals — your lantern will draw them in."],
+        lines:["You see that lost firefly wandering the forest? Walk close to it — your lantern will call it home.", "Once the firefly returns, a crystal shard will appear. Collect it and bring its light to the shrine."],
         quest: { type:'find_firefly', reward: 0, done: false },
         restoredLine:"The light returns! I can smell the blooms again!" },
       { name:'Fern', x:-3, z:2, color:0x9B9AE2,
