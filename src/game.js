@@ -884,23 +884,21 @@ document.getElementById('reset-btn').addEventListener('click', () => {
 });
 
 // ── Start ─────────────────────────────────────────────────────
+let pendingTitleFade = false;
+let titleFadeFrames = 0;
 document.getElementById('start-btn').addEventListener('click', () => {
   initAudio(); audioReady = true;
   startExploreMusic();
   buildIsland(0);
   state = 'playing';
   showHUD(true);
-  // Wait for island to fully render before fading title screen.
-  setTimeout(() => {
-    const ts = document.getElementById('title-screen');
-    ts.style.opacity = '0';
-    ts.addEventListener('transitionend', () => { ts.style.display = 'none'; }, { once: true });
-  }, 400);
+  pendingTitleFade = true;
+  titleFadeFrames = 0;
   setTimeout(()=>showDialogue('✨ Lantern Bearer', [
     'Your golden lantern glows as you step onto the Mossy Forest…',
     'Five crystal shards hide on this island. Find them, then bring them to the shrine!',
     'Press Space near objects to interact. M to open your map. Good luck!'
-  ], null), 800);
+  ], null), 1200);
 });
 
 // ── Resize ────────────────────────────────────────────────────
@@ -927,8 +925,20 @@ function loop(ts) {
   last = ts; time += dt;
   if (state === 'title') { renderer.render(scene, camera); return; }
 
+  // Fade title screen only after island has been rendered for several frames
+  if (pendingTitleFade) {
+    titleFadeFrames++;
+    if (titleFadeFrames >= 5) {
+      pendingTitleFade = false;
+      const ts = document.getElementById('title-screen');
+      ts.style.opacity = '0';
+      ts.addEventListener('transitionend', () => { ts.style.display = 'none'; }, { once: true });
+    }
+  }
+
   // Player movement
   if (state === 'playing') {
+    const island = getIsland(currentIslandId);
     player.update(dt, keys, (joystickDir.x||joystickDir.z) ? joystickDir : null, island.tiles);
     // Camera follow
     const tx = player.pos.x+12, ty = 12, tz = player.pos.z+12;
