@@ -38,7 +38,7 @@ let player, particles, islandMeshes = [], crystalMeshes = [], npcMeshes = [], sh
 let crystalOrbits = [];
 let questStateMap = {};
 function getQuestState(id) {
-  if (!questStateMap[id]) questStateMap[id] = { find_cat: false, fetch_water: false };
+  if (!questStateMap[id]) questStateMap[id] = {};
   return questStateMap[id];
 }
 let questState = getQuestState(0);
@@ -911,7 +911,7 @@ function showDialogue(speaker, lines, callback) {
   dialogueQueue = [...lines];
   dialogueCallback = callback || null;
   dialogueSpeaker.textContent = speaker;
-  dialogueSpeaker.style.background = NPC_COLORS[speaker] || '#EB6259';
+
   dialogueBox.style.display = 'block';
   advanceDialogue();
 }
@@ -999,7 +999,7 @@ function collectCrystal(mesh) {
   if (island.crystalCount >= island.totalCrystals) {
     // Beam of light on shrine
     addShrineBeam(island);
-    setTimeout(()=>showDialogue('✨ Shrine', ['All crystal shards gathered! Bring them to the shrine at the center of the island!'], null), 600);
+    setTimeout(()=>showDialogue('Shrine', ['All shards gathered! Bring them to the shrine.'], null), 600);
   }
 }
 
@@ -1044,19 +1044,16 @@ function activateShrine() {
   ];
 
   const restoreLines = [
-    `The island shrine awakens! Light floods the ${island.name}!`,
-    island.npcs[0].restoredLine,
-    abilityKey ? `New ability unlocked: ${abilityNames[currentIslandId]}!` : 'The Guardian Star grows closer to awakening…',
+    `The ${island.name} shrine awakens!`,
     ...(loreDrops[currentIslandId] ? [loreDrops[currentIslandId]] : []),
+    abilityKey ? `New ability: ${abilityNames[currentIslandId]}` : 'The Guardian Star stirs…',
   ];
 
-  showDialogue('✨ Restoration!', restoreLines, () => {
-    // Unlock next island
+  showDialogue('Restoration!', restoreLines, () => {
     if (currentIslandId + 1 < ISLANDS.length) {
       ISLANDS[currentIslandId+1].unlocked = true;
-      showDialogue('✨ Map Updated', [`A new island has appeared on your map: ${ISLANDS[currentIslandId+1].name}!`, 'Press M or tap the Map button to navigate.'], null);
+      showDialogue('Map Updated', [`New island unlocked: ${ISLANDS[currentIslandId+1].name}. Open the map to navigate.`], null);
     } else {
-      // Final island — trigger win!
       triggerWin();
     }
   });
@@ -1328,8 +1325,10 @@ function handleInteract() {
       const ctype = m.userData.collectibleType;
       if (!inventoryItems.includes(ctype)) {
         inventoryItems.push(ctype);
-        const label = ctype === 'mochi' ? '🐱 Mochi' : '💧 Water Jar';
-        showDialogue('✨', [`You found ${label}! Bring it to the right person.`], null);
+        const island = getIsland(currentIslandId);
+        const col = (island.collectibles||[]).find(c=>c.type===ctype);
+        const label = col ? col.label : ctype;
+        showDialogue('Found', [`You picked up: ${label}. Bring it to the right person.`], null);
         scene.remove(m);
         islandMeshes.splice(i, 1);
         updateInventoryUI();
@@ -1338,11 +1337,20 @@ function handleInteract() {
     }
   }
 
-  // Check crystals
+  // Check crystals — only collectible after all quests on this island are done
+  const island2 = getIsland(currentIslandId);
+  const islandQuests = island2.npcs.filter(n=>n.quest);
+  const questsDone = islandQuests.length === 0 || islandQuests.every(n=>n.quest.done || questState[n.quest.type]);
   for (let i = crystalMeshes.length-1; i >= 0; i--) {
     const cm = crystalMeshes[i];
     const d = pp.distanceTo(cm.position);
-    if (d < 1.0) { collectCrystal(cm); return; }
+    if (d < 1.0) {
+      if (!questsDone) {
+        showDialogue('Crystal', ['The shard is sealed by the island\'s spirit. Help the islanders first.'], null);
+        return;
+      }
+      collectCrystal(cm); return;
+    }
   }
 
   activatePulseAbility();
@@ -1359,69 +1367,84 @@ function activatePulseAbility() {
   }
 }
 
+// Quest collectible type → inventory key mapping
+const QUEST_ITEM_MAP = {
+  find_cat:       'mochi',
+  fetch_water:    'water_jar',
+  find_shell:     'shell',
+  fetch_note:     'driftwood_note',
+  gather_petals:  'petal_bundle',
+  fetch_spring:   'spring_water',
+  fetch_glowstone:'glowstone',
+  use_dust:       'crystal_dust',
+  find_chime:     'wind_chime',
+  offer_flower:   'highland_flower',
+};
+// Quest types that are "elder" gated (require other quests done first)
+const ELDER_QUEST_TYPES = new Set([
+  'elder_final','beach_elder','sakura_elder','cave_elder','highlands_elder'
+]);
+// "Find firefly" on Mossy Forest is auto-gated (no collectible, just talk-to-complete)
+const TALK_QUEST_TYPES = new Set(['find_firefly']);
+
 function handleNPCInteract(npc, ni) {
   const island = getIsland(currentIslandId);
   if (island.restored) { showDialogue(npc.name, [npc.restoredLine], null); return; }
 
-  if (npc.quest) {
-    const qt = npc.quest.type;
-    if (qt === 'find_cat') {
-      if (questState.find_cat) {
-        showDialogue(npc.name, ["Mochi is safe inside now. Thank you again!"], null);
-        return;
-      }
-      if (inventoryItems.includes('mochi')) {
-        showDialogue(npc.name, ["*gasp* You found Mochi! Oh thank you! Here, take this crystal shard I found!"], ()=>{
-          questState.find_cat = true;
-          inventoryItems.splice(inventoryItems.indexOf('mochi'), 1);
-          island.crystalCount++; updateCrystalHUD();
-          sfxCrystalCollect();
-          updateInventoryUI();
-          updateQuestTracker(currentIslandId);
-        });
-      } else {
-        showDialogue(npc.name, npc.lines, null);
-      }
-      return;
-    }
-    if (qt === 'fetch_water') {
-      if (questState.fetch_water) {
-        showDialogue(npc.name, ["My garden is blooming again, thanks to you!"], null);
-        return;
-      }
-      if (inventoryItems.includes('water_jar')) {
-        showDialogue(npc.name, ["Oh, you brought me water! You're too kind! Take this shard I found!"], ()=>{
-          questState.fetch_water = true;
-          inventoryItems.splice(inventoryItems.indexOf('water_jar'), 1);
-          island.crystalCount++; updateCrystalHUD();
-          sfxCrystalCollect();
-          updateInventoryUI();
-          updateQuestTracker(currentIslandId);
-        });
-      } else {
-        showDialogue(npc.name, npc.lines, null);
-      }
-      return;
-    }
-    if (qt === 'elder_final') {
-      if (npc.quest.done) {
-        showDialogue(npc.name, ["Hoo hoo… The warmth is returning. Bless you, child."], null);
-        return;
-      }
-      if (!questState.find_cat || !questState.fetch_water) {
-        showDialogue(npc.name, ["Help the baker and the gardener first. Then return to me."], null);
-        return;
-      }
-      showDialogue(npc.name, npc.lines, ()=>{
-        npc.quest.done = true;
-        island.crystalCount++; updateCrystalHUD();
-        sfxCrystalCollect();
-        showDialogue(npc.name, ["The village shards are together. Now bring them to the shrine, young one."], null);
-      });
-      return;
-    }
+  if (!npc.quest) { showDialogue(npc.name, npc.lines, null); return; }
+
+  const qt = npc.quest.type;
+
+  // Already completed this quest
+  if (questState[qt] || npc.quest.done) {
+    showDialogue(npc.name, [npc.restoredLine || "Thanks again for your help!"], null);
+    return;
   }
-  showDialogue(npc.name, npc.lines, null);
+
+  // Elder-type: requires prerequisite quests
+  if (ELDER_QUEST_TYPES.has(qt)) {
+    const reqs = npc.quest.requires || [];
+    const allDone = reqs.every(r => questState[r]);
+    if (!allDone) {
+      showDialogue(npc.name, [npc.lines[0]], null);
+      return;
+    }
+    showDialogue(npc.name, npc.lines, () => {
+      npc.quest.done = true;
+      questState[qt] = true;
+      island.crystalCount++; updateCrystalHUD(); sfxCrystalCollect();
+      updateQuestTracker(currentIslandId);
+    });
+    return;
+  }
+
+  // Talk-to-complete quests (no collectible needed)
+  if (TALK_QUEST_TYPES.has(qt)) {
+    if (!questState[qt]) {
+      showDialogue(npc.name, npc.lines, () => {
+        questState[qt] = true;
+        island.crystalCount++; updateCrystalHUD(); sfxCrystalCollect();
+        updateQuestTracker(currentIslandId);
+      });
+    }
+    return;
+  }
+
+  // Collectible-delivery quests
+  const itemKey = QUEST_ITEM_MAP[qt];
+  if (itemKey && inventoryItems.includes(itemKey)) {
+    showDialogue(npc.name, ["You brought it! Thank you — take this crystal shard!"], () => {
+      questState[qt] = true;
+      npc.quest.done = true;
+      const idx = inventoryItems.indexOf(itemKey);
+      if (idx >= 0) inventoryItems.splice(idx, 1);
+      island.crystalCount++; updateCrystalHUD(); sfxCrystalCollect();
+      updateInventoryUI();
+      updateQuestTracker(currentIslandId);
+    });
+  } else {
+    showDialogue(npc.name, npc.lines, null);
+  }
 }
 
 // ── Map ───────────────────────────────────────────────────────
@@ -1469,20 +1492,24 @@ function loadIsland(id) {
     overlay.style.pointerEvents = 'none';
     setTimeout(() => {
       banner.classList.remove('show');
-      showDialogue(`✨ ${island.name}`, [`You arrive at ${island.name}.`, island.npcs[0].lines[0]], null);
+      showDialogue(island.name, [island.npcs[0].lines[0]], null);
     }, 1800);
     updateQuestTracker(id);
   }, 360);
 }
 
-const ITEM_ICONS = { mochi: '🐱', water_jar: '💧' };
 function updateInventoryUI() {
   const slots = [document.getElementById('inv1'), document.getElementById('inv2')];
   slots.forEach((sl, i) => {
     if (!sl) return;
     const item = inventoryItems[i];
-    sl.textContent = item ? ITEM_ICONS[item] || '❓' : '';
-    sl.title = item || '';
+    if (!item) { sl.innerHTML = ''; sl.title = ''; return; }
+    const island = getIsland(currentIslandId);
+    const col = (island.collectibles||[]).find(c=>c.type===item);
+    const label = col ? col.label : item;
+    sl.title = label;
+    // Simple dot indicator — item present
+    sl.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="6" fill="#EBB21A" opacity="0.9"/><circle cx="12" cy="12" r="3" fill="#F0DEC2"/></svg>`;
   });
 }
 
@@ -1494,12 +1521,12 @@ function updateQuestTracker(islandId) {
   const quests = island.npcs.filter(n => n.quest).map(n => n.quest);
   if (!quests.length) { tracker.style.display = 'none'; return; }
   const qs = getQuestState(islandId);
-  const labels = { find_cat: 'Find the missing cat', fetch_water: 'Bring sacred water', elder_final: 'Speak to the Elder' };
   list.innerHTML = '';
-  quests.forEach(q => {
+  island.npcs.filter(n=>n.quest).forEach(npc => {
+    const q = npc.quest;
+    const done = qs[q.type] || q.done;
     const li = document.createElement('li');
-    const done = qs[q.type];
-    li.textContent = (done ? '✓ ' : '○ ') + (labels[q.type] || q.type);
+    li.textContent = `${npc.name}: ${npc.lines[0].split('.')[0].substring(0,38)}…`;
     if (done) li.classList.add('done');
     list.appendChild(li);
   });
