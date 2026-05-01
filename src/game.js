@@ -84,6 +84,7 @@ function buildIsland(islandId) {
   // Clear previous
   islandMeshes.forEach(m => scene.remove(m));
   crystalMeshes.forEach(m => { if (m.userData.glowLight) scene.remove(m.userData.glowLight); scene.remove(m); });
+  fireflyTargetMesh = null;
   npcMeshes.forEach(m => scene.remove(m));
   if (shrineMesh) scene.remove(shrineMesh);
 
@@ -1227,6 +1228,41 @@ function collectCrystal(mesh) {
 }
 
 // ── Spawn Quest Crystal near NPC ─────────────────────────────
+let fireflyTargetMesh = null;
+function spawnFireflyTarget() {
+  if (fireflyTargetMesh) return;
+  // Place firefly at a random spot on the island, away from center
+  const angle = Math.random() * Math.PI * 2;
+  const dist = 3.5 + Math.random() * 1.5;
+  const fx = Math.cos(angle) * dist;
+  const fz = Math.sin(angle) * dist;
+  const ffGroup = new THREE.Group();
+  ffGroup.position.set(fx, 0.6, fz);
+  // Glowing orb
+  const orbGeo = new THREE.SphereGeometry(0.12, 10, 8);
+  const orbMat = new THREE.MeshLambertMaterial({ color: 0xFFFF88, emissive: 0xFFFF00, emissiveIntensity: 1.2 });
+  const orb = new THREE.Mesh(orbGeo, orbMat);
+  ffGroup.add(orb);
+  // Soft wings (two flat ellipses)
+  const wingMat = new THREE.MeshLambertMaterial({ color: 0xCCFFCC, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
+  for (let w = 0; w < 2; w++) {
+    const wingGeo = new THREE.SphereGeometry(0.1, 6, 4);
+    const wing = new THREE.Mesh(wingGeo, wingMat);
+    wing.scale.set(1.4, 0.35, 0.6);
+    wing.position.set(w === 0 ? -0.14 : 0.14, 0.02, -0.04);
+    wing.rotation.z = w === 0 ? 0.3 : -0.3;
+    ffGroup.add(wing);
+  }
+  const ffLight = new THREE.PointLight(0xFFFF44, 1.2, 3.0);
+  ffGroup.add(ffLight);
+  ffGroup.userData = { fireflyTarget: true, bobBase: 0.6, bobOffset: Math.random() * Math.PI * 2, spin: true };
+  scene.add(ffGroup);
+  islandMeshes.push(ffGroup);
+  fireflyTargetMesh = ffGroup;
+  // Spawn particle burst to draw attention
+  particles.addBurst(fx, 0.8, fz, 0xFFFF88, 20);
+}
+
 function spawnQuestCrystal(npcX, npcZ) {
   const island = getIsland(currentIslandId);
   // Place crystal in front of the NPC (toward island center) at safe distance
@@ -1736,6 +1772,24 @@ function handleInteract() {
     }
   }
 
+  // Check firefly proximity
+  if (fireflyTargetMesh && questState['find_firefly_started'] && !questState['find_firefly']) {
+    const ff = fireflyTargetMesh;
+    const fdx = player.pos.x - ff.position.x, fdz = player.pos.z - ff.position.z;
+    if (Math.sqrt(fdx*fdx + fdz*fdz) < 0.9) {
+      questState['find_firefly'] = true;
+      scene.remove(ff);
+      const fi = islandMeshes.indexOf(ff);
+      if (fi >= 0) islandMeshes.splice(fi, 1);
+      fireflyTargetMesh = null;
+      spawnQuestCrystal(0, 3);
+      updateQuestTracker(currentIslandId);
+      showDialogue('Firefly', ['✨ You found the lost firefly! It circles your lantern happily.'], null);
+      particles.addBurst(player.pos.x, 0.8, player.pos.z, 0xFFFF88, 30);
+      particles.addPulseRing(player.pos.x, 0.1, player.pos.z, 0xFFFF44, 1.2);
+    }
+  }
+
   // Check crystals — only collectible after all quests on this island are done
   const island2 = getIsland(currentIslandId);
   const islandQuests = island2.npcs.filter(n=>n.quest);
@@ -1784,10 +1838,13 @@ const ELDER_QUEST_TYPES = new Set([
   'elder_final','beach_elder','sakura_elder','cave_elder','highlands_elder'
 ]);
 // "Find firefly" on Mossy Forest is auto-gated (no collectible, just talk-to-complete)
-const TALK_QUEST_TYPES = new Set(['find_firefly']);
+const TALK_QUEST_TYPES = new Set([]);
 
 function handleNPCInteract(npc, ni) {
   const island = getIsland(currentIslandId);
+  // Mark this NPC as met so they start facing the player
+  const npcMesh = npcMeshes.find(m => m.userData.npcIdx === ni);
+  if (npcMesh) npcMesh.userData.metPlayer = true;
   if (island.restored) { showDialogue(npc.name, [npc.restoredLine], null); return; }
 
   if (!npc.quest) { showDialogue(npc.name, npc.lines, null); return; }
@@ -1825,6 +1882,19 @@ function handleNPCInteract(npc, ni) {
         spawnQuestCrystal(npc.x, npc.z);
         updateQuestTracker(currentIslandId);
       });
+    }
+    return;
+  }
+
+  // Proximity-find quests: talking starts the quest, player must walk to the target
+  if (qt === 'find_firefly') {
+    if (!questState['find_firefly_started']) {
+      questState['find_firefly_started'] = true;
+      spawnFireflyTarget();
+      updateQuestTracker(currentIslandId);
+      showDialogue(npc.name, npc.lines, null);
+    } else {
+      showDialogue(npc.name, ["Keep searching — the firefly is still out there. Follow the glow!"], null);
     }
     return;
   }
@@ -1964,9 +2034,12 @@ function updateQuestTracker(islandId) {
   island.npcs.filter(n=>n.quest).forEach(npc => {
     const q = npc.quest;
     const done = qs[q.type] || q.done;
+    // For proximity quests, only show once started
+    if (q.type === 'find_firefly' && !qs['find_firefly_started'] && !done) return;
     const li = document.createElement('li');
     li.textContent = QUEST_THEMES[q.type] || q.type.replace(/_/g,' ');
     if (done) li.classList.add('done');
+    else if (q.type === 'find_firefly' && qs['find_firefly_started']) li.style.color = '#E8B830';
     list.appendChild(li);
   });
   tracker.style.display = 'block';
@@ -2200,12 +2273,12 @@ function loop(ts) {
         sp.material.opacity = 0.75 + Math.sin(time*3 + sp.userData.excOffset)*0.25;
       }
       // Cycle 2: NPC faces player when nearby (rotate whole group toward player)
-      if (player) {
+      if (player && m.userData.metPlayer) {
         const dx = player.pos.x - m.position.x, dz = player.pos.z - m.position.z;
         const dist = Math.sqrt(dx*dx + dz*dz);
-        if (dist < 3.5) {
+        if (dist < 2.8) {
           const targetAngle = Math.atan2(dx, dz);
-          m.rotation.y += (targetAngle - m.rotation.y) * 4 * dt;
+          m.rotation.y += (targetAngle - m.rotation.y) * 3 * dt;
         }
       }
     });
