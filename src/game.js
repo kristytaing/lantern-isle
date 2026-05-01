@@ -1218,7 +1218,6 @@ function collectCrystal(mesh) {
   particles.addBurst(mesh.position.x, mesh.position.y, mesh.position.z, PALETTE.softPinkN, 25);
   particles.addPulseRing(mesh.position.x, 0.1, mesh.position.z);
   sfxCrystalCollect();
-  showWisdomOverlay(currentIslandId);
   updateCrystalHUD();
   if (island.crystalCount >= island.totalCrystals) {
     // Beam of light on shrine
