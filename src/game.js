@@ -2141,7 +2141,7 @@ function setupMobile() {
     const dist = Math.sqrt(dx*dx + dy*dy);
     if (dist < DEAD) { joystickDir.x = 0; joystickDir.z = 0; return; }
     const scale = Math.min(dist / 48, 1);
-    joystickDir.x = dy / dist * scale;
+    joystickDir.x = -dy / dist * scale;
     joystickDir.z = dx / dist * scale;
   }, { passive: false });
 
