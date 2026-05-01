@@ -1682,27 +1682,19 @@ function drawCompass(island) {
 // ── World Map Screen ──────────────────────────────────────────
 function drawWorldMap() {
   const mc = document.getElementById('map-canvas');
-  // Size canvas: use actual rendered modal width, DPR-aware, fixed aspect ratio
+  // Fit canvas to modal width with 16:6 aspect ratio, DPR-scaled for crispness
   const modal = document.getElementById('map-modal');
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const padding = 32;
-  const availW = modal.getBoundingClientRect().width - padding;
-  const cssW = Math.max(Math.min(availW, 820), 200);
-  const cssH = Math.round(cssW * 0.38);
-  // Only resize canvas element if dimensions changed (avoids clearing on every draw)
-  const newPxW = Math.round(cssW * dpr);
-  const newPxH = Math.round(cssH * dpr);
-  if (mc.width !== newPxW || mc.height !== newPxH) {
-    mc.width  = newPxW;
-    mc.height = newPxH;
-    mc.style.width  = cssW + 'px';
-    mc.style.height = cssH + 'px';
-  }
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = Math.max(Math.min(modal.clientWidth - 32, 820), 560);
+  const cssH = Math.round(cssW * 6 / 16);
+  mc.style.width = cssW + 'px';
+  mc.style.height = cssH + 'px';
+  mc.width = Math.round(cssW * dpr);
+  mc.height = Math.round(cssH * dpr);
   const ctx = mc.getContext('2d');
-  // Reset transform each frame to avoid accumulation
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.scale(dpr, dpr);
   const W = cssW, H = cssH;
-  ctx.clearRect(0, 0, W, H);
+  ctx.clearRect(0,0,W,H);
 
   // ── Watercolor background ──────────────────────────────────
   // Soft pink-cream gradient
@@ -1744,7 +1736,7 @@ function drawWorldMap() {
   ctx.restore();
 
   // ── Biome mini-scenes ──────────────────────────────────────
-  const R = Math.max(14, Math.round(Math.min(W / 14, H / 4.5))); // fits 5 islands without overlap
+  const R = 38; // island circle radius
   const biomeColors = [
     { base:'#b8e8c0', mid:'#88c898', dark:'#5a9a6a' }, // Mossy Forest
     { base:'#fdf5d0', mid:'#f8e498', dark:'#e8c860' }, // Sunflower Beach
@@ -1771,7 +1763,7 @@ function drawWorldMap() {
 
     // Ground
     ctx.fillStyle=bc.mid;
-    ctx.beginPath(); ctx.ellipse(px,py+R*0.47,R,R*0.53,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(px,py+18,R,20,0,0,Math.PI*2); ctx.fill();
 
     // Biome-specific details
     if (i===0) {
@@ -1876,16 +1868,17 @@ function drawWorldMap() {
     // Wrap long names
     const words = island.name.split(' ');
     if (words.length <= 2) {
-      ctx.fillText(island.name, px, py+R+12);
+      ctx.fillText(island.name, px, py+R+14);
     } else {
-      ctx.fillText(words.slice(0,2).join(' '), px, py+R+12);
-      ctx.fillText(words.slice(2).join(' '), px, py+R+22);
+      ctx.fillText(words.slice(0,2).join(' '), px, py+R+13);
+      ctx.fillText(words.slice(2).join(' '), px, py+R+24);
     }
     ctx.restore();
   });
 
 
 }
+
 
 // ── Input ─────────────────────────────────────────────────────
 window.addEventListener('keydown', e => {

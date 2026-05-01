@@ -121,15 +121,13 @@
     #map-title svg{width:20px;height:20px;}
     #map-canvas-wrap{
       width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;
-      border-radius:16px;display:flex;justify-content:center;align-items:flex-start;
+      border-radius:16px;display:flex;justify-content:center;
     }
     #map-canvas{
       border:none;border-radius:16px;
       background:transparent;
       display:block;
-      flex-shrink:0;
-      align-self:flex-start;
-      aspect-ratio:auto;
+      min-width:320px;max-width:100%;margin:0 auto;
     }
     #close-map{
       position:absolute;top:10px;right:12px;
