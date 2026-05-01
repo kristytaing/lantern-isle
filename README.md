@@ -6,6 +6,8 @@
 
 ---
 
+![Lantern Isle gameplay — Mossy Forest island with chibi player character, NPCs, and golden shrine](assets/screenshot.png)
+
 ## About
 
 You are the Lantern Bearer — a wanderer who arrives at a fading archipelago the night the Guardian Star went dark. Guide your chibi adventurer across **6 hand-crafted islands**, earning the trust of islanders, collecting crystal shards, and awakening ancient shrines to restore light to the world.
