@@ -1692,7 +1692,7 @@ function drawWorldMap() {
   mc.width = Math.round(cssW * dpr);
   mc.height = Math.round(cssH * dpr);
   const ctx = mc.getContext('2d');
-  ctx.scale(dpr, dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const W = cssW, H = cssH;
   ctx.clearRect(0,0,W,H);
 
