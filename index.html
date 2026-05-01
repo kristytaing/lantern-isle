@@ -46,12 +46,20 @@
 
     /* ── Inventory ── */
     #inventory{position:absolute;right:14px;top:50%;transform:translateY(-50%);
-      display:flex;flex-direction:column;gap:6px;pointer-events:auto;}
-    .inv-slot{width:44px;height:44px;
-      background:rgba(245,240,228,0.88);border:1.5px solid rgba(180,160,120,0.4);
-      border-radius:14px;display:flex;align-items:center;justify-content:center;
-      backdrop-filter:blur(10px);box-shadow:0 2px 10px rgba(220,140,180,0.15);}
-    .inv-slot svg{width:24px;height:24px;}
+      display:flex;flex-direction:column;gap:5px;pointer-events:auto;
+      background:rgba(245,240,228,0.72);border:1.5px solid rgba(180,160,120,0.35);
+      border-radius:18px;padding:8px 7px;
+      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      box-shadow:0 4px 18px rgba(220,140,180,0.15);}
+    #inventory-label{font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:600;
+      color:rgba(155,106,176,0.7);text-align:center;letter-spacing:0.8px;
+      text-transform:uppercase;margin-bottom:2px;}
+    .inv-slot{width:46px;height:46px;
+      background:rgba(255,252,245,0.80);border:1.5px solid rgba(180,160,120,0.35);
+      border-radius:12px;display:flex;align-items:center;justify-content:center;
+      transition:border-color 0.2s,box-shadow 0.2s;}
+    .inv-slot.filled{border-color:rgba(155,106,176,0.5);box-shadow:0 0 8px rgba(155,106,176,0.18);}
+    .inv-slot svg{width:26px;height:26px;}
 
     /* ── Quest Tracker ── */
     #quest-tracker{position:absolute;left:14px;top:50%;transform:translateY(-50%);
@@ -590,18 +598,13 @@
 
   <!-- Inventory -->
   <div id="inventory" style="display:none;">
-    <div class="inv-slot">
-      <!-- Lantern icon -->
-      <svg viewBox="0 0 24 24" fill="none">
-        <rect x="7" y="7" width="10" height="12" rx="2" fill="#EBB21A" opacity="0.85"/>
-        <rect x="9" y="5" width="6" height="3" rx="1" fill="#D4836A"/>
-        <rect x="11" y="3" width="2" height="3" rx="0.5" fill="#4F4261"/>
-        <ellipse cx="12" cy="13" rx="3" ry="4" fill="#FFF8DC" opacity="0.55"/>
-        <rect x="7" y="17" width="10" height="2" rx="1" fill="#D4836A"/>
-      </svg>
-    </div>
+    <div id="inventory-label">Items</div>
+    <div class="inv-slot" id="inv0"></div>
     <div class="inv-slot" id="inv1"></div>
     <div class="inv-slot" id="inv2"></div>
+    <div class="inv-slot" id="inv3"></div>
+    <div class="inv-slot" id="inv4"></div>
+    <div class="inv-slot" id="inv5"></div>
   </div>
 
   <!-- Quest Tracker -->

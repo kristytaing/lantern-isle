@@ -1496,12 +1496,11 @@ function showMoodHint(islandId, overrideText) {
   if (!el) {
     el = document.createElement('div');
     el.id = 'mood-hint';
-    el.style.cssText = `position:fixed;bottom:72px;left:50%;transform:translateX(-50%);
-      font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;
-      color:rgba(240,235,255,0.92);pointer-events:none;z-index:200;
-      text-shadow:0 0 12px rgba(0,0,0,0.9),0 1px 3px rgba(0,0,0,0.95),0 2px 8px rgba(0,0,0,0.8);
-      transition:opacity 1.2s ease;opacity:0;
-      text-align:center;max-width:320px;line-height:1.7;letter-spacing:0.02em;`;
+    el.style.cssText = `position:fixed;top:52px;left:14px;
+      font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;
+      color:rgba(120,90,140,0.82);pointer-events:none;z-index:200;
+      transition:opacity 1.4s ease;opacity:0;
+      text-align:left;max-width:220px;line-height:1.6;letter-spacing:0.01em;`;
     document.body.appendChild(el);
   }
   el.textContent = text;
@@ -2018,31 +2017,35 @@ function loadIsland(id) {
 }
 
 function updateInventoryUI() {
-  const slots = [document.getElementById('inv1'), document.getElementById('inv2')];
-  slots.forEach((sl, i) => {
-    if (!sl) return;
+  const ITEM_ICONS = {
+    mochi_cat:      `<text y="17" x="12" text-anchor="middle" font-size="15">🐱</text>`,
+    water_jar:      `<text y="17" x="12" text-anchor="middle" font-size="15">🫙</text>`,
+    shell:          `<text y="17" x="12" text-anchor="middle" font-size="15">🐚</text>`,
+    driftwood_note: `<text y="17" x="12" text-anchor="middle" font-size="15">📜</text>`,
+    petal_bundle:   `<text y="17" x="12" text-anchor="middle" font-size="15">🌸</text>`,
+    spring_water:   `<text y="17" x="12" text-anchor="middle" font-size="15">💧</text>`,
+    glowstone:      `<text y="17" x="12" text-anchor="middle" font-size="15">🔮</text>`,
+    crystal_dust:   `<text y="17" x="12" text-anchor="middle" font-size="15">✨</text>`,
+    wind_chime:     `<text y="17" x="12" text-anchor="middle" font-size="15">🎐</text>`,
+    highland_flower:`<text y="17" x="12" text-anchor="middle" font-size="15">💜</text>`,
+  };
+  for (let i = 0; i < 6; i++) {
+    const sl = document.getElementById(`inv${i}`);
+    if (!sl) continue;
     const item = inventoryItems[i];
-    if (!item) { sl.innerHTML = ''; sl.title = ''; return; }
+    if (!item) {
+      sl.innerHTML = '';
+      sl.title = '';
+      sl.classList.remove('filled');
+      continue;
+    }
     const island = getIsland(currentIslandId);
     const col = (island.collectibles||[]).find(c=>c.type===item);
-    const label = col ? col.label : item;
-    sl.title = label;
-    // Cycle 12: per-type inventory icons
-    const ITEM_ICONS = {
-      mochi_cat:      `<text y="17" x="12" text-anchor="middle" font-size="14">🐱</text>`,
-      water_jar:      `<text y="17" x="12" text-anchor="middle" font-size="14">🫙</text>`,
-      shell:          `<text y="17" x="12" text-anchor="middle" font-size="14">🐚</text>`,
-      driftwood_note: `<text y="17" x="12" text-anchor="middle" font-size="14">📜</text>`,
-      petal_bundle:   `<text y="17" x="12" text-anchor="middle" font-size="14">🌸</text>`,
-      spring_water:   `<text y="17" x="12" text-anchor="middle" font-size="14">💧</text>`,
-      glowstone:      `<text y="17" x="12" text-anchor="middle" font-size="14">🔮</text>`,
-      crystal_dust:   `<text y="17" x="12" text-anchor="middle" font-size="14">✨</text>`,
-      wind_chime:     `<text y="17" x="12" text-anchor="middle" font-size="14">🎐</text>`,
-      highland_flower:`<text y="17" x="12" text-anchor="middle" font-size="14">💜</text>`,
-    };
+    sl.title = col ? col.label : item;
+    sl.classList.add('filled');
     const icon = ITEM_ICONS[item] || `<circle cx="12" cy="12" r="6" fill="#EBB21A" opacity="0.9"/><circle cx="12" cy="12" r="3" fill="#F0DEC2"/>`;
     sl.innerHTML = `<svg viewBox="0 0 24 24" fill="none">${icon}</svg>`;
-  });
+  }
 }
 
 function updateQuestTracker(islandId) {

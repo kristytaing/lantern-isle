@@ -47,40 +47,40 @@ function connectWarm(source, reverbSend=0.4) {
 // Each island: root, chords (semitone offsets from root), BPM, melody style
 const ISLAND_MUSIC = [
   { // 0 Mossy Forest — Cm, slow dreamy
-    root: 130.81, bpm: 68,
-    chords: [[0,3,7,10],[5,8,12,15],[3,7,10,14],[7,10,14,17]],
-    melodyScale: [0,3,5,7,10,12,15], melodyOct: 2, swing: 0.6,
-    bassStyle: 'slow', crackle: 0.012
+    root: 130.81, bpm: 62,
+    chords: [[0,3,7],[5,8,12],[3,7,10],[7,10,14]],
+    melodyOct: 2, swing: 0.58,
+    bassStyle: 'slow', crackle: 0.010
   },
-  { // 1 Sunflower Beach — C major, bright warm
-    root: 130.81, bpm: 78,
-    chords: [[0,4,7,12],[5,9,12,17],[7,11,14,19],[9,12,16,21]],
-    melodyScale: [0,2,4,7,9,12,14], melodyOct: 2.5, swing: 0.48,
-    bassStyle: 'bounce', crackle: 0.008
+  { // 1 Sunflower Beach — C major, warm gentle
+    root: 130.81, bpm: 72,
+    chords: [[0,4,7],[5,9,12],[4,7,11],[7,11,14]],
+    melodyOct: 2.5, swing: 0.46,
+    bassStyle: 'bounce', crackle: 0.007
   },
-  { // 2 Sakura Cove — Bm, gentle mysterious
-    root: 123.47, bpm: 72,
-    chords: [[0,3,7,10],[5,8,12,14],[8,12,15,19],[3,7,10,12]],
-    melodyScale: [0,2,3,7,9,12,14], melodyOct: 2.2, swing: 0.55,
-    bassStyle: 'slow', crackle: 0.01
+  { // 2 Sakura Cove — Bm, gentle flowing
+    root: 123.47, bpm: 66,
+    chords: [[0,3,7],[5,8,12],[7,10,14],[3,7,10]],
+    melodyOct: 2.2, swing: 0.54,
+    bassStyle: 'slow', crackle: 0.009
   },
   { // 3 Cozy Village — C, warm folksy
-    root: 130.81, bpm: 76,
-    chords: [[0,4,7,12],[5,9,12,17],[9,12,16,19],[7,11,14,17]],
-    melodyScale: [0,2,4,7,9,12,14], melodyOct: 2.3, swing: 0.5,
-    bassStyle: 'bounce', crackle: 0.015
+    root: 130.81, bpm: 74,
+    chords: [[0,4,7],[5,9,12],[9,12,16],[7,10,14]],
+    melodyOct: 2.3, swing: 0.50,
+    bassStyle: 'bounce', crackle: 0.013
   },
   { // 4 Crystal Cave — Ab, eerie sparse
-    root: 103.83, bpm: 58,
-    chords: [[0,3,6,10],[5,8,11,15],[8,11,15,18],[3,6,10,13]],
-    melodyScale: [0,3,5,6,10,12,15], melodyOct: 1.8, swing: 0.7,
-    bassStyle: 'sparse', crackle: 0.006
+    root: 103.83, bpm: 54,
+    chords: [[0,3,7],[5,8,12],[8,11,15],[3,7,10]],
+    melodyOct: 1.8, swing: 0.65,
+    bassStyle: 'sparse', crackle: 0.005
   },
   { // 5 Lavender Highlands — Am, airy floaty
-    root: 110, bpm: 70,
-    chords: [[0,3,7,12],[5,8,12,15],[7,10,14,17],[3,7,10,14]],
-    melodyScale: [0,2,3,7,9,10,12], melodyOct: 2.4, swing: 0.52,
-    bassStyle: 'slow', crackle: 0.009
+    root: 110, bpm: 66,
+    chords: [[0,3,7],[5,8,12],[7,10,14],[3,7,10]],
+    melodyOct: 2.4, swing: 0.50,
+    bassStyle: 'slow', crackle: 0.008
   },
 ];
 
@@ -89,16 +89,15 @@ function semitone(base, semi) { return base * Math.pow(2, semi/12); }
 // ── Lofi instrument voices ─────────────────────────────────
 function playPianoNote(freq, time, dur, vol=0.18) {
   const o1 = ctx.createOscillator(); o1.type = 'triangle'; o1.frequency.value = freq;
-  const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq*2.01;
-  const o3 = ctx.createOscillator(); o3.type = 'sine'; o3.frequency.value = freq*3.0;
-  const g = gainNode(0); connectWarm(g, 0.35);
-  [o1,o2,o3].forEach((o,i) => {
-    const og = gainNode([1, 0.4, 0.15][i]); o.connect(og); og.connect(g); o.start(time); o.stop(time+dur+0.4);
+  const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq*2.005;
+  const g = gainNode(0); connectWarm(g, 0.38);
+  [[o1,1],[o2,0.3]].forEach(([o,w]) => {
+    const og = gainNode(w); o.connect(og); og.connect(g); o.start(time); o.stop(time+dur+0.6);
   });
   g.gain.setValueAtTime(0, time);
-  g.gain.linearRampToValueAtTime(vol, time+0.015);
-  g.gain.setValueAtTime(vol*0.6, time+0.08);
-  g.gain.exponentialRampToValueAtTime(0.001, time+dur+0.35);
+  g.gain.linearRampToValueAtTime(vol, time+0.025);
+  g.gain.setValueAtTime(vol*0.55, time+0.12);
+  g.gain.exponentialRampToValueAtTime(0.001, time+dur+0.55);
 }
 
 function playBassNote(freq, time, dur, vol=0.22) {
@@ -173,39 +172,40 @@ function buildLofiScheduler(islandId) {
 
     // Bass line
     const bassRoot = semitone(root, chord[0]);
-    const bassRoot2 = semitone(root, chord[0]);
     if (bassStyle === 'bounce') {
-      playBassNote(bassRoot, barStart, beat*1.2);
-      playBassNote(bassRoot2*1.5, barStart+beat*2+beat*0.5*swing, beat*0.8, 0.16);
-      playBassNote(bassRoot2, barStart+beat*3, beat*0.7, 0.14);
+      playBassNote(bassRoot, barStart, beat*1.4);
+      if (Math.random() > 0.35) playBassNote(bassRoot, barStart+beat*2.5, beat*1.0, 0.15);
     } else if (bassStyle === 'sparse') {
-      playBassNote(bassRoot, barStart, beat*1.8);
-      if (Math.random() > 0.4) playBassNote(bassRoot2, barStart+beat*2.5, beat*1.2, 0.16);
+      playBassNote(bassRoot, barStart, beat*2.2);
+      if (Math.random() > 0.5) playBassNote(bassRoot, barStart+beat*3, beat*1.0, 0.14);
     } else {
-      playBassNote(bassRoot, barStart, beat*1.5);
-      playBassNote(bassRoot2, barStart+beat*2, beat*1.8);
+      playBassNote(bassRoot, barStart, beat*2.0);
+      if (Math.random() > 0.4) playBassNote(bassRoot, barStart+beat*2.5, beat*1.4, 0.15);
     }
 
-    // Chord pads: soft strum on beat 1, lighter hit on beat 3
+    // Chord pads: gentle strum on beat 1, optional soft repeat on beat 3
     chord.forEach((semi, i) => {
       const freq = semitone(root * melodyOct, semi);
-      playPianoNote(freq, barStart + i*0.018, beat*1.6, 0.10);
-      if (Math.random() > 0.3) playPianoNote(freq, barStart+beat*2 + i*0.015, beat*1.2, 0.07);
+      playPianoNote(freq, barStart + i*0.022, beat*2.2, 0.085);
+      if (Math.random() > 0.55) playPianoNote(freq, barStart+beat*2.5 + i*0.018, beat*1.4, 0.055);
     });
 
-    // Melody: 3-5 notes per bar from scale, syncopated timing
-    const numNotes = 3 + Math.floor(Math.random()*3);
+    // Melody: chord-aware, 1-2 notes per bar, long gentle durations
+    // Only pick semitones that belong to the current chord (+ octave up)
+    const melodyPool = [];
+    chord.forEach(semi => { melodyPool.push(semi); melodyPool.push(semi + 12); });
+    const numNotes = Math.random() > 0.45 ? 2 : 1;
     const usedBeats = new Set();
     for (let n = 0; n < numNotes; n++) {
-      let beatPos;
-      let tries = 0;
-      do { beatPos = Math.floor(Math.random()*8) * beat*0.5; tries++; } while (usedBeats.has(beatPos) && tries < 10);
+      const beatChoices = [0, beat, beat*1.5, beat*2, beat*3];
+      let beatPos = beatChoices[Math.floor(Math.random()*beatChoices.length)];
+      if (usedBeats.has(beatPos)) beatPos = beatChoices[(Math.floor(Math.random()*beatChoices.length)+2)%beatChoices.length];
       usedBeats.add(beatPos);
-      const swingAdj = (Math.round(beatPos/(beat*0.5)) % 2 === 1) ? beat*0.5*(swing-0.5)*0.4 : 0;
-      const semi = melodyScale[Math.floor(Math.random()*melodyScale.length)];
-      const oct = Math.random() > 0.25 ? 2 : 1;
-      const freq = semitone(root * (melodyOct + (oct-2)*0.5), semi);
-      playPianoNote(freq, barStart + beatPos + swingAdj, beat*0.55, 0.13 + Math.random()*0.06);
+      const swingAdj = (beatPos > 0) ? beat*0.5*(swing-0.5)*0.3 : 0;
+      const semi = melodyPool[Math.floor(Math.random()*melodyPool.length)];
+      const freq = semitone(root * melodyOct, semi);
+      const noteDur = beat * (1.6 + Math.random()*1.2);
+      playPianoNote(freq, barStart + beatPos + swingAdj, noteDur, 0.11 + Math.random()*0.04);
     }
 
     // Vinyl crackle over the bar
@@ -233,9 +233,11 @@ function buildLofiScheduler(islandId) {
       tick();
     },
     stop() {
-      active = false;
+      active = false; // immediately stops tick() from scheduling any more notes
       if (rafId) clearTimeout(rafId);
-      masterG.gain.linearRampToValueAtTime(0, ctx.currentTime+2);
+      masterG.gain.cancelScheduledValues(ctx.currentTime);
+      masterG.gain.setValueAtTime(masterG.gain.value, ctx.currentTime);
+      masterG.gain.linearRampToValueAtTime(0, ctx.currentTime+3.0);
     }
   };
 }
@@ -245,10 +247,10 @@ export function setIslandMusic(islandId) {
   currentIslandId = islandId;
   if (musicScheduler) { musicScheduler.stop(); musicScheduler = null; }
   setTimeout(() => {
-    if (!ctx || muted) return;
+    if (!ctx || muted || currentIslandId !== islandId) return;
     musicScheduler = buildLofiScheduler(islandId);
     musicScheduler.start();
-  }, 1600);
+  }, 3800);
 }
 
 export function startExploreMusic() {
