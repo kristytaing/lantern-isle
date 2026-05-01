@@ -71,22 +71,22 @@ export class Player {
     g.add(this.bootL, this.bootR);
 
     // ── LEGS / TROUSERS ──────────────────────────────────────
-    const legGeo = new THREE.CylinderGeometry(0.050, 0.045, 0.16, 9);
+    const legGeo = new THREE.CylinderGeometry(0.054, 0.046, 0.22, 9);
     this.legL = new THREE.Mesh(legGeo, M('trouser'));
     this.legR = new THREE.Mesh(legGeo, M('trouser'));
-    this.legL.position.set(-0.065, 0.155, 0);
-    this.legR.position.set( 0.065, 0.155, 0);
+    this.legL.position.set(-0.065, 0.200, 0);
+    this.legR.position.set( 0.065, 0.200, 0);
     g.add(this.legL, this.legR);
 
-    // ── SHIRT — straight torso ───────────────────────────────
-    const skirtGeo = new THREE.CylinderGeometry(0.118, 0.122, 0.20, 12);
-    const skirt = new THREE.Mesh(skirtGeo, new THREE.MeshLambertMaterial({ color: C.shirt }));
-    skirt.position.y = 0.235;
-    g.add(skirt);
+    // ── SHIRT — straight torso (tucked in, pants show below belt) ──
+    const shirtLowGeo = new THREE.CylinderGeometry(0.112, 0.112, 0.13, 12);
+    const shirtLow = new THREE.Mesh(shirtLowGeo, new THREE.MeshLambertMaterial({ color: C.shirt }));
+    shirtLow.position.y = 0.315;
+    g.add(shirtLow);
 
-    const bodiceGeo = new THREE.CylinderGeometry(0.105, 0.118, 0.175, 12);
+    const bodiceGeo = new THREE.CylinderGeometry(0.108, 0.112, 0.175, 12);
     const bodice = new THREE.Mesh(bodiceGeo, new THREE.MeshLambertMaterial({ color: C.shirtD }));
-    bodice.position.y = 0.420;
+    bodice.position.y = 0.430;
     g.add(bodice);
 
     // Collar
@@ -110,13 +110,13 @@ export class Player {
     }
 
     // Belt
-    const beltGeo = new THREE.CylinderGeometry(0.128, 0.128, 0.022, 12);
+    const beltGeo = new THREE.CylinderGeometry(0.118, 0.118, 0.024, 12);
     const belt = new THREE.Mesh(beltGeo, new THREE.MeshLambertMaterial({ color: 0x7A4E22 }));
-    belt.position.y = 0.330;
+    belt.position.y = 0.310;
     g.add(belt);
     const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.030, 0.020, 0.012),
       new THREE.MeshLambertMaterial({ color: 0xD4AA30 }));
-    buckle.position.set(0, 0.330, 0.130);
+    buckle.position.set(0, 0.310, 0.122);
     g.add(buckle);
 
     // ── ARMS ─────────────────────────────────────────────────

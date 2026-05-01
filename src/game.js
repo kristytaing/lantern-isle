@@ -2414,12 +2414,14 @@ function loop(ts) {
       }
     }
 
-    // NPCs: auto-dialogue on approach (once per visit, resets on island reload)
+    // NPCs: auto-dialogue on approach; resets when player walks away so re-trigger works
     npcMeshes.forEach((nm, ni) => {
-      if (pp.distanceTo(nm.position) < 1.4 && !nm.userData.autoTriggered && state === 'playing') {
+      const dist = pp.distanceTo(nm.position);
+      if (dist < 1.4 && !nm.userData.autoTriggered && state === 'playing') {
         nm.userData.autoTriggered = true;
-        nm.userData.metPlayer = true;
         handleNPCInteract(island.npcs[ni], ni);
+      } else if (dist > 2.2) {
+        nm.userData.autoTriggered = false;
       }
     });
 
@@ -2428,6 +2430,8 @@ function loop(ts) {
     if (sd < 1.2 && !island._shrineAutoTriggered && state === 'playing') {
       island._shrineAutoTriggered = true;
       activateShrine();
+    } else if (sd > 2.5) {
+      island._shrineAutoTriggered = false;
     }
   }
 

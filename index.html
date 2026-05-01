@@ -17,7 +17,7 @@
     /* ── Crystal Status Bar ── */
     #hud-crystals{
       position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:5px;
-      background:rgba(255,240,248,0.82);border:1.5px solid rgba(255,180,210,0.5);
+      background:rgba(245,240,228,0.88);border:1.5px solid rgba(180,160,120,0.4);
       border-radius:24px;padding:6px 13px 6px 10px;pointer-events:auto;
       backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
       box-shadow:0 2px 12px rgba(220,140,180,0.18);
@@ -30,7 +30,7 @@
     /* ── HUD Buttons (sound + map) ── */
     .hud-btn{
       position:absolute;top:14px;
-      background:rgba(255,240,248,0.82);border:1.5px solid rgba(255,180,210,0.5);
+      background:rgba(245,240,228,0.88);border:1.5px solid rgba(180,160,120,0.4);
       border-radius:20px;padding:6px 14px;cursor:pointer;pointer-events:auto;
       display:flex;align-items:center;gap:6px;
       font-family:'Quicksand',sans-serif;font-size:16.2px;font-weight:700;color:#9B6AB0;
@@ -38,7 +38,7 @@
       box-shadow:0 2px 12px rgba(220,140,180,0.18);
       transition:background 0.2s,box-shadow 0.2s;
     }
-    .hud-btn:hover{background:rgba(255,228,242,0.95);box-shadow:0 4px 18px rgba(220,140,180,0.3);}
+    .hud-btn:hover{background:rgba(235,225,205,0.95);box-shadow:0 4px 18px rgba(220,140,180,0.3);}
     .hud-btn svg{flex-shrink:0;pointer-events:none;}
     #sound-toggle{right:14px;}
     #map-btn{left:50%;transform:translateX(-50%);}
@@ -48,14 +48,14 @@
     #inventory{position:absolute;right:14px;top:50%;transform:translateY(-50%);
       display:flex;flex-direction:column;gap:6px;pointer-events:auto;}
     .inv-slot{width:44px;height:44px;
-      background:rgba(255,240,248,0.82);border:1.5px solid rgba(255,180,210,0.5);
+      background:rgba(245,240,228,0.88);border:1.5px solid rgba(180,160,120,0.4);
       border-radius:14px;display:flex;align-items:center;justify-content:center;
       backdrop-filter:blur(10px);box-shadow:0 2px 10px rgba(220,140,180,0.15);}
     .inv-slot svg{width:24px;height:24px;}
 
     /* ── Quest Tracker ── */
     #quest-tracker{position:absolute;left:14px;top:50%;transform:translateY(-50%);
-      background:rgba(255,240,248,0.85);border:1.5px solid rgba(255,180,210,0.45);
+      background:rgba(245,240,228,0.90);border:1.5px solid rgba(180,160,120,0.35);
       border-radius:18px;padding:11px 15px;min-width:150px;max-width:200px;
       display:none;pointer-events:none;
       backdrop-filter:blur(10px);box-shadow:0 4px 18px rgba(220,140,180,0.2);}
@@ -71,7 +71,7 @@
     /* ── Dialogue Box ── */
     #dialogue-box{
       position:absolute;bottom:0;left:0;width:100%;
-      background:rgba(255,242,250,0.94);border-top:2px solid rgba(255,180,210,0.5);
+      background:rgba(245,240,228,0.96);border-top:2px solid rgba(180,160,120,0.4);
       display:none;pointer-events:auto;
       padding:0 0 16px 0;
       backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
@@ -80,11 +80,11 @@
     #dialogue-header{
       display:flex;align-items:center;gap:8px;
       padding:10px 18px 8px 18px;
-      border-bottom:1px solid rgba(255,180,210,0.25);
+      border-bottom:1px solid rgba(160,140,100,0.2);
     }
     #dialogue-speaker-icon{
       width:28px;height:28px;border-radius:50%;
-      background:rgba(255,210,230,0.6);border:1.5px solid rgba(255,180,210,0.6);
+      background:rgba(220,205,175,0.7);border:1.5px solid rgba(180,160,120,0.5);
       display:flex;align-items:center;justify-content:center;flex-shrink:0;
     }
     #dialogue-speaker-icon svg{width:15px;height:15px;}
@@ -109,7 +109,7 @@
       display:flex;gap:8px;pointer-events:none;}
     .ability-slot{
       width:40px;height:40px;
-      background:rgba(255,240,248,0.82);border:1.5px solid rgba(255,180,210,0.5);
+      background:rgba(245,240,228,0.88);border:1.5px solid rgba(180,160,120,0.4);
       border-radius:12px;display:flex;align-items:center;justify-content:center;
       position:relative;overflow:hidden;
       backdrop-filter:blur(10px);box-shadow:0 2px 10px rgba(220,140,180,0.18);
@@ -124,7 +124,7 @@
 
     /* ── Map Screen ── */
     #map-screen{position:absolute;inset:0;
-      background:rgba(40,35,25,0.55);
+      background:rgba(30,25,15,0.60);
       display:none;flex-direction:column;align-items:center;justify-content:center;
       pointer-events:auto;z-index:20;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
     #map-modal{
@@ -164,7 +164,7 @@
     /* palette vars scoped to title screen */
     #title-screen{
       --periwinkle:#9B9AE2;--coral:#EB6259;--lavender:#C6C3DC;
-      --gold:#EBB21A;--cream:#F0DEC2;--deep-plum:#4F4261;--sage:#6F7E4A;--pink:#F29FD7;
+      --gold:#EBB21A;--cream:#F0DEC2;--deep-plum:#4F4261;--sage:#6F7E4A;--pink:#F5F0E8;
     }
 
     .ts-sky{
@@ -347,12 +347,12 @@
 
     /* ── Island Banner ── */
     #island-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.88);
-      background:rgba(255,242,250,0.94);border:1.5px solid rgba(255,180,210,0.55);
+      background:rgba(245,240,228,0.96);border:1.5px solid rgba(180,160,120,0.45);
       border-radius:22px;padding:16px 38px;text-align:center;pointer-events:none;z-index:36;
       opacity:0;transition:opacity 0.3s ease,transform 0.3s ease;
       box-shadow:0 8px 32px rgba(220,140,180,0.28);backdrop-filter:blur(14px);}
     #island-banner.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
-    #island-banner h2{font-size:24px;font-weight:700;color:#5C2D5A;margin:0;}
+    #island-banner h2{font-size:24px;font-weight:700;color:#3A2A10;margin:0;}
     #island-banner p{font-size:16.2px;color:#C4709A;font-weight:600;margin-top:5px;letter-spacing:0.5px;}
 
 
@@ -365,12 +365,12 @@
     #win-stars{position:absolute;inset:0;pointer-events:none;}
     #win-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;
       padding:20px;text-align:center;}
-    #win-screen h1{font-size:34px;font-weight:700;color:#5C2D5A;text-align:center;
-      text-shadow:0 0 28px rgba(220,140,200,0.5),0 2px 6px rgba(255,255,255,0.4);line-height:1.35;}
+    #win-screen h1{font-size:34px;font-weight:700;color:#3A2A10;text-align:center;
+      text-shadow:0 0 28px rgba(180,150,80,0.45),0 2px 6px rgba(255,255,255,0.4);line-height:1.35;}
     #win-screen p{color:#7A5A7A;margin-top:14px;font-size:20.2px;max-width:440px;line-height:1.85;}
     #restart-btn{margin-top:28px;
-      background:linear-gradient(135deg,rgba(255,190,220,0.95),rgba(220,160,210,0.95));
-      color:#5C2D5A;border:1.5px solid rgba(255,180,210,0.7);
+      background:linear-gradient(135deg,rgba(210,185,140,0.95),rgba(175,155,110,0.95));
+      color:#3A2A10;border:1.5px solid rgba(160,130,80,0.6);
       font-family:'Quicksand',sans-serif;font-size:21.6px;font-weight:700;
       padding:12px 36px;border-radius:28px;cursor:pointer;
       box-shadow:0 4px 20px rgba(220,140,180,0.4);}
