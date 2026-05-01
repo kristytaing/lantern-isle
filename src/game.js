@@ -1374,12 +1374,10 @@ function activateShrine() {
     '', // Island 4 — lore delivered by Ancient Keeper NPC already
   ];
 
-  const restoreLines = [
-    `✦ ${island.name} restored!` +
-    (loreDrops[currentIslandId] ? ' ' + loreDrops[currentIslandId] : ''),
-  ];
+  const restoreLines = [`✦ ${island.name} restored!`];
 
   showDialogue('Restoration!', restoreLines, () => {
+    if (loreDrops[currentIslandId]) setTimeout(() => showMoodHint(currentIslandId, loreDrops[currentIslandId]), 800);
     if (currentIslandId + 1 < ISLANDS.length) {
       ISLANDS[currentIslandId+1].unlocked = true;
       showDialogue('Map Updated', [`New island unlocked: ${ISLANDS[currentIslandId+1].name}!`], openMap);
@@ -1483,10 +1481,10 @@ const BIOME_HINTS = [
 ];
 let hintTimer = 0;
 let hintIndex = 0;
-function showMoodHint(islandId) {
+function showMoodHint(islandId, overrideText) {
   const hints = BIOME_HINTS[islandId] || BIOME_HINTS[0];
-  const text = hints[hintIndex % hints.length];
-  hintIndex++;
+  const text = overrideText || hints[hintIndex % hints.length];
+  if (!overrideText) hintIndex++;
   let el = document.getElementById('mood-hint');
   if (!el) {
     el = document.createElement('div');
