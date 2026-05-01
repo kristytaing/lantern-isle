@@ -14,19 +14,6 @@ Every crystal is earned, not found. Help the people first — then the shards ap
 
 ---
 
-## Islands
-
-| Island | Vibe | Unlock Requirement |
-|--------|------|--------------------|
-| Mossy Forest | Misty green woodland, ancient spirits | Start here |
-| Sunflower Beach | Cream sands, warm coral tones | Restore Mossy Forest |
-| Sakura Cove | Cherry blossom pink, crescent cove | Restore Mossy Forest |
-| Cozy Village | Cream cottages, lantern-lit lanes | Restore Sunflower Beach or Sakura Cove |
-| Crystal Cave | Deep violet caverns, glowing spires | Restore Cozy Village |
-| Lavender Highlands | Windswept ridge, ancient keeper | Restore Cozy Village |
-
----
-
 ## How It Works
 
 Each island has **3 NPCs**, each with a quest. Complete their requests — fetch lost items, gather offerings, earn their trust — and a crystal shard materializes near them as a reward. Collect all shards, then bring them to the shrine at the island's heart.
@@ -44,9 +31,6 @@ The shrine awakens with a beam of light, grants you a new ability, and unlocks t
 - **6 distinct biomes** — unique skyboxes, terrain palettes, fog, flora, and NPC characters per island
 - **Quest-gated crystal system** — shards are invisible until earned; each appears near the NPC who rewards it
 - **Ability progression** — Lantern Pulse, Sprint, Heat Ward, Whistle, Sonar Echo unlocked island by island
-- **Shrine beam** — completing all shards triggers a golden light beam on the shrine
-- **Cozy village architecture** — houses with roofs, doors, and windows populate Cozy Village
-- **Dark frosted-glass HUD** — SVG icons, no emoji, palette-matched UI that blends into the world
 - **Procedural audio** — generative music and SFX per island, zero file downloads
 - **Mobile ready** — virtual joystick + action button, touch-tuned input mapping
 
@@ -78,20 +62,4 @@ Mobile: on-screen joystick (bottom-left) + action button (bottom-right).
 
 ---
 
-## Story
-
-*The Guardian Star did not fall by accident. Someone let it go.*
-
-Six islands. Six shrines. Six fragments of a wish left behind by the Keeper of Lanterns — who walked into the dark willingly, to protect the archipelago from something worse. The darkness was never the enemy. It was grief. And you answered it with light.
-
----
-
-## Competition Pitch
-
-> A hand-crafted cozy adventure where kindness is the key — help six islands of charming characters earn back their crystal shards, restore ancient shrines, and piece together the bittersweet mystery of why the Guardian Star went dark.
-
----
-
 Built for [VibeJam 2026](https://vibej.am/2026)
-
-*Palette: Soft Purple · Coral Red · Warm Cream · Deep Plum · Olive Green · Soft Pink · Soft Lavender*
