@@ -1186,7 +1186,6 @@ function showDialogue(speaker, lines, callback) {
     icon.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="${pColor}" opacity="0.85"/><text x="12" y="16" text-anchor="middle" font-size="11" font-family="Quicksand,sans-serif" fill="white" font-weight="700">${initial}</text></svg>`;
   }
   dialogueBox.style.display = 'block';
-  const jr = document.getElementById('joy-ring'); if (jr) jr.style.display = 'none';
   advanceDialogue();
 }
 
@@ -1223,7 +1222,6 @@ function advanceDialogue() {
 
 function closeDialogue() {
   dialogueBox.style.display = 'none';
-  const jr = document.getElementById('joy-ring'); if (jr) jr.style.display = '';
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
   Object.keys(keys).forEach(k => { keys[k] = false; });
   state = 'playing';
@@ -2108,15 +2106,12 @@ function updateQuestTracker() {}
 
 // ── Mobile Controls ───────────────────────────────────────────
 function setupMobile() {
-  if (!isMobile) return;
-
-  // Tap anywhere to advance/dismiss dialogue
+  // Tap to advance dialogue (works on all touch devices)
   document.addEventListener('touchend', e => {
     if (state === 'dialogue') {
       e.preventDefault();
       e.stopPropagation();
       if (typewriterTimer) {
-        // If still typing, snap to full line immediately
         clearInterval(typewriterTimer);
         typewriterTimer = null;
         dialogueText.innerHTML = formatDialogueLine(currentFullLine);
@@ -2127,57 +2122,33 @@ function setupMobile() {
     }
   }, { passive: false });
 
-  // Fixed joystick at bottom-left: always visible, drag to steer
-  const JOY_R = 48; // outer ring radius px
-  const JOY_DEAD = 6;
-  const joyEl = document.createElement('div');
-  joyEl.id = 'joy-ring';
-  joyEl.style.cssText = `position:fixed;bottom:32px;left:36px;width:${JOY_R*2}px;height:${JOY_R*2}px;border-radius:50%;border:3px solid rgba(255,255,255,0.55);background:rgba(255,255,255,0.13);pointer-events:none;z-index:15;touch-action:none;`;
-  const joyDot = document.createElement('div');
-  const DOT = 26;
-  joyDot.style.cssText = `position:absolute;width:${DOT}px;height:${DOT}px;border-radius:50%;background:rgba(255,255,255,0.7);top:50%;left:50%;transform:translate(-50%,-50%);transition:transform 0.05s;`;
-  joyEl.appendChild(joyDot);
-  document.body.appendChild(joyEl);
-
-  let joyActive = false;
-
-  function getJoyCenter() {
-    const r = joyEl.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-  }
+  // Drag-to-move: touch anywhere on canvas, drag in direction to walk
+  const DEAD = 8;
+  let dragOrigin = null;
 
   document.addEventListener('touchstart', e => {
     if (state !== 'playing') return;
     const t = e.touches[0];
-    const c = getJoyCenter();
-    const dx = t.clientX - c.x, dy = t.clientY - c.y;
-    if (Math.sqrt(dx*dx + dy*dy) < JOY_R + 20) {
-      joyActive = true;
-      e.preventDefault();
-    }
-  }, { passive: false });
+    dragOrigin = { x: t.clientX, y: t.clientY };
+  }, { passive: true });
 
   document.addEventListener('touchmove', e => {
-    if (!joyActive) return;
+    if (state !== 'playing' || !dragOrigin) return;
     e.preventDefault();
     const t = e.touches[0];
-    const c = getJoyCenter();
-    const dx = t.clientX - c.x, dy = t.clientY - c.y;
+    const dx = t.clientX - dragOrigin.x;
+    const dy = t.clientY - dragOrigin.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
-    const clamp = Math.min(dist, JOY_R - 6);
-    joyDot.style.transform = `translate(calc(-50% + ${dx/Math.max(dist,1)*clamp}px), calc(-50% + ${dy/Math.max(dist,1)*clamp}px))`;
-    if (dist < JOY_DEAD) { joystickDir.x = 0; joystickDir.z = 0; return; }
-    const scale = Math.min(dist, JOY_R) / JOY_R;
-    joystickDir.x = (dx - dy) / dist * scale;
-    joystickDir.z = (dx + dy) / dist * scale;
+    if (dist < DEAD) { joystickDir.x = 0; joystickDir.z = 0; return; }
+    const scale = Math.min(dist / 48, 1);
+    joystickDir.x = dy / dist * scale;
+    joystickDir.z = dx / dist * scale;
   }, { passive: false });
 
   document.addEventListener('touchend', e => {
-    if (!joyActive) return;
-    joyActive = false;
+    dragOrigin = null;
     joystickDir.x = 0; joystickDir.z = 0;
-    joyDot.style.transform = 'translate(-50%,-50%)';
-  }, { passive: false });
+  }, { passive: true });
 }
 
 // ── Map click handling ────────────────────────────────────────
