@@ -56,12 +56,18 @@ let dialogueQueue = [], dialogueCallback = null, typewriterTimer = null, current
 function updateCrystalHUD() {
   const island = getIsland(currentIslandId);
   const count = island.crystalCount;
+  const total = island.totalCrystals;
   for (let i = 0; i < 5; i++) {
     const gem = document.getElementById('gem'+i);
-    gem.innerHTML = `<svg viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/><polygon points="9,2 15,7 9,7" fill="#C6C3DC" opacity="0.5"/></svg>`;
-    gem.classList.toggle('lit', count > i);
+    if (i < total) {
+      gem.style.display = '';
+      gem.innerHTML = `<svg viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/><polygon points="9,2 15,7 9,7" fill="#C6C3DC" opacity="0.5"/></svg>`;
+      gem.classList.toggle('lit', count > i);
+    } else {
+      gem.style.display = 'none';
+    }
   }
-  document.getElementById('crystal-label').textContent = `${count} / 5`;
+  document.getElementById('crystal-label').textContent = `${count} / ${total}`;
 }
 
 function showHUD(show) {
@@ -77,7 +83,7 @@ function showHUD(show) {
 function buildIsland(islandId) {
   // Clear previous
   islandMeshes.forEach(m => scene.remove(m));
-  crystalMeshes.forEach(m => scene.remove(m));
+  crystalMeshes.forEach(m => { if (m.userData.glowLight) scene.remove(m.userData.glowLight); scene.remove(m); });
   npcMeshes.forEach(m => scene.remove(m));
   if (shrineMesh) scene.remove(shrineMesh);
 
@@ -191,6 +197,34 @@ function buildIsland(islandId) {
     scene.add(spire); islandMeshes.push(spire);
   }
 
+  function addHouse(x, z, wallCol, roofCol) {
+    // Base/walls
+    const wallGeo = new THREE.BoxGeometry(0.7, 0.5, 0.7);
+    const wallMat = new THREE.MeshLambertMaterial({ color: wallCol || 0xF0DEC2 });
+    const walls = new THREE.Mesh(wallGeo, wallMat);
+    walls.position.set(x, 0.4, z);
+    scene.add(walls); islandMeshes.push(walls);
+    // Roof (pyramid)
+    const roofGeo = new THREE.ConeGeometry(0.58, 0.38, 4);
+    const roofMat = new THREE.MeshLambertMaterial({ color: roofCol || 0xEB6259 });
+    const roof = new THREE.Mesh(roofGeo, roofMat);
+    roof.position.set(x, 0.84, z);
+    roof.rotation.y = Math.PI / 4;
+    scene.add(roof); islandMeshes.push(roof);
+    // Door
+    const doorGeo = new THREE.BoxGeometry(0.13, 0.2, 0.05);
+    const doorMat = new THREE.MeshLambertMaterial({ color: 0x8B5A2B });
+    const door = new THREE.Mesh(doorGeo, doorMat);
+    door.position.set(x, 0.25, z + 0.35);
+    scene.add(door); islandMeshes.push(door);
+    // Window
+    const winGeo = new THREE.BoxGeometry(0.14, 0.12, 0.05);
+    const winMat = new THREE.MeshLambertMaterial({ color: 0xC6E0F0, emissive: 0x8BBBD0, emissiveIntensity: 0.25 });
+    const win = new THREE.Mesh(winGeo, winMat);
+    win.position.set(x + 0.2, 0.4, z + 0.35);
+    scene.add(win); islandMeshes.push(win);
+  }
+
   function addLantern(x, z) {
     const poleGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.5, 5);
     const poleMat = new THREE.MeshLambertMaterial({ color: 0x4F4261 });
@@ -288,22 +322,19 @@ function buildIsland(islandId) {
     }
   });
 
-  // Crystals
-  island.crystalPositions.forEach((cp, i) => {
-    if (island.crystalCount > i) return; // Already collected
-    const geo = new THREE.SphereGeometry(0.14, 10, 8);
-    const mat = new THREE.MeshLambertMaterial({ color: PALETTE.softPinkN, emissive: PALETTE.softPurpleN, emissiveIntensity: 0.5 });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(cp.x, 0.5, cp.z);
-    const cl = new THREE.PointLight(PALETTE.softPinkN, 0.5, 2.5);
-    cl.position.set(cp.x, 0.5, cp.z);
-    scene.add(cl);
-    mesh.userData = { crystalIdx: i, bobBase: 0.5, glowLight: cl };
-    scene.add(mesh); crystalMeshes.push(mesh);
-    // Orbiting particles
-    const orbit = particles.addCrystalOrbiters(cp.x, 0.5, cp.z);
-    crystalOrbits.push({ mesh, orbit });
-  });
+  // Cozy Village houses
+  if (islandId === 3) {
+    const houseSpots = [
+      { x: -5, z: -5, wall: 0xF5EAD8, roof: 0xC0785A },
+      { x:  5, z: -5, wall: 0xEDE0C8, roof: 0x9B6A50 },
+      { x: -6, z:  2, wall: 0xF0E4D0, roof: 0xD4836A },
+      { x:  6, z:  2, wall: 0xF5EAD8, roof: 0xB07060 },
+      { x:  0, z: -7, wall: 0xEADDC8, roof: 0xC0785A },
+    ];
+    houseSpots.forEach(h => addHouse(h.x, h.z, h.wall, h.roof));
+  }
+
+  // Crystals are NOT spawned at island load — they appear when quests are completed
 
   // Shrine
   const shrGeo = new THREE.CylinderGeometry(0.3, 0.4, 0.6, 8);
@@ -1003,6 +1034,31 @@ function collectCrystal(mesh) {
   }
 }
 
+// ── Spawn Quest Crystal near NPC ─────────────────────────────
+function spawnQuestCrystal(npcX, npcZ) {
+  const island = getIsland(currentIslandId);
+  // Offset slightly so it doesn't overlap the NPC
+  const ox = (Math.random() - 0.5) * 1.2;
+  const oz = (Math.random() - 0.5) * 1.2;
+  const cx = npcX + ox, cz = npcZ + oz;
+  const geo = new THREE.SphereGeometry(0.14, 10, 8);
+  const mat = new THREE.MeshLambertMaterial({ color: PALETTE.softPinkN, emissive: PALETTE.softPurpleN, emissiveIntensity: 0.5 });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(cx, 0.5, cz);
+  const cl = new THREE.PointLight(PALETTE.softPinkN, 0.5, 2.5);
+  cl.position.set(cx, 0.5, cz);
+  scene.add(cl);
+  mesh.userData = { crystalIdx: crystalMeshes.length, bobBase: 0.5, glowLight: cl };
+  scene.add(mesh); crystalMeshes.push(mesh);
+  const orbit = particles.addCrystalOrbiters(cx, 0.5, cz);
+  crystalOrbits.push({ mesh, orbit });
+  // Flash + sound
+  sfxCrystalCollect();
+  particles.addBurst(cx, 0.5, cz, PALETTE.softPinkN, 20);
+  // Hint dialogue
+  setTimeout(() => showDialogue('Crystal', ['A crystal shard appeared nearby! Collect it.'], null), 300);
+}
+
 // ── Shrine Restoration ────────────────────────────────────────
 function activateShrine() {
   const island = getIsland(currentIslandId);
@@ -1412,7 +1468,7 @@ function handleNPCInteract(npc, ni) {
     showDialogue(npc.name, npc.lines, () => {
       npc.quest.done = true;
       questState[qt] = true;
-      island.crystalCount++; updateCrystalHUD(); sfxCrystalCollect();
+      spawnQuestCrystal(npc.x, npc.z);
       updateQuestTracker(currentIslandId);
     });
     return;
@@ -1423,7 +1479,7 @@ function handleNPCInteract(npc, ni) {
     if (!questState[qt]) {
       showDialogue(npc.name, npc.lines, () => {
         questState[qt] = true;
-        island.crystalCount++; updateCrystalHUD(); sfxCrystalCollect();
+        spawnQuestCrystal(npc.x, npc.z);
         updateQuestTracker(currentIslandId);
       });
     }
@@ -1438,8 +1494,8 @@ function handleNPCInteract(npc, ni) {
       npc.quest.done = true;
       const idx = inventoryItems.indexOf(itemKey);
       if (idx >= 0) inventoryItems.splice(idx, 1);
-      island.crystalCount++; updateCrystalHUD(); sfxCrystalCollect();
       updateInventoryUI();
+      spawnQuestCrystal(npc.x, npc.z);
       updateQuestTracker(currentIslandId);
     });
   } else {
