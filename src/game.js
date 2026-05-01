@@ -1213,10 +1213,12 @@ function collectCrystal(mesh) {
 // ── Spawn Quest Crystal near NPC ─────────────────────────────
 function spawnQuestCrystal(npcX, npcZ) {
   const island = getIsland(currentIslandId);
-  // Offset slightly so it doesn't overlap the NPC
-  const ox = (Math.random() - 0.5) * 1.2;
-  const oz = (Math.random() - 0.5) * 1.2;
-  const cx = npcX + ox, cz = npcZ + oz;
+  // Place crystal in front of the NPC (toward island center) at safe distance
+  const toCenter = new THREE.Vector2(-npcX, -npcZ);
+  const len = toCenter.length();
+  const dir = len > 0.01 ? toCenter.normalize() : new THREE.Vector2(0, 1);
+  const cx = npcX + dir.x * 2.2 + (Math.random() - 0.5) * 0.4;
+  const cz = npcZ + dir.y * 2.2 + (Math.random() - 0.5) * 0.4;
   const geo = new THREE.SphereGeometry(0.14, 10, 8);
   const mat = new THREE.MeshLambertMaterial({ color: PALETTE.softPinkN, emissive: PALETTE.softPurpleN, emissiveIntensity: 0.5 });
   const mesh = new THREE.Mesh(geo, mat);
@@ -2149,14 +2151,13 @@ function loop(ts) {
         sp.position.y = sp.userData.excBase + Math.sin(time*3 + sp.userData.excOffset)*0.07;
         sp.material.opacity = 0.75 + Math.sin(time*3 + sp.userData.excOffset)*0.25;
       }
-      // Cycle 2: NPC head-look toward player when nearby
-      if (player && m.userData.headMesh) {
+      // Cycle 2: NPC faces player when nearby (rotate whole group toward player)
+      if (player) {
         const dx = player.pos.x - m.position.x, dz = player.pos.z - m.position.z;
         const dist = Math.sqrt(dx*dx + dz*dz);
         if (dist < 3.5) {
           const targetAngle = Math.atan2(dx, dz);
-          const head = m.userData.headMesh;
-          head.rotation.y += (targetAngle - head.rotation.y) * 3 * dt;
+          m.rotation.y += (targetAngle - m.rotation.y) * 4 * dt;
         }
       }
     });

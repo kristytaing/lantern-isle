@@ -28,8 +28,8 @@ export class Player {
 
   _build() {
     const g = this.group;
-    // Body
-    const bodyGeo = new THREE.BoxGeometry(0.28, 0.32, 0.2);
+    // Body — rounded cylinder for softer silhouette
+    const bodyGeo = new THREE.CylinderGeometry(0.13, 0.15, 0.32, 12);
     const bodyMat = new THREE.MeshLambertMaterial({ color: PALETTE.warmCreamN });
     this.body = new THREE.Mesh(bodyGeo, bodyMat);
     this.body.position.y = 0.16;
@@ -97,23 +97,22 @@ export class Player {
     this.scarfTail.position.set(0.1, 0.3, 0.05);
     g.add(this.scarfTail);
 
-    // Boots
-    const bootGeo = new THREE.BoxGeometry(0.1, 0.08, 0.12);
+    // Boots — rounded for softer look
+    const bootGeo = new THREE.CylinderGeometry(0.05, 0.06, 0.09, 10);
     const bootMat = new THREE.MeshLambertMaterial({ color: PALETTE.oliveGreenN });
     this.bootL = new THREE.Mesh(bootGeo, bootMat);
-    this.bootR = new THREE.Mesh(bootGeo, bootMat);
-    this.bootL.position.set(-0.08, 0.04, 0); this.bootR.position.set(0.08, 0.04, 0);
+    this.bootR = new THREE.Mesh(bootGeo.clone(), bootMat);
+    this.bootL.position.set(-0.07, 0.045, 0); this.bootR.position.set(0.07, 0.045, 0);
     g.add(this.bootL); g.add(this.bootR);
 
-    // Arms
-    const armGeo = new THREE.BoxGeometry(0.08, 0.22, 0.08);
+    // Arms — slim rounded cylinders
+    const armGeo = new THREE.CylinderGeometry(0.035, 0.04, 0.22, 8);
+    armGeo.translate(0, -0.11, 0); // pivot from shoulder
     const armMat = new THREE.MeshLambertMaterial({ color: PALETTE.warmCreamN });
     this.armL = new THREE.Mesh(armGeo, armMat);
-    this.armR = new THREE.Mesh(armGeo, armMat);
-    this.armL.position.set(-0.19, 0.2, 0);
-    this.armR.position.set(0.19, 0.2, 0);
-    this.armL.geometry.translate(0, -0.11, 0); // pivot from shoulder
-    this.armR.geometry.translate(0, -0.11, 0);
+    this.armR = new THREE.Mesh(armGeo.clone(), armMat);
+    this.armL.position.set(-0.17, 0.22, 0);
+    this.armR.position.set(0.17, 0.22, 0);
     g.add(this.armL); g.add(this.armR);
 
     // Lantern
@@ -194,7 +193,7 @@ export class Player {
     const bob = Math.sin(this.bobTime * 2.0) * 0.05;
     const hairSway = Math.sin(this.bobTime * 1.2) * 0.04;
     this.group.position.copy(this.pos);
-    this.group.position.y = bob;
+    this.group.position.y = 0.08 + bob;
     this.group.rotation.y = this.facing;
     this.hairGroup.rotation.z = hairSway;
     // Hair trails when moving
