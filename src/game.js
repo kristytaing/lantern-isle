@@ -885,9 +885,17 @@ document.getElementById('start-btn').addEventListener('click', () => {
   initAudio(); audioReady = true;
   startExploreMusic();
   buildIsland(0);
-  document.getElementById('title-screen').style.display = 'none';
-  showHUD(true);
   state = 'playing';
+  showHUD(true);
+  // Double-rAF: let the game loop render the island into the WebGL buffer,
+  // then fade the title screen out so there's no black flash.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const ts = document.getElementById('title-screen');
+      ts.style.opacity = '0';
+      ts.addEventListener('transitionend', () => { ts.style.display = 'none'; }, { once: true });
+    });
+  });
   setTimeout(()=>showDialogue('✨ Lantern Bearer', [
     'Your golden lantern glows as you step onto the Mossy Forest…',
     'Five crystal shards hide on this island. Find them, then bring them to the shrine!',
