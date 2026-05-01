@@ -1377,12 +1377,19 @@ function activateShrine() {
   const restoreLines = [`✦ ${island.name} restored!`];
 
   showDialogue('Restoration!', restoreLines, () => {
-    if (loreDrops[currentIslandId]) setTimeout(() => showMoodHint(currentIslandId, loreDrops[currentIslandId]), 800);
-    if (currentIslandId + 1 < ISLANDS.length) {
-      ISLANDS[currentIslandId+1].unlocked = true;
-      showDialogue('Map Updated', [`New island unlocked: ${ISLANDS[currentIslandId+1].name}!`], openMap);
+    const lore = loreDrops[currentIslandId];
+    const afterLore = () => {
+      if (currentIslandId + 1 < ISLANDS.length) {
+        ISLANDS[currentIslandId+1].unlocked = true;
+        showDialogue('Map Updated', [`New island unlocked: ${ISLANDS[currentIslandId+1].name}!`], openMap);
+      } else {
+        triggerWin();
+      }
+    };
+    if (lore) {
+      showDialogue('The Shrine Speaks…', [lore], afterLore);
     } else {
-      triggerWin();
+      afterLore();
     }
   });
 }
