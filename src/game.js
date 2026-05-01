@@ -2447,20 +2447,20 @@ function loop(ts) {
     // NPCs: auto-dialogue on approach; resets when player walks away so re-trigger works
     npcMeshes.forEach((nm, ni) => {
       const dist = pp.distanceTo(nm.position);
-      if (dist < 1.4 && !nm.userData.autoTriggered && state === 'playing') {
+      if (dist < 0.7 && !nm.userData.autoTriggered && state === 'playing') {
         nm.userData.autoTriggered = true;
         handleNPCInteract(island.npcs[ni], ni);
-      } else if (dist > 2.2) {
+      } else if (dist > 1.2) {
         nm.userData.autoTriggered = false;
       }
     });
 
     // Shrine: auto-activate on approach
     const sd = Math.sqrt((pp.x - island.shrinePos.x) ** 2 + (pp.z - island.shrinePos.z) ** 2);
-    if (sd < 1.2 && !island._shrineAutoTriggered && state === 'playing') {
+    if (sd < 0.65 && !island._shrineAutoTriggered && state === 'playing') {
       island._shrineAutoTriggered = true;
       activateShrine();
-    } else if (sd > 2.5) {
+    } else if (sd > 1.4) {
       island._shrineAutoTriggered = false;
     }
   }
