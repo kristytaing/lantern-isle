@@ -6,7 +6,8 @@ import { PALETTE, ISLANDS, getIsland } from './world.js';
 import { Player } from './player.js';
 import { ParticleSystem } from './particles.js';
 import { initAudio, startExploreMusic, sfxCrystalCollect, sfxLanternPulse,
-         sfxFootstep, sfxDialogue, sfxShrine, sfxClick, sfxWin, toggleMute, isMuted } from './audio.js';
+         sfxFootstep, sfxDialogue, sfxShrine, sfxClick, sfxWin, toggleMute, isMuted,
+         setIslandMusic, sfxIslandArrive } from './audio.js';
 
 // ── State ────────────────────────────────────────────────────
 let state = 'title'; // title | playing | dialogue | map | win
@@ -251,28 +252,38 @@ function buildIsland(islandId) {
   ];
   const decorFn = biomeDecorations[islandId] || biomeDecorations[0];
 
+  // Deterministic hash per tile — stable across island revisits
+  function tileHash(x, z) {
+    let h = (x * 374761393 + z * 668265263 + islandId * 2246822519) >>> 0;
+    h ^= h >>> 13; h = Math.imul(h, 1540483477); h ^= h >>> 15;
+    return (h >>> 0) / 0xFFFFFFFF;
+  }
+
   island.tiles.forEach(tile => {
     const isWater = tile.type === 'water';
+    const h = tileHash(tile.x, tile.z);
     const color = isWater
       ? (islandId === 1 ? 0x9BC8D4 : islandId === 4 ? 0x2A4A6B : 0x8AAABB)
       : island.groundColor;
-    const mat = new THREE.MeshLambertMaterial({ color, transparent: isWater, opacity: isWater?0.78:1 });
+    // Slight height variation on ground tiles for organic feel
+    const yOff = isWater ? -0.18 : (h < 0.3 ? -0.02 : h > 0.85 ? 0.03 : 0);
+    const mat = new THREE.MeshLambertMaterial({ color, transparent: isWater, opacity: isWater ? 0.78 : 1 });
     const mesh = new THREE.Mesh(tileGeo, mat);
-    mesh.position.set(tile.x, isWater ? -0.18 : 0, tile.z);
+    mesh.position.set(tile.x, yOff, tile.z);
+    // Water tiles get shimmer animation tag
+    if (isWater) { mesh.userData.waterTile = true; mesh.userData.waterPhase = h * Math.PI * 2; mesh.userData.baseMat = mat; }
     scene.add(mesh); islandMeshes.push(mesh);
 
-    // Terrain decorations — skip occupied tiles and centre
+    // Terrain decorations — skip occupied tiles and centre, use stable hash for consistency
     if (!isWater && (tile.x!==0||tile.z!==0)) {
       const key = `${tile.x},${tile.z}`;
-      const r = Math.random();
+      const r = h;
+      const ox = (tileHash(tile.x+7, tile.z)-0.5)*0.55;
+      const oz = (tileHash(tile.x, tile.z+7)-0.5)*0.55;
       if (occupiedKeys.has(key)) {
-        // Tile is shared with NPC/shrine/crystal — place a small offset flower only
-        if (r < 0.35) {
-          const ox = (Math.random()-0.5)*0.55, oz = (Math.random()-0.5)*0.55;
-          addFlower(tile.x+ox, tile.z+oz, island.accentColor);
-        }
+        if (r < 0.35) addFlower(tile.x+ox, tile.z+oz, island.accentColor);
       } else {
-        decorFn(tile.x+(Math.random()-0.5)*0.45, tile.z+(Math.random()-0.5)*0.45, r);
+        decorFn(tile.x+(tileHash(tile.x+1,tile.z)-0.5)*0.45, tile.z+(tileHash(tile.x,tile.z+1)-0.5)*0.45, r);
       }
     }
   });
@@ -863,8 +874,21 @@ function buildIsland(islandId) {
 
   // Particles per biome
   particles.addAmbientMotes(isMobile ? 60 : 120);
+  if (islandId === 0) particles.addFireflies(isMobile ? 15 : 30); // Mossy Forest fireflies
+  if (islandId === 1) { // Sunflower Beach — wave foam bursts
+    for (let i = 0; i < (isMobile?4:8); i++) {
+      setTimeout(() => particles.addBurst(-3+Math.random()*6, 0.1, -4+Math.random()*2, 0xB8E4F0, 12), i*600);
+    }
+  }
   if (islandId === 2) particles.addPetals(isMobile?20:40, PALETTE.softPinkN);
-  if (islandId === 4) particles.addAmbientMotes(isMobile?30:60); // extra cave spores
+  if (islandId === 4) { // Crystal Cave — extra spores + bioluminescent pool glow
+    particles.addAmbientMotes(isMobile?30:60);
+    // Bioluminescent pool: pulsing cyan point light
+    const poolLight = new THREE.PointLight(0x00FFCC, 0.6, 4);
+    poolLight.position.set(0, 0.3, -3);
+    poolLight.userData.bioPool = true;
+    scene.add(poolLight); islandMeshes.push(poolLight);
+  }
   if (islandId === 5) particles.addPetals(isMobile?20:40, PALETTE.softLavenderN);
 
   updateCrystalHUD();
@@ -872,14 +896,24 @@ function buildIsland(islandId) {
 }
 
 // ── Dialogue System ───────────────────────────────────────────
+const NPC_COLORS = {
+  '✨': '#EBB21A', 'Shrine': '#9B9AE2', '✨ Shrine': '#9B9AE2',
+  '✨ Restoration!': '#EBB21A', '✨ Map Updated': '#EBB21A',
+};
 function showDialogue(speaker, lines, callback) {
   if (state === 'dialogue') return;
   state = 'dialogue';
   dialogueQueue = [...lines];
   dialogueCallback = callback || null;
   dialogueSpeaker.textContent = speaker;
+  dialogueSpeaker.style.background = NPC_COLORS[speaker] || '#EB6259';
   dialogueBox.style.display = 'block';
   advanceDialogue();
+}
+
+function formatDialogueLine(text) {
+  // Render *emotion* tags as styled spans
+  return text.replace(/\*([^*]+)\*/g, '<em style="color:#9B9AE2;font-style:italic;font-size:0.9em">$1</em>');
 }
 
 function advanceDialogue() {
@@ -889,7 +923,7 @@ function advanceDialogue() {
   const line = dialogueQueue.shift();
   currentLine = '';
   currentFullLine = line;
-  dialogueText.textContent = '';
+  dialogueText.innerHTML = '';
   dialogueContinue.style.display = 'none';
   if (typewriterTimer) clearInterval(typewriterTimer);
   let ci = 0;
@@ -897,11 +931,12 @@ function advanceDialogue() {
   typewriterTimer = setInterval(() => {
     if (ci < line.length) {
       currentLine += line[ci++];
-      dialogueText.textContent = currentLine;
-      if (ci % 8 === 0) sfxDialogue();
+      dialogueText.innerHTML = formatDialogueLine(currentLine);
+      if (ci % 6 === 0) sfxDialogue();
     } else {
       clearInterval(typewriterTimer);
       typewriterTimer = null;
+      dialogueText.innerHTML = formatDialogueLine(line);
       dialogueContinue.style.display = 'block';
     }
   }, 28);
@@ -947,6 +982,12 @@ function activateShrine() {
   island.restored = true;
   sfxShrine();
   particles.addRestorationBurst(island.shrinePos.x, 1, island.shrinePos.z);
+  // Screen flash on restoration
+  const flash = document.getElementById('restore-flash');
+  if (flash) {
+    flash.style.transition = 'none'; flash.style.opacity = '0.7';
+    setTimeout(() => { flash.style.transition = 'opacity 0.8s ease'; flash.style.opacity = '0'; }, 80);
+  }
   // Light up shrine
   if (shrineMesh) { shrineMesh.material.emissiveIntensity = 0.9; }
   // Stop shadow creep
@@ -996,13 +1037,46 @@ function triggerWin() {
   particles.addRestorationBurst(0, 2, 0);
   setTimeout(() => particles.addRestorationBurst(0, 2, 0), 400);
   setTimeout(() => particles.addRestorationBurst(0, 2, 0), 800);
-  document.getElementById('win-epilogue').textContent =
-    'The prophecy is fulfilled. The Lantern Bearer — once a child who wandered ' +
-    'into a fading world — has relit the heart of the Archipelago. ' +
-    'Six islands remember warmth. Six shrines sing. ' +
-    'And somewhere above, the Guardian Star smiles back at the light below.';
-  document.getElementById('win-screen').style.display = 'flex';
-  showHUD(false);
+  // Flash white then reveal win screen
+  const flash = document.getElementById('restore-flash');
+  flash.style.transition = 'none'; flash.style.opacity = '1';
+  setTimeout(() => {
+    flash.style.transition = 'opacity 1.2s ease';
+    flash.style.opacity = '0';
+    document.getElementById('win-epilogue').textContent =
+      'The prophecy is fulfilled. The Lantern Bearer — once a child who wandered ' +
+      'into a fading world — has relit the heart of the Archipelago. ' +
+      'Six islands remember warmth. Six shrines sing. ' +
+      'And somewhere above, the Guardian Star smiles back at the light below.';
+    document.getElementById('win-screen').style.display = 'flex';
+    showHUD(false);
+    startWinStarfield();
+  }, 120);
+}
+
+function startWinStarfield() {
+  const canvas = document.getElementById('win-stars');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const stars = Array.from({length: 180}, () => ({
+    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+    r: Math.random() * 1.8 + 0.4, speed: Math.random() * 0.4 + 0.1,
+    twinkle: Math.random() * Math.PI * 2
+  }));
+  let running = true;
+  function drawStars(t) {
+    if (!running) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+      s.twinkle += s.speed * 0.04;
+      const alpha = 0.5 + Math.sin(s.twinkle) * 0.5;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(235,178,26,${alpha})`; ctx.fill();
+    });
+    requestAnimationFrame(drawStars);
+  }
+  drawStars(0);
+  document.getElementById('restart-btn').addEventListener('click', () => { running = false; }, { once: true });
 }
 
 // ── Ability Bar ───────────────────────────────────────────────
@@ -1177,7 +1251,7 @@ window.addEventListener('keydown', e => {
   if (state === 'dialogue') {
     if (k === 'e' || k === ' ' || k === 'enter') {
       e.preventDefault();
-      if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; currentLine = currentFullLine; dialogueText.textContent = currentFullLine; dialogueContinue.style.display='block'; return; }
+      if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; currentLine = currentFullLine; dialogueText.innerHTML = formatDialogueLine(currentFullLine); dialogueContinue.style.display='block'; return; }
       if (!wasDown && dialogueContinue.style.display !== 'none') advanceDialogue();
     }
     return;
@@ -1226,6 +1300,7 @@ function handleInteract() {
         showDialogue('✨', [`You found ${label}! Bring it to the right person.`], null);
         scene.remove(m);
         islandMeshes.splice(i, 1);
+        updateInventoryUI();
       }
       return;
     }
@@ -1269,6 +1344,8 @@ function handleNPCInteract(npc, ni) {
           inventoryItems.splice(inventoryItems.indexOf('mochi'), 1);
           island.crystalCount++; updateCrystalHUD();
           sfxCrystalCollect();
+          updateInventoryUI();
+          updateQuestTracker(currentIslandId);
         });
       } else {
         showDialogue(npc.name, npc.lines, null);
@@ -1286,6 +1363,8 @@ function handleNPCInteract(npc, ni) {
           inventoryItems.splice(inventoryItems.indexOf('water_jar'), 1);
           island.crystalCount++; updateCrystalHUD();
           sfxCrystalCollect();
+          updateInventoryUI();
+          updateQuestTracker(currentIslandId);
         });
       } else {
         showDialogue(npc.name, npc.lines, null);
@@ -1334,13 +1413,65 @@ function selectIslandFromMap(islandId) {
 
 // ── Island Navigation ─────────────────────────────────────────
 function loadIsland(id) {
-  currentIslandId = id;
-  questState = getQuestState(id);
-  player.pos.set(0, 0, 2);
-  buildIsland(id);
-  updateAbilityBar();
-  const island = getIsland(id);
-  setTimeout(()=>showDialogue(`✨ ${island.name}`, [`You arrive at ${island.name}.`, island.npcs[0].lines[0]], null), 500);
+  const overlay = document.getElementById('transition-overlay');
+  const banner = document.getElementById('island-banner');
+  // Fade to black
+  overlay.style.transition = 'opacity 0.35s ease';
+  overlay.style.opacity = '1';
+  overlay.style.pointerEvents = 'all';
+  setTimeout(() => {
+    currentIslandId = id;
+    questState = getQuestState(id);
+    player.pos.set(0, 0, 2);
+    buildIsland(id);
+    updateAbilityBar();
+    setIslandMusic(id);
+    sfxIslandArrive();
+    const island = getIsland(id);
+    // Show island name banner
+    document.getElementById('island-banner-name').textContent = island.name;
+    document.getElementById('island-banner-sub').textContent = island.mechanic || 'A mysterious isle…';
+    banner.classList.add('show');
+    // Fade back in
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+    setTimeout(() => {
+      banner.classList.remove('show');
+      showDialogue(`✨ ${island.name}`, [`You arrive at ${island.name}.`, island.npcs[0].lines[0]], null);
+    }, 1800);
+    updateQuestTracker(id);
+  }, 360);
+}
+
+const ITEM_ICONS = { mochi: '🐱', water_jar: '💧' };
+function updateInventoryUI() {
+  const slots = [document.getElementById('inv1'), document.getElementById('inv2')];
+  slots.forEach((sl, i) => {
+    if (!sl) return;
+    const item = inventoryItems[i];
+    sl.textContent = item ? ITEM_ICONS[item] || '❓' : '';
+    sl.title = item || '';
+  });
+}
+
+function updateQuestTracker(islandId) {
+  const island = getIsland(islandId);
+  const tracker = document.getElementById('quest-tracker');
+  const list = document.getElementById('quest-list');
+  if (!island || !island.npcs) { tracker.style.display = 'none'; return; }
+  const quests = island.npcs.filter(n => n.quest).map(n => n.quest);
+  if (!quests.length) { tracker.style.display = 'none'; return; }
+  const qs = getQuestState(islandId);
+  const labels = { find_cat: 'Find the missing cat', fetch_water: 'Bring sacred water', elder_final: 'Speak to the Elder' };
+  list.innerHTML = '';
+  quests.forEach(q => {
+    const li = document.createElement('li');
+    const done = qs[q.type];
+    li.textContent = (done ? '✓ ' : '○ ') + (labels[q.type] || q.type);
+    if (done) li.classList.add('done');
+    list.appendChild(li);
+  });
+  tracker.style.display = 'block';
 }
 
 // ── Mobile Controls ───────────────────────────────────────────
@@ -1395,12 +1526,12 @@ document.getElementById('sound-toggle').addEventListener('click', ()=>{
 });
 document.getElementById('dialogue-continue').addEventListener('click', e=>{
   e.stopPropagation();
-  if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; dialogueText.textContent=currentLine; dialogueContinue.style.display='block'; return; }
+  if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; dialogueText.innerHTML=formatDialogueLine(currentLine); dialogueContinue.style.display='block'; return; }
   advanceDialogue();
 });
 document.getElementById('dialogue-box').addEventListener('click', ()=>{
   if (state !== 'dialogue') return;
-  if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; dialogueText.textContent=currentLine; dialogueContinue.style.display='block'; return; }
+  if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; dialogueText.innerHTML=formatDialogueLine(currentLine); dialogueContinue.style.display='block'; return; }
   if (dialogueContinue.style.display !== 'none') advanceDialogue();
 });
 document.getElementById('restart-btn').addEventListener('click', ()=>{
@@ -1498,6 +1629,11 @@ function loop(ts) {
   if (state === 'playing') {
     const island = getIsland(currentIslandId);
     player.update(dt, keys, (joystickDir.x||joystickDir.z) ? joystickDir : null, island.tiles);
+    if (player.isMoving && player.footstepTimer <= 0) {
+      sfxFootstep();
+      player.footstepTimer = 0.28;
+      particles.addBurst(player.pos.x, 0.05, player.pos.z, 0xC8B89A, 5);
+    }
     // Camera follow
     const tx = player.pos.x+12, ty = 12, tz = player.pos.z+12;
     camera.position.x += (tx - camera.position.x) * 4 * dt;
@@ -1505,10 +1641,16 @@ function loop(ts) {
     camera.position.z += (tz - camera.position.z) * 4 * dt;
     camera.lookAt(player.pos.x, 0, player.pos.z);
 
-    // Foliage + objects bob
+    // Foliage + objects bob + water shimmer
     islandMeshes.forEach(m=>{
       if (m.userData.bobBase !== undefined) {
         m.position.y = m.userData.bobBase + Math.sin(time*1.5+(m.userData.bobOffset||0))*0.03;
+      }
+      if (m.userData.waterTile) {
+        m.userData.baseMat.opacity = 0.68 + Math.sin(time*1.1 + m.userData.waterPhase)*0.1;
+      }
+      if (m.userData.bioPool) {
+        m.intensity = 0.4 + Math.sin(time*2.3)*0.35;
       }
     });
     // NPC bob + sway
@@ -1552,7 +1694,8 @@ function loop(ts) {
         vig.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9;transition:opacity 0.8s;background:radial-gradient(ellipse at center,transparent 40%,rgba(30,10,50,0.7) 100%);opacity:0;';
         document.body.appendChild(vig);
       }
-      vig.style.opacity = inShadow ? '1' : '0';
+      const nearShadow = !inShadow && distToCreep < shadowCreepMesh.userData.radius + 1.2;
+      vig.style.opacity = inShadow ? '1' : nearShadow ? (0.35 + Math.sin(time*3)*0.2).toString() : '0';
     }
     // Pulse reveal timer
     if (pulseRevealTimer > 0) pulseRevealTimer -= dt;

@@ -46,17 +46,24 @@
     #close-map{margin-top:14px;background:#EB6259;color:#F0DEC2;border:none;
       font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;
       padding:8px 28px;border-radius:12px;cursor:pointer;pointer-events:auto;}
-    #title-screen{position:absolute;inset:0;background:linear-gradient(180deg,#9B9AE2 0%,#C6C3DC 60%,#F0DEC2 100%);transition:opacity 0.35s ease;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      z-index:30;pointer-events:auto;}
-    #title-screen h1{font-size:42px;font-weight:800;color:#4F4261;text-align:center;
-      line-height:1.2;text-shadow:0 2px 12px rgba(155,154,226,0.5);}
-    #title-screen p{color:#4F4261;font-size:15px;margin-top:8px;opacity:0.8;}
-    #start-btn{margin-top:28px;background:#EB6259;color:#F0DEC2;border:none;
-      font-family:'Nunito',sans-serif;font-size:17px;font-weight:700;
-      padding:12px 36px;border-radius:14px;cursor:pointer;
-      box-shadow:0 4px 14px rgba(235,98,89,0.4);}
-    #start-btn:hover{background:#d4554d;}
+    #title-screen{position:absolute;inset:0;
+      background:linear-gradient(180deg,#2A1A4A 0%,#4F3A7A 40%,#9B9AE2 80%,#F0DEC2 100%);
+      transition:opacity 0.35s ease;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;z-index:30;pointer-events:auto;overflow:hidden;}
+    #title-lantern{font-size:56px;animation:lanternFloat 2.5s ease-in-out infinite alternate;
+      filter:drop-shadow(0 0 18px rgba(235,178,26,0.8));margin-bottom:8px;}
+    @keyframes lanternFloat{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-12px) rotate(4deg)}}
+    #title-screen h1{font-size:42px;font-weight:800;color:#F0DEC2;text-align:center;
+      line-height:1.2;text-shadow:0 0 24px rgba(235,178,26,0.6),0 2px 8px rgba(0,0,0,0.4);}
+    #title-tagline{color:#EBB21A;font-size:14px;margin-top:6px;font-weight:600;
+      letter-spacing:1.5px;text-transform:uppercase;opacity:0.9;}
+    #title-screen p{color:#C6C3DC;font-size:14px;margin-top:10px;opacity:0.85;
+      max-width:320px;text-align:center;line-height:1.6;}
+    #start-btn{margin-top:28px;background:linear-gradient(135deg,#EBB21A,#EB6259);color:#1a1228;border:none;
+      font-family:'Nunito',sans-serif;font-size:17px;font-weight:800;
+      padding:13px 42px;border-radius:14px;cursor:pointer;
+      box-shadow:0 4px 20px rgba(235,178,26,0.5);transition:transform 0.15s,box-shadow 0.15s;}
+    #start-btn:hover{transform:scale(1.06);box-shadow:0 6px 28px rgba(235,178,26,0.7);}
     #reset-btn{margin-top:12px;background:transparent;color:#4F4261;border:1.5px solid #4F4261;
       font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;
       padding:7px 22px;border-radius:10px;cursor:pointer;opacity:0.7;}
@@ -75,14 +82,22 @@
       justify-content:center;font-size:16px;position:relative;}
     .ability-cooldown{position:absolute;inset:0;background:rgba(79,66,97,0.5);
       border-radius:7px;transform-origin:bottom;transition:transform 0.1s;}
-    #win-screen{position:absolute;inset:0;background:radial-gradient(ellipse at center,#EBB21A 0%,#9B9AE2 60%,#4F4261 100%);
+    #win-screen{position:absolute;inset:0;background:radial-gradient(ellipse at center,#2A1A4A 0%,#1a1228 100%);
       display:none;flex-direction:column;align-items:center;justify-content:center;
-      z-index:40;pointer-events:auto;}
-    #win-screen h1{font-size:40px;font-weight:800;color:#F0DEC2;text-align:center;}
-    #win-screen p{color:#F0DEC2;margin-top:10px;font-size:16px;}
-    #restart-btn{margin-top:24px;background:#F0DEC2;color:#4F4261;border:none;
-      font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;
-      padding:10px 30px;border-radius:12px;cursor:pointer;}
+      z-index:40;pointer-events:auto;overflow:hidden;}
+    #win-stars{position:absolute;inset:0;pointer-events:none;}
+    #win-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;
+      padding:20px;text-align:center;}
+    #win-screen h1{font-size:38px;font-weight:800;color:#EBB21A;text-align:center;
+      text-shadow:0 0 30px rgba(235,178,26,0.8),0 2px 4px rgba(0,0,0,0.5);line-height:1.3;}
+    #win-screen p{color:#F0DEC2;margin-top:14px;font-size:15px;max-width:480px;
+      line-height:1.9;text-shadow:0 1px 3px rgba(0,0,0,0.5);}
+    #restart-btn{margin-top:28px;background:linear-gradient(135deg,#EBB21A,#EB6259);color:#1a1228;
+      border:none;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;
+      padding:12px 36px;border-radius:14px;cursor:pointer;box-shadow:0 4px 20px rgba(235,178,26,0.5);}
+    #restart-btn:hover{transform:scale(1.05);}
+    #restore-flash{position:fixed;inset:0;background:white;opacity:0;pointer-events:none;z-index:45;
+      transition:opacity 0.12s ease;}
     #grain{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:0.09;
       background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       background-size:200px 200px;}
@@ -119,18 +134,40 @@
       border:1.5px solid #EBB21A;white-space:nowrap;transform:translate(-50%,-100%);
       animation:promptbob 0.7s ease-in-out infinite alternate;}
     @keyframes promptbob{from{transform:translate(-50%,-100%) translateY(0)}to{transform:translate(-50%,-100%) translateY(-4px)}}
+    #transition-overlay{position:fixed;inset:0;background:#1a1228;opacity:0;pointer-events:none;
+      z-index:35;transition:opacity 0.35s ease;}
+    #island-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.85);
+      background:rgba(240,222,194,0.95);border:3px solid #EBB21A;border-radius:20px;
+      padding:18px 40px;text-align:center;pointer-events:none;z-index:36;
+      opacity:0;transition:opacity 0.3s ease,transform 0.3s ease;box-shadow:0 8px 32px rgba(79,66,97,0.35);}
+    #island-banner.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+    #island-banner h2{font-size:26px;font-weight:800;color:#4F4261;margin:0;}
+    #island-banner p{font-size:13px;color:#EB6259;font-weight:600;margin-top:4px;}
+    #quest-tracker{position:absolute;left:12px;top:50%;transform:translateY(-50%);
+      background:rgba(240,222,194,0.88);border:1.5px solid #4F4261;border-radius:14px;
+      padding:10px 14px;min-width:150px;max-width:200px;display:none;pointer-events:none;}
+    #quest-tracker h4{font-size:11px;font-weight:800;color:#EB6259;text-transform:uppercase;
+      letter-spacing:0.5px;margin-bottom:6px;}
+    #quest-tracker ul{list-style:none;padding:0;margin:0;}
+    #quest-tracker li{font-size:11px;color:#4F4261;font-weight:600;padding:2px 0;
+      display:flex;align-items:center;gap:4px;}
+    #quest-tracker li.done{opacity:0.45;text-decoration:line-through;}
   </style>
 </head>
 <body>
 <div id="grain"></div>
 <canvas id="game-canvas"></canvas>
+<div id="transition-overlay"></div>
+<div id="island-banner"><h2 id="island-banner-name"></h2><p id="island-banner-sub"></p></div>
 <div id="ui">
   <div id="title-screen">
-    <h1>✨ Lantern Isle<br>Guardian Star ✨</h1>
-    <p>The Guardian Star awaits the Lantern Bearer…</p>
-    <button id="start-btn">Begin Adventure</button>
-    <button id="reset-btn">Start Your Adventure Over</button>
-    <button id="dev-btn">🛠️ Dev Mode (all islands unlocked)</button>
+    <div id="title-lantern">🏮</div>
+    <h1>Lantern Isle<br>Guardian Star</h1>
+    <div id="title-tagline">A Cozy Island Adventure</div>
+    <p>Six islands. Six shrines. One lantern bearer.<br>Can you reawaken the Guardian Star?</p>
+    <button id="start-btn">✨ Begin Adventure</button>
+    <button id="reset-btn">Start Over</button>
+    <button id="dev-btn">🛠️ Dev Mode</button>
   </div>
   <div id="hud-crystals" style="display:none;">
     <div class="gem" id="gem0"></div>
@@ -147,6 +184,10 @@
     <div class="inv-slot">🏮</div>
     <div class="inv-slot" id="inv1"></div>
     <div class="inv-slot" id="inv2"></div>
+  </div>
+  <div id="quest-tracker">
+    <h4>📜 Quests</h4>
+    <ul id="quest-list"></ul>
   </div>
   <div id="ability-bar" style="display:none;">
     <div class="ability-slot" id="ab-pulse" title="Lantern Pulse [Q]" style="display:none;">💫<div class="ability-cooldown" style="transform:scaleY(0);"></div></div>
@@ -166,10 +207,14 @@
   </div>
   <div id="interact-prompt">Press E</div>
   <div id="win-screen">
-    <h1>✨ The Guardian Star<br>is Reawakened! ✨</h1>
-    <p id="win-epilogue" style="color:#F0DEC2;margin-top:10px;font-size:15px;max-width:480px;text-align:center;line-height:1.8;padding:0 20px;"></p>
-    <button id="restart-btn">Play Again</button>
+    <canvas id="win-stars"></canvas>
+    <div id="win-content">
+      <h1>✨ The Guardian Star<br>is Reawakened! ✨</h1>
+      <p id="win-epilogue"></p>
+      <button id="restart-btn">Play Again</button>
+    </div>
   </div>
+  <div id="restore-flash"></div>
 </div>
 <div id="mobile-controls" style="display:none;">
   <div id="joystick-zone"><div id="joystick-knob"></div></div>

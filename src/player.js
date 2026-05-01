@@ -105,6 +105,17 @@ export class Player {
     this.bootL.position.set(-0.08, 0.04, 0); this.bootR.position.set(0.08, 0.04, 0);
     g.add(this.bootL); g.add(this.bootR);
 
+    // Arms
+    const armGeo = new THREE.BoxGeometry(0.08, 0.22, 0.08);
+    const armMat = new THREE.MeshLambertMaterial({ color: PALETTE.warmCreamN });
+    this.armL = new THREE.Mesh(armGeo, armMat);
+    this.armR = new THREE.Mesh(armGeo, armMat);
+    this.armL.position.set(-0.19, 0.2, 0);
+    this.armR.position.set(0.19, 0.2, 0);
+    this.armL.geometry.translate(0, -0.11, 0); // pivot from shoulder
+    this.armR.geometry.translate(0, -0.11, 0);
+    g.add(this.armL); g.add(this.armR);
+
     // Lantern
     const lanternGeo = new THREE.SphereGeometry(0.07, 8, 8);
     const lanternMat = new THREE.MeshLambertMaterial({ color: PALETTE.goldenYellowN, emissive: 0xEBB21A, emissiveIntensity: 0.6 });
@@ -196,6 +207,10 @@ export class Player {
     const walkBob = this.isMoving ? Math.sin(this.bobTime * 6) * 0.04 : 0;
     this.bootL.position.y = 0.04 + walkBob;
     this.bootR.position.y = 0.04 - walkBob;
+    // Arm swing animation (opposite to boots)
+    const armSwing = this.isMoving ? Math.sin(this.bobTime * 6) * 0.3 : 0;
+    this.armL.rotation.x = -armSwing;
+    this.armR.rotation.x = armSwing;
     // Lantern glow oscillation
     this.lanternLight.intensity = 0.8 + Math.sin(this.bobTime * 1.2) * 0.15;
     // Lantern swing
