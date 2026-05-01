@@ -1269,19 +1269,19 @@ function spawnFireflyTarget() {
 
 function spawnQuestCrystal(npcX, npcZ) {
   const island = getIsland(currentIslandId);
-  // Place crystal in a random open spot on the island, well away from shrine + NPCs
+  // Spawn close to the player (1.5–2.5 units away) so they can see and reach it
+  const px = player ? player.pos.x : npcX;
+  const pz = player ? player.pos.z : npcZ;
   let cx, cz, attempts = 0;
   do {
-    // Random angle + radius within island walkable area (~3-5 units from centre)
     const angle = Math.random() * Math.PI * 2;
-    const radius = 2.8 + Math.random() * 2.0;
-    cx = Math.cos(angle) * radius;
-    cz = Math.sin(angle) * radius;
+    const radius = 1.5 + Math.random() * 1.0;
+    cx = px + Math.cos(angle) * radius;
+    cz = pz + Math.sin(angle) * radius;
     attempts++;
-    const tooCloseShrine = Math.hypot(cx - island.shrinePos.x, cz - island.shrinePos.z) < 2.8;
-    const tooCloseNPC    = island.npcs.some(n => Math.hypot(cx - n.x, cz - n.z) < 2.2);
-    const tooCloseOrigin = Math.hypot(cx - npcX, cz - npcZ) < 2.0;
-    if (!tooCloseShrine && !tooCloseNPC && !tooCloseOrigin) break;
+    const tooCloseShrine = Math.hypot(cx - island.shrinePos.x, cz - island.shrinePos.z) < 1.5;
+    const tooCloseNPC    = island.npcs.some(n => Math.hypot(cx - n.x, cz - n.z) < 1.5);
+    if (!tooCloseShrine && !tooCloseNPC) break;
   } while (attempts < 20);
   const geo = new THREE.SphereGeometry(0.14, 10, 8);
   const mat = new THREE.MeshLambertMaterial({ color: PALETTE.softPinkN, emissive: PALETTE.softPurpleN, emissiveIntensity: 0.5 });
@@ -1343,9 +1343,9 @@ function activateShrine() {
   ];
 
   const restoreLines = [
-    `The ${island.name} shrine awakens!`,
-    ...(loreDrops[currentIslandId] ? [loreDrops[currentIslandId]] : []),
-    abilityKey ? `New ability: ${abilityNames[currentIslandId]}` : 'The Guardian Star stirs…',
+    `✦ ${island.name} restored!` +
+    (abilityKey ? ` You gained: ${abilityNames[currentIslandId]}.` : '') +
+    (loreDrops[currentIslandId] ? ' ' + loreDrops[currentIslandId] : ''),
   ];
 
   showDialogue('Restoration!', restoreLines, () => {
@@ -1858,13 +1858,19 @@ function handleNPCInteract(npc, ni) {
     const reqs = npc.quest.requires || [];
     const allDone = reqs.every(r => questState[r]);
     if (!allDone) {
-      showDialogue(npc.name, [npc.lines[0]], null);
+      const missing = reqs.filter(r => !questState[r]);
+      const questNames = { find_shell:'find Sandy\'s shell', fetch_note:'fetch the driftwood note',
+        gather_petals:'gather petals', fetch_spring:'fetch spring water',
+        fetch_glowstone:'find the glowstone', use_dust:'use the crystal dust',
+        find_chime:'find the wind chime', offer_flower:'offer the highland flower' };
+      const missingStr = missing.map(r => questNames[r] || r).join(' and ');
+      showDialogue(npc.name, [`You still need to: ${missingStr}.`], null);
       return;
     }
     showDialogue(npc.name, npc.lines, () => {
       npc.quest.done = true;
       questState[qt] = true;
-      spawnQuestCrystal(npc.x, npc.z);
+      spawnQuestCrystal(player ? player.pos.x : npc.x, player ? player.pos.z : npc.z);
       updateQuestTracker(currentIslandId);
     });
     return;
@@ -1903,7 +1909,7 @@ function handleNPCInteract(npc, ni) {
       const idx = inventoryItems.indexOf(itemKey);
       if (idx >= 0) inventoryItems.splice(idx, 1);
       updateInventoryUI();
-      spawnQuestCrystal(npc.x, npc.z);
+      spawnQuestCrystal(player ? player.pos.x : npc.x, player ? player.pos.z : npc.z);
       updateQuestTracker(currentIslandId);
     });
   } else {

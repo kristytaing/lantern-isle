@@ -30,7 +30,7 @@ export const ISLANDS = [
     shrinePos: {x:0,z:0},
     npcs: [
       { name:'Elder Moss', x:2, z:-1, color:0x6F7E4A,
-        lines:["You see that lost firefly wandering the forest? Walk close to it — your lantern will call it home.", "Once the firefly returns, a crystal shard will appear. Collect it and bring its light to the shrine."],
+        lines:["A lost firefly is wandering the forest. Walk up to it and your lantern will guide it home.", "Once you reunite the firefly, a crystal shard will appear. Pick it up and bring it to the shrine in the center."],
         quest: { type:'find_firefly', reward: 0, done: false },
         restoredLine:"The light returns! I can smell the blooms again!" },
       { name:'Fern', x:-3, z:2, color:0x9B9AE2,
@@ -69,7 +69,7 @@ export const ISLANDS = [
         quest: { type:'fetch_note', reward: 1, done: false },
         restoredLine:"*happy clicking* The water is warm and golden again!" },
       { name:'Driftwood', x:3, z:3, color:0xC6C3DC,
-        lines:["I drifted here from afar. Both quests done? Then the final shard is yours.", "The Guardian Star once made these waters glow at night."],
+        lines:["Help Sandy find her shell AND fetch the Crab's note — then come back to me for the final crystal shard.", "The Guardian Star once made these waters glow at night."],
         quest: { type:'beach_elder', reward: 2, done: false, requires:['find_shell','fetch_note'] },
         restoredLine:"I can see the stars reflected in the water again!" },
     ]
