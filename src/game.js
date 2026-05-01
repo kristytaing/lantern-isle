@@ -657,10 +657,10 @@ window.addEventListener('keydown', e => {
   keys[k] = true;
   if (state === 'title') return;
   if (state === 'dialogue') {
-    if (!wasDown && (k === 'e' || k === ' ' || k === 'enter')) {
+    if (k === 'e' || k === ' ' || k === 'enter') {
       e.preventDefault();
       if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; currentLine = currentFullLine; dialogueText.textContent = currentFullLine; dialogueContinue.style.display='block'; return; }
-      if (dialogueContinue.style.display !== 'none') advanceDialogue();
+      if (!wasDown && dialogueContinue.style.display !== 'none') advanceDialogue();
     }
     return;
   }
