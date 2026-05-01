@@ -1346,20 +1346,7 @@ function drawWorldMap() {
   bg.addColorStop(1, '#f0e0f0');
   ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
 
-  // Soft watercolor wash blobs
-  function wBlob(x,y,rx,ry,col,alpha=0.18) {
-    ctx.save(); ctx.globalAlpha=alpha;
-    const g=ctx.createRadialGradient(x,y,0,x,y,Math.max(rx,ry));
-    g.addColorStop(0,col); g.addColorStop(1,'transparent');
-    ctx.fillStyle=g;
-    ctx.beginPath(); ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2); ctx.fill();
-    ctx.restore();
-  }
-  wBlob(W*0.15,H*0.45,120,90,'#f9b8d8',0.22);
-  wBlob(W*0.5,H*0.5,180,100,'#e8c8f0',0.18);
-  wBlob(W*0.85,H*0.55,130,95,'#c8d8f8',0.2);
-  wBlob(W*0.35,H*0.3,100,70,'#f8e0b0',0.14);
-  wBlob(W*0.7,H*0.65,110,80,'#d0f0d8',0.14);
+
 
   // ── Sequential curving path ────────────────────────────────
   const pts = ISLANDS.map(il=>({x:il.mapPos.x*W, y:il.mapPos.y*H}));
@@ -1532,21 +1519,7 @@ function drawWorldMap() {
     ctx.restore();
   });
 
-  // Step numbers on path
-  ISLANDS.forEach((island,i) => {
-    const px=pts[i].x, py=pts[i].y;
-    if (!island.unlocked) return;
-    ctx.save();
-    ctx.fillStyle='rgba(255,240,248,0.9)';
-    ctx.beginPath(); ctx.arc(px+R-4,py-R+4,9,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='rgba(196,112,154,0.5)'; ctx.lineWidth=1;
-    ctx.stroke();
-    ctx.font='700 9px Quicksand,sans-serif'; ctx.fillStyle='#C4709A';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(i+1, px+R-4, py-R+4);
-    ctx.textBaseline='alphabetic';
-    ctx.restore();
-  });
+
 }
 
 // ── Input ─────────────────────────────────────────────────────
