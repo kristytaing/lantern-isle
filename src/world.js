@@ -55,7 +55,7 @@ export const ISLANDS = [
     mechanic: 'Help the islanders',
     tiles: buildTiles(1),
     // 3 free crystals at positions 0-2, 2 quest-locked (shell + note quests)
-    crystalPositions: [{x:-8,z:0},{x:8,z:1},{x:0,z:-3},{x:5,z:2},{x:-5,z:2}],
+    crystalPositions: [{x:-6,z:0},{x:6,z:0},{x:0,z:-3},{x:5,z:2},{x:-5,z:2}],
     shrinePos: {x:0,z:0},
     collectibles: [
       { type:'shell', x:6, z:-2, label:'Spiral Shell' },
