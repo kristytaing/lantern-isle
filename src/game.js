@@ -375,16 +375,28 @@ function buildIsland(islandId) {
         const tail = new THREE.Mesh(tailGeo, bodyMat); tail.position.set(0.13, 0.12, 0); tail.rotation.z = -Math.PI/2;
         group.add(body, head, earL, earR, tail);
       } else if (col.type === 'shell') {
-        // Spiral shell: torus + cone tip
-        const shellRingGeo = new THREE.TorusGeometry(0.09, 0.04, 8, 14);
-        const shellMat2 = new THREE.MeshLambertMaterial({ color: 0xF4DEB8 });
-        const shellRing = new THREE.Mesh(shellRingGeo, shellMat2); shellRing.position.y = 0.12; shellRing.rotation.x = Math.PI/2;
-        const shellTipGeo = new THREE.ConeGeometry(0.045, 0.14, 8);
-        const shellTip = new THREE.Mesh(shellTipGeo, shellMat2); shellTip.position.y = 0.22; shellTip.rotation.z = 0.4;
-        const shellInnerGeo = new THREE.TorusGeometry(0.055, 0.022, 6, 10);
-        const shellInnerMat = new THREE.MeshLambertMaterial({ color: 0xF8C8A0 });
-        const shellInner = new THREE.Mesh(shellInnerGeo, shellInnerMat); shellInner.position.y = 0.12; shellInner.rotation.x = Math.PI/2;
-        group.add(shellRing, shellTip, shellInner);
+        // Scallop shell: curved base dome + fan of ribs + pink interior glow
+        const shellBaseMat = new THREE.MeshLambertMaterial({ color: 0xF4DEB8 });
+        const shellPinkMat = new THREE.MeshLambertMaterial({ color: 0xF4A0B0 });
+        // Flattened dome base
+        const baseDomeGeo = new THREE.SphereGeometry(0.13, 10, 7, 0, Math.PI*2, 0, Math.PI*0.55);
+        const baseDome = new THREE.Mesh(baseDomeGeo, shellBaseMat);
+        baseDome.scale.set(1, 0.45, 1); baseDome.position.y = 0.08; baseDome.rotation.y = Math.PI;
+        // Inner pink concave face (slightly smaller, facing up)
+        const innerGeo = new THREE.SphereGeometry(0.11, 8, 5, 0, Math.PI*2, 0, Math.PI*0.45);
+        const innerShell = new THREE.Mesh(innerGeo, shellPinkMat);
+        innerShell.scale.set(1, 0.35, 1); innerShell.position.y = 0.09;
+        // Fan ribs: 5 thin wedge-cones radiating from center
+        const ribMat = new THREE.MeshLambertMaterial({ color: 0xE8C89A });
+        for (let r = 0; r < 5; r++) {
+          const angle = (r / 4) * Math.PI - Math.PI * 0.5;
+          const ribGeo = new THREE.ConeGeometry(0.018, 0.13, 4);
+          const rib = new THREE.Mesh(ribGeo, ribMat);
+          rib.position.set(Math.cos(angle) * 0.06, 0.1, Math.sin(angle) * 0.04);
+          rib.rotation.z = -angle * 0.6; rib.rotation.x = -0.5;
+          group.add(rib);
+        }
+        group.add(baseDome, innerShell);
       } else if (col.type === 'driftwood_note') {
         // Rolled parchment scroll
         const scrollGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.18, 8);
