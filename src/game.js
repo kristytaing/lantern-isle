@@ -1682,11 +1682,12 @@ function drawCompass(island) {
 // ── World Map Screen ──────────────────────────────────────────
 function drawWorldMap() {
   const mc = document.getElementById('map-canvas');
-  // Fit canvas to modal width with 16:6 aspect ratio, DPR-scaled for crispness
+  // Fit canvas to modal — taller ratio on mobile to avoid squashed circles
   const modal = document.getElementById('map-modal');
   const dpr = window.devicePixelRatio || 1;
-  const cssW = Math.max(Math.min(modal.clientWidth - 32, 820), 560);
-  const cssH = Math.round(cssW * 6 / 16);
+  const mobileMap = window.innerWidth < 600;
+  const cssW = Math.max(Math.min(modal.clientWidth - 32, 820), mobileMap ? 300 : 560);
+  const cssH = mobileMap ? Math.round(cssW * 10 / 16) : Math.round(cssW * 6 / 16);
   mc.style.width = cssW + 'px';
   mc.style.height = cssH + 'px';
   mc.width = Math.round(cssW * dpr);
