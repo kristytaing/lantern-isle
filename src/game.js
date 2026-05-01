@@ -860,7 +860,7 @@ document.getElementById('reset-btn').addEventListener('click', () => {
   setTimeout(()=>showDialogue('✨ Lantern Bearer', [
     'Your golden lantern glows as you step onto the Mossy Forest…',
     'Five crystal shards hide on this island. Find them, then bring them to the shrine!',
-    'Press E near objects to interact. M to open your map. Good luck!'
+    'Press Space near objects to interact. M to open your map. Good luck!'
   ], null), 800);
 });
 
@@ -875,7 +875,7 @@ document.getElementById('start-btn').addEventListener('click', () => {
   setTimeout(()=>showDialogue('✨ Lantern Bearer', [
     'Your golden lantern glows as you step onto the Mossy Forest…',
     'Five crystal shards hide on this island. Find them, then bring them to the shrine!',
-    'Press E near objects to interact. M to open your map. Good luck!'
+    'Press Space near objects to interact. M to open your map. Good luck!'
   ], null), 800);
 });
 
@@ -905,7 +905,7 @@ function loop(ts) {
 
   // Player movement
   if (state === 'playing') {
-    player.update(dt, keys, (joystickDir.x||joystickDir.z) ? joystickDir : null);
+    player.update(dt, keys, (joystickDir.x||joystickDir.z) ? joystickDir : null, island.tiles);
     // Camera follow
     const tx = player.pos.x+12, ty = 12, tz = player.pos.z+12;
     camera.position.x += (tx - camera.position.x) * 4 * dt;
@@ -968,10 +968,10 @@ function loop(ts) {
   // Proximity prompt (crystals / NPCs / shrine)
   if (state === 'playing' && player) {
     const pp = player.pos;
-    let promptTarget = null, promptLabel = 'Press E';
+    let promptTarget = null, promptLabel = 'Space';
     const island = getIsland(currentIslandId);
     const sd = Math.sqrt((pp.x-island.shrinePos.x)**2+(pp.z-island.shrinePos.z)**2);
-    if (sd < 1.2) { promptTarget = shrineMesh; promptLabel = island.restored ? '✨ Shrine' : 'Press E — Shrine'; }
+    if (sd < 1.2) { promptTarget = shrineMesh; promptLabel = island.restored ? '✨ Shrine' : 'Space — Shrine'; }
     npcMeshes.forEach((nm, ni) => {
       if (pp.distanceTo(nm.position) < 1.4) { promptTarget = nm; promptLabel = `Talk to ${island.npcs[ni].name}`; }
     });

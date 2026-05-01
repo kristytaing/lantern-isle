@@ -131,7 +131,7 @@ export class Player {
     g.add(this.shadow);
   }
 
-  update(dt, keys, isoDir) {
+  update(dt, keys, isoDir, tiles) {
     this.bobTime += dt;
     // Movement
     let dx = 0, dz = 0;
@@ -149,8 +149,16 @@ export class Player {
 
     if (this.isMoving) {
       const len = Math.sqrt(dx*dx+dz*dz);
-      this.pos.x += (dx/len) * spd * dt;
-      this.pos.z += (dz/len) * spd * dt;
+      const nx = this.pos.x + (dx/len) * spd * dt;
+      const nz = this.pos.z + (dz/len) * spd * dt;
+      // Tile collision — only move onto ground tiles
+      if (!tiles || this._onGround(nx, nz, tiles)) {
+        this.pos.x = nx; this.pos.z = nz;
+      } else {
+        // Try sliding on each axis independently
+        if (this._onGround(nx, this.pos.z, tiles)) { this.pos.x = nx; }
+        else if (this._onGround(this.pos.x, nz, tiles)) { this.pos.z = nz; }
+      }
       this.facing = Math.atan2(dx, dz);
       // Footstep timer
       this.footstepTimer -= dt;
@@ -205,4 +213,14 @@ export class Player {
     return true;
   }
   grantAbility(name) { this.abilities[name] = true; }
+  _onGround(x, z, tiles) {
+    // Round to nearest tile integer coords and check tile set
+    const tx = Math.round(x), tz = Math.round(z);
+    for (let i = 0; i < tiles.length; i++) {
+      const t = tiles[i];
+      if (t.type === 'ground' && t.x === tx && t.z === tz) return true;
+    }
+    return false;
+  }
+
 }
