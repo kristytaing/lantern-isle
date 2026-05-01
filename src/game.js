@@ -23,6 +23,7 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
 renderer.shadowMap.enabled = false;
+renderer.setClearColor(0x9B9AE2);
 
 const scene = new THREE.Scene();
 const aspect = window.innerWidth / window.innerHeight;
@@ -48,7 +49,7 @@ const dialogueBox  = document.getElementById('dialogue-box');
 const dialogueText = document.getElementById('dialogue-text');
 const dialogueSpeaker = document.getElementById('dialogue-speaker');
 const dialogueContinue = document.getElementById('dialogue-continue');
-let dialogueQueue = [], dialogueCallback = null, typewriterTimer = null, currentLine = '';
+let dialogueQueue = [], dialogueCallback = null, typewriterTimer = null, currentLine = '', currentFullLine = '';
 
 // ── HUD ───────────────────────────────────────────────────────
 function updateCrystalHUD() {
@@ -369,6 +370,7 @@ function advanceDialogue() {
   }
   const line = dialogueQueue.shift();
   currentLine = '';
+  currentFullLine = line;
   dialogueText.textContent = '';
   dialogueContinue.style.display = 'none';
   if (typewriterTimer) clearInterval(typewriterTimer);
@@ -390,6 +392,7 @@ function advanceDialogue() {
 function closeDialogue() {
   dialogueBox.style.display = 'none';
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
+  Object.keys(keys).forEach(k => { keys[k] = false; });
   state = 'playing';
   if (dialogueCallback) { const cb = dialogueCallback; dialogueCallback = null; cb(); }
 }
@@ -656,7 +659,7 @@ window.addEventListener('keydown', e => {
   if (state === 'dialogue') {
     if (!wasDown && (k === 'e' || k === ' ' || k === 'enter')) {
       e.preventDefault();
-      if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; dialogueText.textContent = currentLine; dialogueContinue.style.display='block'; return; }
+      if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; currentLine = currentFullLine; dialogueText.textContent = currentFullLine; dialogueContinue.style.display='block'; return; }
       if (dialogueContinue.style.display !== 'none') advanceDialogue();
     }
     return;
