@@ -90,13 +90,13 @@ function buildIsland(islandId) {
   if (particles) particles.clearAll();
   crystalOrbits = [];
   islandMeshes = []; crystalMeshes = []; npcMeshes = [];
-  island.obstacles = [];
   if (scene._islandGlowMesh) { scene.remove(scene._islandGlowMesh); scene._islandGlowMesh = null; }
   // Reset per-visit auto-trigger flags
   if (typeof ISLANDS !== 'undefined') ISLANDS.forEach(il => { il._shrineAutoTriggered = false; });
   shrinBeamMesh = null; shrineBeamLight = null;
 
   const island = getIsland(islandId);
+  island.obstacles = [];
   scene.background = new THREE.Color(island.skyTop);
   scene.fog = new THREE.Fog(island.fogColor, island.fogNear, island.fogFar);
   // Spawn firefly at island load so it's visible before talking to elder
