@@ -2119,6 +2119,23 @@ function updateQuestTracker() {}
 function setupMobile() {
   if (!isMobile) return;
 
+  // Tap anywhere to advance/dismiss dialogue
+  document.addEventListener('touchend', e => {
+    if (state === 'dialogue') {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typewriterTimer) {
+        // If still typing, snap to full line immediately
+        clearInterval(typewriterTimer);
+        typewriterTimer = null;
+        dialogueText.innerHTML = formatDialogueLine(currentFullLine);
+        dialogueContinue.style.display = 'block';
+      } else {
+        advanceDialogue();
+      }
+    }
+  }, { passive: false });
+
   // Tap-to-move: character walks toward tapped world position
   let touchTarget = null; // { x, z } world coords
 
