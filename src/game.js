@@ -2122,32 +2122,42 @@ function setupMobile() {
     }
   }, { passive: false });
 
-  // Drag-to-move: touch anywhere on canvas, drag in direction to walk
-  const DEAD = 8;
-  let dragOrigin = null;
+  // Touch-to-move: character walks toward wherever finger is touching
+  // Uses raycasting so direction is always correct regardless of camera angle
+  const _ray = new THREE.Raycaster();
+  const _groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const _hitPoint = new THREE.Vector3();
+  let touchActive = false;
+
+  function updateMoveFromTouch(clientX, clientY) {
+    const canvas = renderer.domElement;
+    const rect = canvas.getBoundingClientRect();
+    const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
+    const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
+    _ray.setFromCamera({ x: ndcX, y: ndcY }, camera);
+    if (!_ray.ray.intersectPlane(_groundPlane, _hitPoint)) return;
+    const dx = _hitPoint.x - player.pos.x;
+    const dz = _hitPoint.z - player.pos.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist < 0.4) { joystickDir.x = 0; joystickDir.z = 0; return; }
+    joystickDir.x = dx / dist;
+    joystickDir.z = dz / dist;
+  }
 
   document.addEventListener('touchstart', e => {
     if (state !== 'playing') return;
-    const t = e.touches[0];
-    dragOrigin = { x: t.clientX, y: t.clientY };
+    touchActive = true;
+    updateMoveFromTouch(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: true });
 
   document.addEventListener('touchmove', e => {
-    if (state !== 'playing' || !dragOrigin) return;
+    if (!touchActive || state !== 'playing') return;
     e.preventDefault();
-    const t = e.touches[0];
-    const dx = t.clientX - dragOrigin.x;
-    const dy = t.clientY - dragOrigin.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if (dist < DEAD) { joystickDir.x = 0; joystickDir.z = 0; return; }
-    const scale = Math.min(dist / 48, 1);
-    // Inverted camera projection: drag direction matches visual character movement
-    joystickDir.x = (dx * 0.707 + dy * 1.225) / dist * scale;
-    joystickDir.z = (dy * 1.225 - dx * 0.707) / dist * scale;
+    updateMoveFromTouch(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: false });
 
   document.addEventListener('touchend', e => {
-    dragOrigin = null;
+    touchActive = false;
     joystickDir.x = 0; joystickDir.z = 0;
   }, { passive: true });
 }
