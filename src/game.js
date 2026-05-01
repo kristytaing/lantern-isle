@@ -1797,7 +1797,7 @@ function handleInteract() {
 
   // Check shrine
   const sd = Math.sqrt((pp.x-island.shrinePos.x)**2+(pp.z-island.shrinePos.z)**2);
-  if (sd < 1.4) { activateShrine(); return; }
+  if (sd < 1.6) { activateShrine(); return; }
 
   // Check NPCs
   for (let ni = 0; ni < npcMeshes.length; ni++) {
@@ -1833,7 +1833,7 @@ function handleInteract() {
   // Check crystals — always collectable
   for (let i = crystalMeshes.length-1; i >= 0; i--) {
     const cm = crystalMeshes[i];
-    if (pp.distanceTo(cm.position) < 1.2) { collectCrystal(cm); return; }
+    if (pp.distanceTo(cm.position) < 1.4) { collectCrystal(cm); return; }
   }
 
 }
@@ -2406,7 +2406,7 @@ function loop(ts) {
     // Crystals: auto-collect (XZ distance only — crystals float above y=0)
     for (let i = crystalMeshes.length - 1; i >= 0; i--) {
       const cp = crystalMeshes[i].position;
-      if (Math.hypot(pp.x - cp.x, pp.z - cp.z) < 0.45) {
+      if (Math.hypot(pp.x - cp.x, pp.z - cp.z) < 0.6) {
         collectCrystal(crystalMeshes[i]); break;
       }
     }
@@ -2442,7 +2442,7 @@ function loop(ts) {
 
     // Shrine: auto-activate on approach
     const sd = Math.sqrt((pp.x - island.shrinePos.x) ** 2 + (pp.z - island.shrinePos.z) ** 2);
-    if (sd < 0.5 && !island._shrineAutoTriggered && state === 'playing') {
+    if (sd < 0.65 && !island._shrineAutoTriggered && state === 'playing') {
       island._shrineAutoTriggered = true;
       activateShrine();
     } else if (sd > 0.75) {
