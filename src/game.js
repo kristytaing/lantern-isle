@@ -1797,13 +1797,13 @@ function handleInteract() {
 
   // Check shrine
   const sd = Math.sqrt((pp.x-island.shrinePos.x)**2+(pp.z-island.shrinePos.z)**2);
-  if (sd < 1.2) { activateShrine(); return; }
+  if (sd < 1.4) { activateShrine(); return; }
 
   // Check NPCs
   for (let ni = 0; ni < npcMeshes.length; ni++) {
     const nm = npcMeshes[ni];
     const d = pp.distanceTo(nm.position);
-    if (d < 1.4) {
+    if (d < 1.6) {
       const npc = island.npcs[ni];
       handleNPCInteract(npc, ni); return;
     }
@@ -1814,7 +1814,7 @@ function handleInteract() {
     const m = islandMeshes[i];
     if (!m.userData.collectibleType) continue;
     const d = pp.distanceTo(m.position);
-    if (d < 1.2) {
+    if (d < 1.4) {
       const ctype = m.userData.collectibleType;
       if (!inventoryItems.includes(ctype)) {
         inventoryItems.push(ctype);
@@ -1833,7 +1833,7 @@ function handleInteract() {
   // Check crystals — always collectable
   for (let i = crystalMeshes.length-1; i >= 0; i--) {
     const cm = crystalMeshes[i];
-    if (pp.distanceTo(cm.position) < 1.0) { collectCrystal(cm); return; }
+    if (pp.distanceTo(cm.position) < 1.2) { collectCrystal(cm); return; }
   }
 
 }
@@ -2406,7 +2406,7 @@ function loop(ts) {
     // Crystals: auto-collect (XZ distance only — crystals float above y=0)
     for (let i = crystalMeshes.length - 1; i >= 0; i--) {
       const cp = crystalMeshes[i].position;
-      if (Math.hypot(pp.x - cp.x, pp.z - cp.z) < 0.35) {
+      if (Math.hypot(pp.x - cp.x, pp.z - cp.z) < 0.45) {
         collectCrystal(crystalMeshes[i]); break;
       }
     }
@@ -2415,7 +2415,7 @@ function loop(ts) {
     for (let i = islandMeshes.length - 1; i >= 0; i--) {
       const m = islandMeshes[i];
       if (!m.userData.collectibleType) continue;
-      if (Math.hypot(pp.x - m.position.x, pp.z - m.position.z) < 0.35) {
+      if (Math.hypot(pp.x - m.position.x, pp.z - m.position.z) < 0.45) {
         const ctype = m.userData.collectibleType;
         if (!inventoryItems.includes(ctype)) {
           inventoryItems.push(ctype);
@@ -2432,7 +2432,7 @@ function loop(ts) {
     // NPCs: auto-dialogue on approach; resets when player walks away so re-trigger works
     npcMeshes.forEach((nm, ni) => {
       const dist = Math.hypot(pp.x - nm.position.x, pp.z - nm.position.z);
-      if (dist < 0.7 && !nm.userData.autoTriggered && state === 'playing') {
+      if (dist < 0.85 && !nm.userData.autoTriggered && state === 'playing') {
         nm.userData.autoTriggered = true;
         handleNPCInteract(island.npcs[ni], ni);
       } else if (dist > 1.0) {
@@ -2442,7 +2442,7 @@ function loop(ts) {
 
     // Shrine: auto-activate on approach
     const sd = Math.sqrt((pp.x - island.shrinePos.x) ** 2 + (pp.z - island.shrinePos.z) ** 2);
-    if (sd < 0.38 && !island._shrineAutoTriggered && state === 'playing') {
+    if (sd < 0.5 && !island._shrineAutoTriggered && state === 'playing') {
       island._shrineAutoTriggered = true;
       activateShrine();
     } else if (sd > 0.75) {
