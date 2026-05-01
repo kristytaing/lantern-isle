@@ -2125,40 +2125,54 @@ function setupMobile() {
     }
   }, { passive: false });
 
-  // Tap-to-move: touch sets world target, character walks toward it
-  // Hold to keep walking, drag to update target, release to stop
-  let touchActive = false;
+  // Fixed joystick at bottom-left: always visible, drag to steer
+  const JOY_R = 48; // outer ring radius px
+  const JOY_DEAD = 6;
+  const joyEl = document.createElement('div');
+  joyEl.id = 'joy-ring';
+  joyEl.style.cssText = `position:fixed;bottom:32px;left:36px;width:${JOY_R*2}px;height:${JOY_R*2}px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.07);pointer-events:none;z-index:5;touch-action:none;`;
+  const joyDot = document.createElement('div');
+  const DOT = 26;
+  joyDot.style.cssText = `position:absolute;width:${DOT}px;height:${DOT}px;border-radius:50%;background:rgba(255,255,255,0.4);top:50%;left:50%;transform:translate(-50%,-50%);transition:transform 0.05s;`;
+  joyEl.appendChild(joyDot);
+  document.body.appendChild(joyEl);
 
-  function screenToWorldDir(clientX, clientY) {
-    // Convert screen touch to isometric world direction relative to player
-    const sw = window.innerWidth, sh = window.innerHeight;
-    // Screen center is where the player roughly appears (isometric projection)
-    const dx = clientX - sw / 2;
-    const dy = clientY - sh / 2;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < 12) return; // tap too close to center = no move
-    // Isometric: screen +x = world +X-Z, screen +y = world +X+Z
-    joystickDir.x = (dx - dy) / dist;
-    joystickDir.z = (dx + dy) / dist;
+  let joyActive = false;
+
+  function getJoyCenter() {
+    const r = joyEl.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   }
 
   renderer.domElement.addEventListener('touchstart', e => {
     if (e.target !== renderer.domElement) return;
     e.preventDefault();
-    touchActive = true;
-    screenToWorldDir(e.touches[0].clientX, e.touches[0].clientY);
+    const t = e.touches[0];
+    const c = getJoyCenter();
+    const dx = t.clientX - c.x, dy = t.clientY - c.y;
+    if (Math.sqrt(dx*dx + dy*dy) < JOY_R + 20) joyActive = true;
   }, { passive: false });
 
   renderer.domElement.addEventListener('touchmove', e => {
     e.preventDefault();
-    if (!touchActive) return;
-    screenToWorldDir(e.touches[0].clientX, e.touches[0].clientY);
+    if (!joyActive) return;
+    const t = e.touches[0];
+    const c = getJoyCenter();
+    const dx = t.clientX - c.x, dy = t.clientY - c.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const clamp = Math.min(dist, JOY_R - 6);
+    joyDot.style.transform = `translate(calc(-50% + ${dx/Math.max(dist,1)*clamp}px), calc(-50% + ${dy/Math.max(dist,1)*clamp}px))`;
+    if (dist < JOY_DEAD) { joystickDir.x = 0; joystickDir.z = 0; return; }
+    const scale = Math.min(dist, JOY_R) / JOY_R;
+    joystickDir.x = (dx - dy) / dist * scale;
+    joystickDir.z = (dx + dy) / dist * scale;
   }, { passive: false });
 
   renderer.domElement.addEventListener('touchend', e => {
     e.preventDefault();
-    touchActive = false;
+    joyActive = false;
     joystickDir.x = 0; joystickDir.z = 0;
+    joyDot.style.transform = 'translate(-50%,-50%)';
   }, { passive: false });
 
   window._touchTarget = () => null;
