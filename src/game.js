@@ -1682,16 +1682,18 @@ function drawCompass(island) {
 // ── World Map Screen ──────────────────────────────────────────
 function drawWorldMap() {
   const mc = document.getElementById('map-canvas');
-  // Fit canvas to modal — pixel dimensions == CSS dimensions (no DPR scaling to avoid distortion)
+  // Size canvas: use actual rendered modal width, DPR-aware, fixed aspect ratio
   const modal = document.getElementById('map-modal');
-  const mobileMap = window.innerWidth < 600;
-  const cssW = Math.max(Math.min(modal.clientWidth - 32, 820), mobileMap ? 280 : 560);
-  const cssH = Math.round(cssW * (mobileMap ? 10 : 6) / 16);
-  mc.style.width = cssW + 'px';
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const availW = modal.getBoundingClientRect().width - 32;
+  const cssW = Math.max(Math.min(availW, 820), 260);
+  const cssH = Math.round(cssW * 0.45); // fixed aspect ~16:7
+  mc.style.width  = cssW + 'px';
   mc.style.height = cssH + 'px';
-  mc.width = cssW;
-  mc.height = cssH;
+  mc.width  = Math.round(cssW * dpr);
+  mc.height = Math.round(cssH * dpr);
   const ctx = mc.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // single scale — draw in CSS pixels
   const W = cssW, H = cssH;
   ctx.clearRect(0,0,W,H);
 
