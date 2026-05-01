@@ -2141,9 +2141,9 @@ function setupMobile() {
     const dist = Math.sqrt(dx*dx + dy*dy);
     if (dist < DEAD) { joystickDir.x = 0; joystickDir.z = 0; return; }
     const scale = Math.min(dist / 48, 1);
-    // Derived from camera(12,12,12) matrix: exact screen→world XZ mapping
-    joystickDir.x = (dy * 1.225 - dx * 0.707) / dist * scale;
-    joystickDir.z = (dy * 1.225 + dx * 0.707) / dist * scale;
+    // Inverted camera projection: drag direction matches visual character movement
+    joystickDir.x = (dx * 0.707 + dy * 1.225) / dist * scale;
+    joystickDir.z = (dy * 1.225 - dx * 0.707) / dist * scale;
   }, { passive: false });
 
   document.addEventListener('touchend', e => {
