@@ -1497,10 +1497,11 @@ function showMoodHint(islandId, overrideText) {
     el = document.createElement('div');
     el.id = 'mood-hint';
     el.style.cssText = `position:fixed;bottom:72px;left:50%;transform:translateX(-50%);
-      font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;
-      color:rgba(198,195,220,0.75);pointer-events:none;z-index:200;
-      text-shadow:0 1px 6px rgba(0,0,0,0.7);transition:opacity 1.2s ease;opacity:0;
-      text-align:center;max-width:320px;line-height:1.6;`;
+      font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;
+      color:rgba(240,235,255,0.92);pointer-events:none;z-index:200;
+      text-shadow:0 0 12px rgba(0,0,0,0.9),0 1px 3px rgba(0,0,0,0.95),0 2px 8px rgba(0,0,0,0.8);
+      transition:opacity 1.2s ease;opacity:0;
+      text-align:center;max-width:320px;line-height:1.7;letter-spacing:0.02em;`;
     document.body.appendChild(el);
   }
   el.textContent = text;
