@@ -1786,20 +1786,10 @@ function handleInteract() {
     }
   }
 
-  // Check crystals — only collectible after all quests on this island are done
-  const island2 = getIsland(currentIslandId);
-  const islandQuests = island2.npcs.filter(n=>n.quest);
-  const questsDone = islandQuests.length === 0 || islandQuests.every(n=>questState[n.quest.type]);
+  // Check crystals — always collectable
   for (let i = crystalMeshes.length-1; i >= 0; i--) {
     const cm = crystalMeshes[i];
-    const d = pp.distanceTo(cm.position);
-    if (d < 1.0) {
-      if (!questsDone) {
-        showDialogue('Crystal', ['The shard is sealed by the island\'s spirit. Help the islanders first.'], null);
-        return;
-      }
-      collectCrystal(cm); return;
-    }
+    if (pp.distanceTo(cm.position) < 1.0) { collectCrystal(cm); return; }
   }
 
   activatePulseAbility();
