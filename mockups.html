@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI Style Mockups — Lantern Isle</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #2a2040; font-family: sans-serif; padding: 32px 24px; display: flex; flex-direction: column; gap: 64px; }
+
+/* ─── shared label ─────────────────────────────────── */
+.style-label {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 18px;
+}
+.style-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.style-desc {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  opacity: 0.6;
+  margin-bottom: 28px;
+  max-width: 480px;
+  line-height: 1.6;
+}
+.row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; }
+
+/* ══════════════════════════════════════════════════════
+   STYLE 1 — PARCHMENT & INK
+══════════════════════════════════════════════════════ */
+.s1 .style-title { color: #C4956A; }
+.s1 .style-desc  { color: #C4956A; }
+
+/* Dialogue box */
+.s1-dialogue {
+  width: 380px;
+  background: #FAF3E4;
+  border: 2px solid #C4956A;
+  border-radius: 4px;
+  box-shadow: 3px 4px 0 #C4956A, 0 0 0 4px #FAF3E4, 0 0 0 6px #C4956A;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+.s1-dialogue::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(196,149,106,0.35);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.s1-dialogue-header {
+  background: #C4956A;
+  padding: 7px 14px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.s1-dialogue-speaker {
+  font-family: 'Lora', serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #FAF3E4;
+  letter-spacing: 0.04em;
+}
+.s1-dialogue-body {
+  padding: 14px 16px 10px;
+  font-family: 'Lora', serif;
+  font-size: 15px;
+  color: #4A3520;
+  line-height: 1.65;
+}
+.s1-dialogue-continue {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 14px 10px;
+}
+.s1-dialogue-continue svg { opacity: 0.55; }
+
+/* Crystal HUD */
+.s1-crystals {
+  background: #FAF3E4;
+  border: 2px solid #C4956A;
+  box-shadow: 2px 3px 0 #C4956A;
+  border-radius: 4px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.s1-gem {
+  width: 18px; height: 18px;
+  opacity: 0.22;
+}
+.s1-gem.lit { opacity: 1; }
+.s1-gem svg polygon { fill: #C4956A; }
+.s1-gem.lit svg polygon { fill: #9B9AE2; }
+.s1-count {
+  font-family: 'Lora', serif;
+  font-size: 13px;
+  color: #6B4A28;
+  margin-left: 2px;
+}
+
+/* Buttons */
+.s1-btn {
+  background: #FAF3E4;
+  border: 2px solid #C4956A;
+  box-shadow: 2px 3px 0 #C4956A;
+  border-radius: 4px;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.s1-btn svg { color: #C4956A; }
+
+/* Interact prompt */
+.s1-interact {
+  background: #FAF3E4;
+  border: 2px solid #C4956A;
+  box-shadow: 2px 3px 0 #C4956A;
+  border-radius: 4px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px 6px 8px;
+}
+.s1-key {
+  background: #C4956A;
+  color: #FAF3E4;
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+.s1-interact-label {
+  font-family: 'Lora', serif;
+  font-size: 13px;
+  color: #4A3520;
+}
+
+/* Quest tracker */
+.s1-quest {
+  background: #FAF3E4;
+  border: 2px solid #C4956A;
+  box-shadow: 2px 3px 0 #C4956A;
+  border-radius: 4px;
+  padding: 10px 14px;
+  width: 200px;
+}
+.s1-quest-title {
+  font-family: 'Lora', serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #C4956A;
+  margin-bottom: 8px;
+}
+.s1-quest li {
+  font-family: 'Lora', serif;
+  font-size: 12px;
+  color: #4A3520;
+  list-style: none;
+  padding: 3px 0;
+  padding-left: 14px;
+  position: relative;
+  line-height: 1.4;
+}
+.s1-quest li::before { content: '◦'; position: absolute; left: 0; color: #C4956A; }
+.s1-quest li.done { text-decoration: line-through; opacity: 0.45; }
+.s1-quest li.done::before { content: '✓'; }
+
+
+/* ══════════════════════════════════════════════════════
+   STYLE 2 — SOFT WATERCOLOR
+══════════════════════════════════════════════════════ */
+.s2 .style-title { color: #D4A8C0; }
+.s2 .style-desc  { color: #D4A8C0; }
+
+/* Dialogue box */
+.s2-dialogue {
+  width: 380px;
+  background: rgba(255,240,248,0.88);
+  border: 1.5px solid rgba(212,168,192,0.5);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 24px rgba(212,168,192,0.28), inset 0 1px 0 rgba(255,255,255,0.7);
+  overflow: hidden;
+}
+.s2-dialogue-header {
+  padding: 10px 16px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(212,168,192,0.25);
+}
+.s2-dialogue-speaker {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #A06888;
+  letter-spacing: 0.03em;
+}
+.s2-dialogue-body {
+  padding: 14px 18px 10px;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 15px;
+  color: #5A3A50;
+  line-height: 1.7;
+}
+.s2-dialogue-continue {
+  display: flex; justify-content: flex-end;
+  padding: 4px 16px 12px;
+}
+.s2-dialogue-continue svg { color: rgba(160,104,136,0.5); }
+
+/* Crystal HUD */
+.s2-crystals {
+  background: rgba(255,240,248,0.82);
+  border: 1.5px solid rgba(212,168,192,0.4);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px rgba(212,168,192,0.2), inset 0 1px 0 rgba(255,255,255,0.6);
+  padding: 7px 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.s2-gem { width: 18px; height: 18px; opacity: 0.2; }
+.s2-gem.lit { opacity: 1; filter: drop-shadow(0 0 4px rgba(155,154,226,0.7)); }
+.s2-count {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: #A06888;
+}
+
+/* Buttons */
+.s2-btn {
+  background: rgba(255,240,248,0.82);
+  border: 1.5px solid rgba(212,168,192,0.4);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(212,168,192,0.18), inset 0 1px 0 rgba(255,255,255,0.55);
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #A06888;
+}
+
+/* Interact prompt */
+.s2-interact {
+  background: rgba(255,240,248,0.88);
+  border: 1.5px solid rgba(212,168,192,0.4);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px rgba(212,168,192,0.2);
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px 6px 8px;
+}
+.s2-key {
+  background: rgba(212,168,192,0.35);
+  color: #A06888;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 10px;
+}
+.s2-interact-label {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: #5A3A50;
+}
+
+/* Quest tracker */
+.s2-quest {
+  background: rgba(255,240,248,0.82);
+  border: 1.5px solid rgba(212,168,192,0.35);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 14px rgba(212,168,192,0.18);
+  padding: 11px 15px;
+  width: 200px;
+}
+.s2-quest-title {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: #A06888; margin-bottom: 8px;
+}
+.s2-quest li {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 12px; font-weight: 600;
+  color: #5A3A50; list-style: none;
+  padding: 3px 0 3px 14px;
+  position: relative; line-height: 1.4;
+}
+.s2-quest li::before { content: '·'; position: absolute; left: 2px; color: #A06888; font-size: 16px; line-height: 1; top: 3px; }
+.s2-quest li.done { text-decoration: line-through; opacity: 0.4; }
+
+
+/* ══════════════════════════════════════════════════════
+   STYLE 3 — WARM LANTERN WOOD
+══════════════════════════════════════════════════════ */
+.s3 .style-title { color: #EBB21A; }
+.s3 .style-desc  { color: #EBB21A; }
+
+/* Dialogue box */
+.s3-dialogue {
+  width: 380px;
+  background: linear-gradient(160deg, #2C1F0E 0%, #1E160A 100%);
+  border: 1px solid rgba(235,178,26,0.3);
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px rgba(235,178,26,0.12), 0 6px 28px rgba(0,0,0,0.55), inset 0 1px 0 rgba(235,178,26,0.12);
+  overflow: hidden;
+}
+.s3-dialogue-header {
+  padding: 9px 16px 8px;
+  display: flex; align-items: center; gap: 9px;
+  border-bottom: 1px solid rgba(235,178,26,0.18);
+  background: rgba(235,178,26,0.06);
+}
+.s3-dialogue-speaker {
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px; font-weight: 700;
+  color: #EBB21A;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.s3-dialogue-body {
+  padding: 13px 18px 10px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  color: #F0DEC2;
+  line-height: 1.7;
+}
+.s3-dialogue-continue {
+  display: flex; justify-content: flex-end;
+  padding: 4px 16px 10px;
+}
+.s3-dialogue-continue svg { color: rgba(235,178,26,0.45); }
+
+/* Crystal HUD */
+.s3-crystals {
+  background: linear-gradient(135deg, #2C1F0E, #1E160A);
+  border: 1px solid rgba(235,178,26,0.28);
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px rgba(235,178,26,0.08), 0 3px 14px rgba(0,0,0,0.4);
+  padding: 8px 14px;
+  display: flex; align-items: center; gap: 9px;
+}
+.s3-gem { width: 18px; height: 18px; opacity: 0.2; }
+.s3-gem.lit { opacity: 1; filter: drop-shadow(0 0 5px rgba(235,178,26,0.65)); }
+.s3-gem.lit svg polygon { fill: #EBB21A !important; stroke: #F0DEC2 !important; }
+.s3-count {
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px; font-weight: 700;
+  color: rgba(240,222,194,0.6);
+  letter-spacing: 0.04em;
+}
+
+/* Buttons */
+.s3-btn {
+  background: linear-gradient(135deg, #2C1F0E, #1E160A);
+  border: 1px solid rgba(235,178,26,0.28);
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px rgba(235,178,26,0.08), 0 3px 12px rgba(0,0,0,0.35);
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #EBB21A;
+}
+
+/* Interact prompt */
+.s3-interact {
+  background: linear-gradient(135deg, #2C1F0E, #1E160A);
+  border: 1px solid rgba(235,178,26,0.28);
+  border-radius: 6px;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px 6px 8px;
+}
+.s3-key {
+  background: rgba(235,178,26,0.18);
+  border: 1px solid rgba(235,178,26,0.35);
+  color: #EBB21A;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700; font-size: 12px;
+  padding: 2px 8px; border-radius: 3px;
+}
+.s3-interact-label {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: #F0DEC2;
+}
+
+/* Quest tracker */
+.s3-quest {
+  background: linear-gradient(150deg, #2C1F0E, #1A1208);
+  border: 1px solid rgba(235,178,26,0.22);
+  border-radius: 6px;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.4);
+  padding: 11px 14px;
+  width: 200px;
+}
+.s3-quest-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  color: rgba(235,178,26,0.65); margin-bottom: 8px;
+}
+.s3-quest li {
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px; font-weight: 600;
+  color: #F0DEC2; list-style: none;
+  padding: 3px 0 3px 16px;
+  position: relative; line-height: 1.45;
+}
+.s3-quest li::before { content: '◦'; position: absolute; left: 2px; color: #EBB21A; }
+.s3-quest li.done { text-decoration: line-through; opacity: 0.35; }
+.s3-quest li.done::before { content: '✓'; }
+
+/* Shared gem SVG helper */
+.gem-svg { width: 18px; height: 18px; display: block; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ STYLE 1 -->
+<section class="s1">
+  <div class="style-label">Style 1 of 3</div>
+  <div class="style-title">Parchment & Ink</div>
+  <div class="style-desc">Warm cream paper, terracotta ink borders, storybook serif type. Feels handcrafted — like a field journal found on the island.</div>
+  <div class="row">
+    <!-- Dialogue -->
+    <div class="s1-dialogue">
+      <div class="s1-dialogue-header">
+        <svg width="13" height="13" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#FAF3E4" stroke="#FAF3E4" stroke-width="1"/></svg>
+        <span class="s1-dialogue-speaker">Baker Bun</span>
+      </div>
+      <div class="s1-dialogue-body">My cat Mochi ran off again — she loves to hide near the old well. Find her and I'll give you the shard I've been keeping safe.</div>
+      <div class="s1-dialogue-continue">
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 1l7 7 7-7" stroke="#C4956A" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <!-- Crystals -->
+      <div class="s1-crystals">
+        <div class="s1-gem lit"><svg class="gem-svg" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/></svg></div>
+        <div class="s1-gem lit"><svg class="gem-svg" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/></svg></div>
+        <div class="s1-gem"><svg class="gem-svg" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#C4956A" stroke="#C4956A" stroke-width="1"/></svg></div>
+        <span class="s1-count">2 / 3</span>
+      </div>
+      <!-- Buttons -->
+      <div style="display:flex;gap:8px;">
+        <div class="s1-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        </div>
+        <div class="s1-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+      </div>
+      <!-- Interact -->
+      <div class="s1-interact">
+        <span class="s1-key">E</span>
+        <span class="s1-interact-label">Talk to Baker Bun</span>
+      </div>
+    </div>
+
+    <!-- Quest tracker -->
+    <div class="s1-quest">
+      <div class="s1-quest-title">Island Quests</div>
+      <ul>
+        <li class="done">Baker Bun: Find Mochi</li>
+        <li>Gardener: Fetch water jar</li>
+        <li>Elder Owl: Return to elder</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════ STYLE 2 -->
+<section class="s2">
+  <div class="style-label">Style 2 of 3</div>
+  <div class="style-title">Soft Watercolor</div>
+  <div class="style-desc">Blush pink translucent panels, rounded edges, soft blur. Dreamy and delicate — like the UI is part of the cherry blossom air.</div>
+  <div class="row">
+    <!-- Dialogue -->
+    <div class="s2-dialogue">
+      <div class="s2-dialogue-header">
+        <svg width="13" height="13" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#A06888" stroke="#A06888" stroke-width="1"/></svg>
+        <span class="s2-dialogue-speaker">Baker Bun</span>
+      </div>
+      <div class="s2-dialogue-body">My cat Mochi ran off again — she loves to hide near the old well. Find her and I'll give you the shard I've been keeping safe.</div>
+      <div class="s2-dialogue-continue">
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 1l7 7 7-7" stroke="#A06888" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <!-- Crystals -->
+      <div class="s2-crystals">
+        <div class="s2-gem lit"><svg class="gem-svg" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/></svg></div>
+        <div class="s2-gem lit"><svg class="gem-svg" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/></svg></div>
+        <div class="s2-gem"><svg class="gem-svg" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/></svg></div>
+        <span class="s2-count">2 / 3</span>
+      </div>
+      <!-- Buttons -->
+      <div style="display:flex;gap:8px;">
+        <div class="s2-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        </div>
+        <div class="s2-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+      </div>
+      <!-- Interact -->
+      <div class="s2-interact">
+        <span class="s2-key">E</span>
+        <span class="s2-interact-label">Talk to Baker Bun</span>
+      </div>
+    </div>
+
+    <!-- Quest tracker -->
+    <div class="s2-quest">
+      <div class="s2-quest-title">Island Quests</div>
+      <ul>
+        <li class="done">Baker Bun: Find Mochi</li>
+        <li>Gardener: Fetch water jar</li>
+        <li>Elder Owl: Return to elder</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════ STYLE 3 -->
+<section class="s3">
+  <div class="style-label">Style 3 of 3</div>
+  <div class="style-title">Warm Lantern Wood</div>
+  <div class="style-desc">Deep walnut backgrounds, golden amber accents, warm cream text. Cozy by firelight — feels like reading a map inside a lantern-lit cabin.</div>
+  <div class="row">
+    <!-- Dialogue -->
+    <div class="s3-dialogue">
+      <div class="s3-dialogue-header">
+        <svg width="13" height="13" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#EBB21A" stroke="#EBB21A" stroke-width="1"/></svg>
+        <span class="s3-dialogue-speaker">Baker Bun</span>
+      </div>
+      <div class="s3-dialogue-body">My cat Mochi ran off again — she loves to hide near the old well. Find her and I'll give you the shard I've been keeping safe.</div>
+      <div class="s3-dialogue-continue">
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 1l7 7 7-7" stroke="#EBB21A" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <!-- Crystals -->
+      <div class="s3-crystals">
+        <div class="s3-gem lit"><svg class="gem-svg" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#EBB21A" stroke="#F0DEC2" stroke-width="1"/></svg></div>
+        <div class="s3-gem lit"><svg class="gem-svg" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#EBB21A" stroke="#F0DEC2" stroke-width="1"/></svg></div>
+        <div class="s3-gem"><svg class="gem-svg" viewBox="0 0 18 18" fill="none"><polygon points="9,2 15,7 13,16 5,16 3,7" fill="#9B9AE2" stroke="#C6C3DC" stroke-width="1"/></svg></div>
+        <span class="s3-count">2 / 3</span>
+      </div>
+      <!-- Buttons -->
+      <div style="display:flex;gap:8px;">
+        <div class="s3-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        </div>
+        <div class="s3-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+      </div>
+      <!-- Interact -->
+      <div class="s3-interact">
+        <span class="s3-key">E</span>
+        <span class="s3-interact-label">Talk to Baker Bun</span>
+      </div>
+    </div>
+
+    <!-- Quest tracker -->
+    <div class="s3-quest">
+      <div class="s3-quest-title">Island Quests</div>
+      <ul>
+        <li class="done">Baker Bun: Find Mochi</li>
+        <li>Gardener: Fetch water jar</li>
+        <li>Elder Owl: Return to elder</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

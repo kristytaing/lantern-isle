@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Lantern Isle: Guardian Star</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <script async src="https://vibej.am/2026/widget.js"></script>
   <style>
     /* ── Soft Watercolor Theme ── */
@@ -154,61 +154,195 @@
     }
     #close-map:hover{background:rgba(255,200,225,0.9);box-shadow:0 4px 16px rgba(220,140,180,0.35);}
 
-    /* ── Title Screen ── */
+    /* ── Title Screen (Golden-Hour Dusk) ── */
     #title-screen{position:absolute;inset:0;
-      background:linear-gradient(160deg,#fce8f5 0%,#f5d6ee 30%,#e8c8e8 60%,#d4b8e0 100%);
-      transition:opacity 0.35s ease;display:flex;flex-direction:column;align-items:center;
-      justify-content:center;z-index:30;pointer-events:auto;overflow:hidden;}
-    /* Soft watercolor blobs */
-    #title-screen::before{
-      content:'';position:absolute;inset:0;pointer-events:none;
-      background:
-        radial-gradient(ellipse 60% 45% at 20% 30%, rgba(255,200,230,0.55) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 40% at 80% 70%, rgba(200,180,240,0.45) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 35% at 60% 20%, rgba(255,220,200,0.35) 0%, transparent 70%);
+      transition:opacity 0.35s ease;
+      z-index:30;pointer-events:auto;overflow:hidden;
+      width:100%;height:100%;}
+
+    /* palette vars scoped to title screen */
+    #title-screen{
+      --periwinkle:#9B9AE2;--coral:#EB6259;--lavender:#C6C3DC;
+      --gold:#EBB21A;--cream:#F0DEC2;--deep-plum:#4F4261;--sage:#6F7E4A;--pink:#F29FD7;
     }
-    #title-lantern{
-      position:relative;z-index:1;
-      width:72px;height:72px;margin-bottom:12px;
-      animation:lanternFloat 2.5s ease-in-out infinite alternate;
-      filter:drop-shadow(0 0 18px rgba(235,178,26,0.7)) drop-shadow(0 4px 12px rgba(200,100,120,0.3));
+
+    .ts-sky{
+      position:absolute;inset:0;
+      background:linear-gradient(to bottom,
+        #2a1e3a 0%,#3a2858 10%,#4f4261 20%,#6a5a88 30%,
+        #9b9ae2 42%,#b8b0d8 50%,#c6c3dc 57%,#d8c8c0 63%,
+        #e8c890 70%,#ebb21a 76%,#e8c060 81%,#f0dec2 86%,
+        #c8a870 91%,#a07860 95%,#6a5060 100%);
     }
-    @keyframes lanternFloat{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-12px) rotate(4deg)}}
-    #title-screen h1{
-      position:relative;z-index:1;
-      font-size:40px;font-weight:700;
-      color:#5C2D5A;text-align:center;line-height:1.2;
-      text-shadow:0 2px 18px rgba(200,120,180,0.35),0 1px 4px rgba(255,255,255,0.6);
+    .ts-cloud{
+      position:absolute;border-radius:50%;
+      filter:blur(var(--blur));opacity:var(--op);background:var(--color);
+      animation:tsCloudDrift var(--dur) ease-in-out infinite;
+      animation-delay:var(--delay);
     }
-    #title-tagline{
-      position:relative;z-index:1;
-      color:#C4709A;font-size:13px;margin-top:8px;font-weight:600;
-      letter-spacing:2px;text-transform:uppercase;opacity:0.9;
+    @keyframes tsCloudDrift{
+      0%,100%{transform:translateX(0) scaleX(1);}
+      50%{transform:translateX(var(--dx)) scaleX(var(--sx));}
     }
-    #title-screen p{
-      position:relative;z-index:1;
-      color:#7A5A7A;font-size:14px;margin-top:12px;opacity:0.9;
-      max-width:300px;text-align:center;line-height:1.7;
+    .ts-sun-glow{
+      position:absolute;bottom:37%;left:50%;transform:translateX(-50%);
+      width:80px;height:80px;border-radius:50%;
+      background:radial-gradient(circle,#fff8d8 0%,#ebb21a 35%,#e8a030 60%,transparent 82%);
+      filter:blur(4px);animation:tsSunBreath 5s ease-in-out infinite;z-index:1;
     }
+    .ts-sun-halo{
+      position:absolute;bottom:30%;left:50%;transform:translateX(-50%);
+      width:600px;height:200px;
+      background:radial-gradient(ellipse at center bottom,
+        rgba(235,178,26,0.4) 0%,rgba(235,178,26,0.2) 30%,
+        rgba(240,222,194,0.1) 55%,transparent 72%);
+      pointer-events:none;z-index:1;
+    }
+    @keyframes tsSunBreath{
+      0%,100%{transform:translateX(-50%) scale(1);opacity:0.9;}
+      50%{transform:translateX(-50%) scale(1.12);opacity:1;}
+    }
+    .ts-star{
+      position:absolute;border-radius:50%;
+      animation:tsTwinkle var(--dur) ease-in-out infinite;
+      animation-delay:var(--delay);opacity:var(--op);
+    }
+    @keyframes tsTwinkle{
+      0%,100%{opacity:var(--op);transform:scale(1);}
+      50%{opacity:1;transform:scale(1.6);}
+    }
+    .ts-mountains-svg{position:absolute;left:0;bottom:0;width:100%;pointer-events:none;}
+    .ts-water{
+      position:absolute;bottom:0;left:0;right:0;height:36%;
+      background:linear-gradient(to bottom,#9b9ae2 0%,#7878c8 10%,#5a5898 25%,#4f4261 45%,#382850 70%,#201830 100%);
+      overflow:hidden;
+    }
+    .ts-water-reflection{
+      position:absolute;top:0;left:50%;transform:translateX(-50%);
+      width:200px;height:100%;
+      background:linear-gradient(to bottom,rgba(235,178,26,0.5) 0%,rgba(235,178,26,0.28) 18%,rgba(155,154,226,0.2) 45%,transparent 80%);
+      filter:blur(10px);animation:tsReflectWave 4s ease-in-out infinite;
+    }
+    @keyframes tsReflectWave{
+      0%,100%{transform:translateX(-50%) scaleX(1);}
+      33%{transform:translateX(-47%) scaleX(0.8);}
+      66%{transform:translateX(-53%) scaleX(1.2);}
+    }
+    .ts-hero-lantern{
+      position:absolute;top:8%;left:50%;transform:translateX(-50%);
+      z-index:8;animation:tsLanternSway 5s ease-in-out infinite;transform-origin:top center;
+    }
+    @keyframes tsLanternSway{
+      0%,100%{transform:translateX(-50%) rotate(-2.5deg);}
+      50%{transform:translateX(-50%) rotate(2.5deg);}
+    }
+    .ts-lantern-glow-orb{
+      position:absolute;top:6%;left:50%;transform:translateX(-50%);
+      width:220px;height:220px;border-radius:50%;
+      background:radial-gradient(circle,rgba(235,178,26,0.38) 0%,rgba(235,178,26,0.2) 35%,rgba(240,222,194,0.1) 60%,transparent 78%);
+      filter:blur(18px);animation:tsGlowPulse 4s ease-in-out infinite;z-index:7;pointer-events:none;
+    }
+    @keyframes tsGlowPulse{
+      0%,100%{opacity:0.8;transform:translateX(-50%) scale(1);}
+      50%{opacity:1;transform:translateX(-50%) scale(1.15);}
+    }
+    .ts-crystal{
+      position:absolute;
+      animation:tsCrystalFloat var(--float-dur) ease-in-out infinite,tsCrystalSpin var(--spin-dur) linear infinite;
+      animation-delay:var(--delay),var(--spin-delay);
+      filter:drop-shadow(0 0 6px rgba(155,154,226,0.85));
+      z-index:9;opacity:0;animation-fill-mode:forwards;
+    }
+    @keyframes tsCrystalFloat{
+      0%{opacity:0;transform:translateY(30px) translateX(0);}
+      15%{opacity:var(--op);}
+      50%{transform:translateY(var(--rise)) translateX(var(--sway));opacity:var(--op);}
+      85%{opacity:calc(var(--op)*0.6);}
+      100%{opacity:0;transform:translateY(calc(var(--rise)*2)) translateX(calc(var(--sway)*1.5));}
+    }
+    @keyframes tsCrystalSpin{0%{rotate:0deg;}100%{rotate:360deg;}}
+    .ts-vignette{
+      position:absolute;inset:0;
+      background:radial-gradient(ellipse at center 55%,transparent 35%,rgba(8,4,18,0.72) 100%);
+      pointer-events:none;z-index:6;
+    }
+    .ts-title-area{
+      position:absolute;top:50%;left:50%;
+      transform:translate(-50%,-38%);
+      text-align:center;z-index:12;
+    }
+    .ts-eyebrow{
+      font-family:'Quicksand',sans-serif;font-weight:300;font-size:10px;
+      letter-spacing:7px;text-transform:uppercase;
+      color:rgba(198,195,220,0.65);margin-bottom:10px;
+    }
+    .ts-title-main{
+      font-family:'Cormorant Garamond',serif;font-weight:600;font-size:72px;
+      line-height:0.95;color:#f0dec2;letter-spacing:4px;
+      text-shadow:0 0 30px rgba(235,178,26,0.85),0 0 60px rgba(235,178,26,0.45),0 3px 10px rgba(0,0,0,0.55);
+      animation:tsTitlePulse 4s ease-in-out infinite;
+    }
+    @keyframes tsTitlePulse{
+      0%,100%{text-shadow:0 0 24px rgba(235,178,26,0.75),0 0 50px rgba(235,178,26,0.35),0 3px 10px rgba(0,0,0,0.55);}
+      50%{text-shadow:0 0 45px rgba(235,178,26,1),0 0 85px rgba(235,178,26,0.6),0 3px 10px rgba(0,0,0,0.55);}
+    }
+    .ts-title-sub{
+      font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:400;font-size:20px;
+      color:rgba(198,195,220,0.9);letter-spacing:3px;margin-top:6px;
+      text-shadow:0 0 18px rgba(155,154,226,0.75);
+    }
+    .ts-divider{
+      margin:18px auto;display:flex;align-items:center;justify-content:center;gap:10px;
+    }
+    .ts-divider-line{
+      width:60px;height:1px;
+      background:linear-gradient(to right,transparent,rgba(155,154,226,0.7),transparent);
+    }
+    .ts-divider-diamond{
+      width:8px;height:8px;background:rgba(155,154,226,0.95);transform:rotate(45deg);
+      box-shadow:0 0 10px rgba(155,154,226,0.9),0 0 20px rgba(155,154,226,0.5);
+      animation:tsDiamondPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes tsDiamondPulse{
+      0%,100%{box-shadow:0 0 10px rgba(155,154,226,0.9),0 0 20px rgba(155,154,226,0.5);transform:rotate(45deg) scale(1);}
+      50%{box-shadow:0 0 18px rgba(155,154,226,1),0 0 35px rgba(155,154,226,0.8);transform:rotate(45deg) scale(1.3);}
+    }
+    .ts-btn-group{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:2px;}
     #start-btn{
-      position:relative;z-index:1;
-      margin-top:28px;
-      background:linear-gradient(135deg,rgba(255,190,220,0.95),rgba(220,160,210,0.95));
-      color:#5C2D5A;border:1.5px solid rgba(255,180,210,0.7);
-      font-family:'Quicksand',sans-serif;font-size:16px;font-weight:700;
-      padding:13px 42px;border-radius:28px;cursor:pointer;
-      box-shadow:0 4px 22px rgba(220,140,180,0.4),0 1px 4px rgba(255,255,255,0.5) inset;
-      transition:transform 0.15s,box-shadow 0.15s;
+      font-family:'Quicksand',sans-serif;font-weight:500;font-size:13px;
+      letter-spacing:4px;text-transform:uppercase;
+      color:#2a1a08;
+      background:linear-gradient(135deg,#f5e070 0%,#ebb21a 45%,#c88a10 100%);
+      border:none;padding:14px 50px;border-radius:2px;cursor:pointer;
+      box-shadow:0 0 30px rgba(235,178,26,0.45),0 4px 18px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,200,0.4);
+      transition:all 0.3s ease;position:relative;overflow:hidden;z-index:1;
     }
-    #start-btn:hover{transform:scale(1.05);box-shadow:0 6px 30px rgba(220,140,180,0.58);}
+    #start-btn::before{
+      content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent);
+      transition:left 0.45s ease;
+    }
+    #start-btn:hover::before{left:100%;}
+    #start-btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 0 55px rgba(235,178,26,0.75),0 6px 22px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,200,0.5);
+    }
     #dev-btn{
-      position:relative;z-index:1;
-      margin-top:6px;background:transparent;color:#C4A0C0;
-      border:1.5px dashed rgba(200,160,200,0.35);
-      font-family:'Quicksand',sans-serif;font-size:11px;font-weight:600;
-      padding:5px 14px;border-radius:14px;cursor:pointer;opacity:0.45;
+      font-family:'Quicksand',sans-serif;font-weight:400;font-size:10px;
+      letter-spacing:4px;text-transform:uppercase;
+      color:rgba(198,195,220,0.7);background:transparent;
+      border:1px solid rgba(155,154,226,0.35);
+      padding:9px 30px;border-radius:2px;cursor:pointer;transition:all 0.3s ease;z-index:1;
     }
-    #dev-btn:hover{opacity:1;}
+    #dev-btn:hover{color:rgba(198,195,220,1);border-color:rgba(155,154,226,0.7);background:rgba(155,154,226,0.1);}
+    .ts-jam-badge{
+      position:absolute;top:18px;right:20px;
+      font-family:'Quicksand',sans-serif;font-size:10px;font-weight:500;
+      letter-spacing:2px;text-transform:uppercase;
+      color:rgba(198,195,220,0.6);border:1px solid rgba(155,154,226,0.28);
+      padding:6px 14px;border-radius:2px;z-index:20;text-decoration:none;
+    }
+    .ts-jam-badge:hover{color:rgba(198,195,220,1);border-color:rgba(155,154,226,0.6);}
 
     /* ── Island Banner ── */
     #island-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.88);
@@ -287,20 +421,137 @@
 <div id="ui">
   <!-- Title Screen -->
   <div id="title-screen">
-    <!-- Lantern SVG -->
-    <svg id="title-lantern" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="22" y="18" width="20" height="28" rx="4" fill="#EBB21A" opacity="0.9"/>
-      <rect x="26" y="14" width="12" height="6" rx="2" fill="#D4836A"/>
-      <rect x="30" y="10" width="4" height="6" rx="1" fill="#4F4261"/>
-      <ellipse cx="32" cy="32" rx="7" ry="9" fill="#FFF8DC" opacity="0.6"/>
-      <rect x="22" y="44" width="20" height="4" rx="2" fill="#D4836A"/>
-      <line x1="32" y1="48" x2="32" y2="54" stroke="#4F4261" stroke-width="2" stroke-linecap="round"/>
+    <!-- SVG Defs for lantern + crystal shards -->
+    <svg width="0" height="0" style="position:absolute">
+      <defs>
+        <symbol id="hero-lantern" viewBox="0 0 80 130">
+          <line x1="40" y1="0" x2="40" y2="14" stroke="#c8a060" stroke-width="2" stroke-linecap="round"/>
+          <ellipse cx="40" cy="14" rx="5" ry="2.5" fill="none" stroke="#c8a060" stroke-width="1.5"/>
+          <path d="M22 18 Q40 10 58 18 L55 28 Q40 22 25 28 Z" fill="#d4a050"/>
+          <path d="M20 28 Q40 22 60 28" fill="none" stroke="#b88030" stroke-width="1"/>
+          <path d="M25 28 L22 38 L20 50 L60 50 L58 38 L55 28 Z" fill="#c89040"/>
+          <rect x="20" y="48" width="40" height="4" rx="1" fill="#b87830"/>
+          <rect x="18" y="52" width="44" height="44" rx="4" fill="#c89040"/>
+          <rect x="24" y="58" width="14" height="20" rx="2" fill="rgba(255,230,140,0.55)"/>
+          <rect x="42" y="58" width="14" height="20" rx="2" fill="rgba(255,230,140,0.55)"/>
+          <line x1="31" y1="58" x2="31" y2="78" stroke="#c89040" stroke-width="1.5"/>
+          <line x1="49" y1="58" x2="49" y2="78" stroke="#c89040" stroke-width="1.5"/>
+          <line x1="24" y1="68" x2="38" y2="68" stroke="#c89040" stroke-width="1"/>
+          <line x1="42" y1="68" x2="56" y2="68" stroke="#c89040" stroke-width="1"/>
+          <ellipse cx="40" cy="68" rx="16" ry="16" fill="rgba(255,220,100,0.3)"/>
+          <ellipse cx="40" cy="68" rx="8" ry="8" fill="rgba(255,240,160,0.5)"/>
+          <rect x="18" y="94" width="44" height="5" rx="1" fill="#b87830"/>
+          <path d="M22 99 L25 110 Q40 114 55 110 L58 99 Z" fill="#c89040"/>
+          <path d="M28 110 Q40 114 52 110 L50 118 Q40 121 30 118 Z" fill="#b87830"/>
+          <line x1="32" y1="118" x2="30" y2="130" stroke="#c8a060" stroke-width="1" stroke-linecap="round"/>
+          <line x1="40" y1="120" x2="40" y2="130" stroke="#c8a060" stroke-width="1" stroke-linecap="round"/>
+          <line x1="48" y1="118" x2="50" y2="130" stroke="#c8a060" stroke-width="1" stroke-linecap="round"/>
+          <circle cx="22" cy="52" r="2.5" fill="#b87830"/>
+          <circle cx="58" cy="52" r="2.5" fill="#b87830"/>
+          <circle cx="22" cy="96" r="2.5" fill="#b87830"/>
+          <circle cx="58" cy="96" r="2.5" fill="#b87830"/>
+        </symbol>
+        <symbol id="shard-p1" viewBox="0 0 14 38">
+          <polygon points="7,0 14,14 10,38 4,38 0,14" fill="url(#ts-grad-p1)" opacity="0.88"/>
+          <polygon points="7,0 14,14 7,11" fill="rgba(255,255,255,0.38)"/>
+          <polygon points="0,14 7,11 4,38" fill="rgba(40,30,80,0.18)"/>
+          <line x1="7" y1="0" x2="7" y2="38" stroke="rgba(255,255,255,0.18)" stroke-width="0.6"/>
+        </symbol>
+        <symbol id="shard-p2" viewBox="0 0 28 22">
+          <polygon points="14,0 28,8 20,22 8,22 0,8" fill="url(#ts-grad-p2)" opacity="0.85"/>
+          <polygon points="14,0 28,8 14,7" fill="rgba(255,255,255,0.35)"/>
+          <polygon points="0,8 14,7 8,22" fill="rgba(40,30,80,0.15)"/>
+        </symbol>
+        <symbol id="shard-p3" viewBox="0 0 16 30">
+          <polygon points="4,0 16,10 13,30 0,22 2,8" fill="url(#ts-grad-p3)" opacity="0.87"/>
+          <polygon points="4,0 16,10 8,8" fill="rgba(255,255,255,0.4)"/>
+          <polygon points="0,22 8,8 2,8" fill="rgba(40,30,80,0.12)"/>
+        </symbol>
+        <symbol id="shard-p4" viewBox="0 0 18 20">
+          <polygon points="9,0 18,16 12,20 6,20 0,16" fill="url(#ts-grad-p4)" opacity="0.9"/>
+          <polygon points="9,0 18,16 9,12" fill="rgba(255,255,255,0.42)"/>
+          <polygon points="0,16 9,12 6,20" fill="rgba(40,30,80,0.14)"/>
+        </symbol>
+        <linearGradient id="ts-grad-p1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#dddcf5"/><stop offset="40%" stop-color="#9b9ae2"/><stop offset="100%" stop-color="#5a5898"/>
+        </linearGradient>
+        <linearGradient id="ts-grad-p2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#c6c3dc"/><stop offset="45%" stop-color="#9b9ae2"/><stop offset="100%" stop-color="#4f4261"/>
+        </linearGradient>
+        <linearGradient id="ts-grad-p3" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#e0dff8"/><stop offset="50%" stop-color="#9b9ae2"/><stop offset="100%" stop-color="#4a4070"/>
+        </linearGradient>
+        <linearGradient id="ts-grad-p4" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#b8b6e8"/><stop offset="55%" stop-color="#8888cc"/><stop offset="100%" stop-color="#4f4261"/>
+        </linearGradient>
+      </defs>
     </svg>
-    <h1>Lantern Isle<br>Guardian Star</h1>
-    <div id="title-tagline">A Cozy Island Adventure</div>
-    <p>Six islands. Six shrines. One lantern bearer.<br>Can you reawaken the Guardian Star?</p>
-    <button id="start-btn">Begin Adventure</button>
-    <button id="dev-btn">Explore Mode</button>
+
+    <!-- Sky -->
+    <div class="ts-sky"></div>
+    <!-- Stars -->
+    <div id="ts-stars"></div>
+    <!-- Clouds -->
+    <div id="ts-clouds"></div>
+    <!-- Sun -->
+    <div class="ts-sun-halo"></div>
+    <div class="ts-sun-glow"></div>
+
+    <!-- Far mountains -->
+    <svg class="ts-mountains-svg" style="bottom:34%;height:200px;" viewBox="0 0 900 200" preserveAspectRatio="none">
+      <path d="M-20 200 L-20 120 Q80 40 180 80 Q240 20 320 60 Q380 0 460 45 Q520 10 600 50 Q660 15 740 55 Q800 10 900 48 L920 55 L920 200 Z" fill="#6a5880" opacity="0.7"/>
+    </svg>
+    <!-- Mid mountains -->
+    <svg class="ts-mountains-svg" style="bottom:26%;height:170px;" viewBox="0 0 900 170" preserveAspectRatio="none">
+      <path d="M-20 170 L-20 100 Q60 55 150 85 Q210 35 290 68 Q360 20 430 58 Q490 28 560 62 Q620 30 700 65 Q760 28 850 60 L920 68 L920 170 Z" fill="#4f4261" opacity="0.85"/>
+    </svg>
+    <!-- Near silhouettes with lighthouse -->
+    <svg class="ts-mountains-svg" style="bottom:18%;height:150px;" viewBox="0 0 900 150" preserveAspectRatio="none">
+      <path d="M-20 150 L-20 95 Q40 70 110 88 Q160 55 230 75 Q290 42 370 65 Q430 35 510 58 Q570 28 650 55 Q710 25 790 52 Q850 28 920 50 L920 150 Z" fill="#3a2e50" opacity="0.92"/>
+      <rect x="365" y="48" width="7" height="22" fill="#2a2040"/>
+      <polygon points="361,50 369,50 365,40" fill="#2a2040"/>
+      <rect x="362" y="62" width="5" height="2" fill="#2a2040"/>
+    </svg>
+    <!-- Foreground land -->
+    <svg class="ts-mountains-svg" style="bottom:0;height:200px;" viewBox="0 0 900 200" preserveAspectRatio="none">
+      <path d="M-20 200 L-20 130 Q30 145 90 135 Q130 118 190 130 Q240 112 310 126 Q370 105 450 120 Q520 98 600 114 Q660 95 740 112 Q800 94 870 110 L920 118 L920 200 Z" fill="#221830"/>
+      <ellipse cx="150" cy="133" rx="30" ry="14" fill="#1a1228"/>
+      <ellipse cx="420" cy="121" rx="24" ry="11" fill="#1a1228"/>
+      <ellipse cx="680" cy="113" rx="28" ry="12" fill="#1a1228"/>
+    </svg>
+
+    <!-- Water -->
+    <div class="ts-water"><div class="ts-water-reflection"></div></div>
+
+    <!-- Lantern glow + hero lantern -->
+    <div class="ts-lantern-glow-orb"></div>
+    <div class="ts-hero-lantern">
+      <svg width="100" height="162" viewBox="0 0 80 130"><use href="#hero-lantern"/></svg>
+    </div>
+
+    <!-- Crystal shards -->
+    <div id="ts-crystals"></div>
+
+    <!-- Vignette -->
+    <div class="ts-vignette"></div>
+
+    <!-- Title -->
+    <div class="ts-title-area">
+      <div class="ts-eyebrow">A cozy island adventure</div>
+      <div class="ts-title-main">Lantern Isle</div>
+      <div class="ts-title-sub">Guardian Star</div>
+      <div class="ts-divider">
+        <div class="ts-divider-line"></div>
+        <div class="ts-divider-diamond"></div>
+        <div class="ts-divider-line"></div>
+      </div>
+      <div class="ts-btn-group">
+        <button id="start-btn">Begin Adventure</button>
+        <button id="dev-btn">Explore Mode</button>
+      </div>
+    </div>
+
+    <a class="ts-jam-badge" href="#">Vibe Jam 2026</a>
   </div>
 
   <!-- Crystal Status Bar -->
@@ -450,5 +701,63 @@
   <div id="action-btn">E</div>
 </div>
 <script type="module" src="src/game.js"></script>
+<script>
+// Title screen star/cloud/crystal generation
+(function(){
+  // Stars
+  const starsEl = document.getElementById('ts-stars');
+  if(starsEl){ for(let i=0;i<65;i++){
+    const s=document.createElement('div'); s.className='ts-star';
+    const sz=Math.random()*2+0.5, op=0.15+Math.random()*0.55;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*48}%;background:${Math.random()>0.5?'#c6c3dc':'white'};--dur:${2+Math.random()*5}s;--delay:${Math.random()*5}s;--op:${op};opacity:${op};`;
+    starsEl.appendChild(s);
+  }}
+
+  // Clouds
+  const cloudsEl = document.getElementById('ts-clouds');
+  const cloudSpecs=[
+    {left:'8%', top:'14%',w:180,h:55, blur:22,color:'rgba(155,154,226,0.18)',dur:'12s',delay:'0s', dx:'10px',sx:'1.05'},
+    {left:'28%',top:'10%',w:240,h:65, blur:28,color:'rgba(198,195,220,0.16)',dur:'16s',delay:'3s', dx:'8px', sx:'1.08'},
+    {left:'55%',top:'8%', w:200,h:50, blur:20,color:'rgba(155,154,226,0.2)', dur:'14s',delay:'1s', dx:'-6px',sx:'1.04'},
+    {left:'72%',top:'13%',w:160,h:45, blur:18,color:'rgba(240,222,194,0.18)',dur:'18s',delay:'5s', dx:'12px',sx:'1.06'},
+    {left:'15%',top:'22%',w:280,h:70, blur:30,color:'rgba(198,195,220,0.14)',dur:'20s',delay:'2s', dx:'-8px',sx:'1.1'},
+    {left:'60%',top:'20%',w:220,h:60, blur:25,color:'rgba(235,178,26,0.12)', dur:'15s',delay:'7s', dx:'6px', sx:'1.05'},
+    {left:'38%',top:'28%',w:320,h:80, blur:35,color:'rgba(198,195,220,0.15)',dur:'22s',delay:'4s', dx:'-10px',sx:'1.12'},
+  ];
+  if(cloudsEl) cloudSpecs.forEach(c=>{
+    const el=document.createElement('div'); el.className='ts-cloud';
+    el.style.cssText=`left:${c.left};top:${c.top};width:${c.w}px;height:${c.h}px;--blur:${c.blur}px;--op:1;--color:${c.color};--dur:${c.dur};--delay:${c.delay};--dx:${c.dx};--sx:${c.sx};position:absolute;z-index:2;`;
+    cloudsEl.appendChild(el);
+  });
+
+  // Crystals
+  const crystalsEl = document.getElementById('ts-crystals');
+  const shardTypes=[
+    {id:'shard-p1',w:14,h:38},{id:'shard-p2',w:28,h:22},
+    {id:'shard-p3',w:16,h:30},{id:'shard-p4',w:18,h:20},
+  ];
+  const crystalPositions=[
+    {left:'12%',top:'55%'},{left:'18%',top:'38%'},{left:'24%',top:'62%'},
+    {left:'72%',top:'52%'},{left:'78%',top:'40%'},{left:'82%',top:'65%'},
+    {left:'35%',top:'70%'},{left:'62%',top:'68%'},{left:'8%', top:'45%'},
+    {left:'88%',top:'48%'},{left:'45%',top:'72%'},{left:'55%',top:'66%'},
+    {left:'28%',top:'44%'},{left:'68%',top:'42%'},{left:'15%',top:'72%'},
+    {left:'85%',top:'58%'},
+  ];
+  if(crystalsEl) crystalPositions.forEach((pos,i)=>{
+    const type=shardTypes[i%shardTypes.length];
+    const scale=0.6+Math.random()*1.0;
+    const w=Math.round(type.w*scale), h=Math.round(type.h*scale);
+    const dur=9+Math.random()*12, spinDur=12+Math.random()*20;
+    const op=0.5+Math.random()*0.45;
+    const rise=-(40+Math.random()*80), sway=(Math.random()-0.5)*50;
+    const delay=Math.random()*dur;
+    const el=document.createElement('div'); el.className='ts-crystal';
+    el.style.cssText=`left:${pos.left};top:${pos.top};--float-dur:${dur}s;--spin-dur:${spinDur}s;--delay:${delay}s;--spin-delay:0s;--op:${op};--rise:${rise}px;--sway:${sway}px;animation-delay:${delay}s,0s;`;
+    el.innerHTML=`<svg width="${w}" height="${h}" viewBox="0 0 ${type.w} ${type.h}"><use href="#${type.id}"/></svg>`;
+    crystalsEl.appendChild(el);
+  });
+})();
+</script>
 </body>
 </html>
