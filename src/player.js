@@ -31,16 +31,17 @@ export class Player {
     // Colours
     const C = {
       skin:    0xF4C49A,
-      hair:    0x3D2006,
-      jacket:  0x4A7AC8,   // medium blue jacket
-      jacketD: 0x345EA0,   // darker blue for bodice
-      trouser: 0x2A3F6A,   // navy trousers
-      boot:    0x5C3518,   // brown boots
-      scarf:   0xD93030,   // red scarf
-      pack:    0x3D7A46,   // green backpack
+      shirt:   0x4A7AC8,
+      shirtD:  0x345EA0,
+      trouser: 0x3A5230,
+      boot:    0x5C3518,
+      scarf:   0xD93030,
+      pack:    0x3D7A46,
       metal:   0xB8941E,
       glass:   0xFFEE88,
       cream:   0xFAEDD8,
+      hat:     0x3A2810,
+      hatBand: 0xD4AA30,
     };
 
     const M = k => new THREE.MeshLambertMaterial({ color: C[k] });
@@ -77,26 +78,24 @@ export class Player {
     this.legR.position.set( 0.065, 0.155, 0);
     g.add(this.legL, this.legR);
 
-    // ── JACKET — bell skirt bottom, fitted top ────────────────
-    // Lower jacket / coat-skirt (flared)
-    const skirtGeo = new THREE.CylinderGeometry(0.125, 0.185, 0.20, 12);
-    const skirt = new THREE.Mesh(skirtGeo, M('jacket'));
+    // ── SHIRT — straight torso ───────────────────────────────
+    const skirtGeo = new THREE.CylinderGeometry(0.118, 0.122, 0.20, 12);
+    const skirt = new THREE.Mesh(skirtGeo, new THREE.MeshLambertMaterial({ color: C.shirt }));
     skirt.position.y = 0.235;
     g.add(skirt);
 
-    // Upper jacket / bodice
-    const bodiceGeo = new THREE.CylinderGeometry(0.105, 0.125, 0.175, 12);
-    const bodice = new THREE.Mesh(bodiceGeo, new THREE.MeshLambertMaterial({ color: C.jacketD }));
+    const bodiceGeo = new THREE.CylinderGeometry(0.105, 0.118, 0.175, 12);
+    const bodice = new THREE.Mesh(bodiceGeo, new THREE.MeshLambertMaterial({ color: C.shirtD }));
     bodice.position.y = 0.420;
     g.add(bodice);
 
-    // Jacket lapels (two small cream triangles)
+    // Collar
     for (let s of [-1, 1]) {
       const lapel = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.025, 0.042, 0.10, 4),
+        new THREE.CylinderGeometry(0.020, 0.032, 0.08, 4),
         new THREE.MeshLambertMaterial({ color: C.cream })
       );
-      lapel.position.set(s * 0.050, 0.460, 0.095); lapel.rotation.z = -s * 0.5;
+      lapel.position.set(s * 0.040, 0.475, 0.095); lapel.rotation.z = -s * 0.4;
       g.add(lapel);
     }
 
@@ -122,8 +121,8 @@ export class Player {
 
     // ── ARMS ─────────────────────────────────────────────────
     const armGeo = new THREE.CylinderGeometry(0.038, 0.033, 0.20, 8);
-    this.armL = new THREE.Mesh(armGeo, new THREE.MeshLambertMaterial({ color: C.jacketD }));
-    this.armR = new THREE.Mesh(armGeo, new THREE.MeshLambertMaterial({ color: C.jacketD }));
+    this.armL = new THREE.Mesh(armGeo, new THREE.MeshLambertMaterial({ color: C.shirtD }));
+    this.armR = new THREE.Mesh(armGeo, new THREE.MeshLambertMaterial({ color: C.shirtD }));
     this.armL.position.set(-0.170, 0.42, 0); this.armL.rotation.z =  0.25;
     this.armR.position.set( 0.170, 0.42, 0); this.armR.rotation.z = -0.25;
     g.add(this.armL, this.armR);
@@ -184,15 +183,6 @@ export class Player {
     this.head.position.set(0, 0.768, 0);
     g.add(this.head);
 
-    // Cheek blush
-    const blushM = new THREE.MeshBasicMaterial({ color: 0xF09898, transparent: true, opacity: 0.38 });
-    for (let s of [-1, 1]) {
-      const b = new THREE.Mesh(new THREE.CircleGeometry(0.045, 8), blushM);
-      b.position.set(s * 0.118, 0.754, 0.192);
-      b.rotation.y = -s * 0.30;
-      b.renderOrder = 1;
-      g.add(b);
-    }
 
     // ── EYES ─────────────────────────────────────────────────
     // Proper oval chibi eyes: white → iris → pupil → shine + lash
@@ -257,36 +247,31 @@ export class Player {
     smile.renderOrder = 1;
     g.add(smile);
 
-    // ── HAIR — simple clean shapes, zero face overlap ─────────
-    // Approach:
-    //  1) A flattened dome sitting ON TOP of the head (y > head top)
-    //  2) A volume behind the head (z < -0.15)
-    //  Skin-coloured head sphere naturally occludes hair where needed.
-
-    const hairMat = new THREE.MeshLambertMaterial({ color: C.hair });
+    // ── HAT — wide-brim adventurer hat ──────────────────────
+    const hatMat = new THREE.MeshLambertMaterial({ color: C.hat });
     this.hairGroup = new THREE.Group();
 
-    // Top dome — pure flat cap, well above face level
-    // Head top = y 0.768 + 0.218*1.05 ≈ 0.997
-    // Cap sits at y=0.985, slightly squashed sphere
-    const topDome = new THREE.Mesh(new THREE.SphereGeometry(0.215, 14, 10), hairMat);
-    topDome.scale.set(1.02, 0.52, 0.98);
-    topDome.position.set(0, 0.990, -0.010);
-    this.hairGroup.add(topDome);
+    // Brim
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.300, 0.310, 0.022, 14), hatMat);
+    brim.position.set(0, 0.988, 0);
+    g.add(brim);
 
-    // Back volume — box-ish capsule behind head, creates the illusion of hair depth
-    this.hairBack = new THREE.Mesh(new THREE.CapsuleGeometry(0.095, 0.22, 6, 10), hairMat);
-    this.hairBack.position.set(0, 0.780, -0.210);
-    this.hairBack.scale.set(1.5, 1.0, 0.65);
-    this.hairGroup.add(this.hairBack);
+    // Crown
+    const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.175, 0.190, 0.175, 12), hatMat);
+    crown.position.set(0, 1.075, 0);
+    g.add(crown);
 
-    // Side panels — at ears, clearly behind face (z=-0.08)
-    for (let s of [-1, 1]) {
-      const side = new THREE.Mesh(new THREE.CapsuleGeometry(0.040, 0.18, 5, 8), hairMat);
-      side.position.set(s * 0.196, 0.730, -0.075);
-      side.rotation.z = s * 0.12;
-      this.hairGroup.add(side);
-    }
+    // Crown top
+    const crownTop = new THREE.Mesh(
+      new THREE.SphereGeometry(0.178, 12, 8, 0, Math.PI*2, 0, Math.PI*0.5), hatMat);
+    crownTop.position.set(0, 1.158, 0);
+    g.add(crownTop);
+
+    // Hat band
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.192, 0.192, 0.032, 12),
+      new THREE.MeshLambertMaterial({ color: C.hatBand }));
+    band.position.set(0, 1.000, 0);
+    g.add(band);
 
     g.add(this.hairGroup);
 
@@ -399,10 +384,6 @@ export class Player {
     this.group.position.copy(this.pos);
     this.group.position.y = 0.08 + bob;
     this.group.rotation.y = this.facing;
-
-    // Hair gentle idle sway
-    this.hairGroup.rotation.z = Math.sin(this.bobTime * 0.9) * 0.018;
-    this.hairBack.rotation.x  = this.isMoving ? 0.14 : 0.0;
 
     this.scarfTail.rotation.z = this.isMoving ? 0.28 : 0.0;
 

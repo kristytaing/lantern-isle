@@ -10,7 +10,7 @@ export const PALETTE = {
   warmCream:    '#F0DEC2', warmCreamN:    0xF0DEC2,
   deepPlum:     '#4F4261', deepPlumN:     0x4F4261,
   oliveGreen:   '#6F7E4A', oliveGreenN:   0x6F7E4A,
-  softPink:     '#F29FD7', softPinkN:     0xF29FD7,
+  softPink:     '#F5F0E8', softPinkN:     0xF5F0E8,
 };
 
 export const ISLANDS = [
@@ -36,7 +36,7 @@ export const ISLANDS = [
       { name:'Fern', x:-3, z:2, color:0x9B9AE2,
         lines:["Fireflies haven't danced here since the Star went dark.", "Each crystal shard you collect brings a little more warmth back to the forest."],
         restoredLine:"It's warm again! Thank you, Lantern Bearer!" },
-      { name:'Sprite', x:3, z:3, color:0xF29FD7,
+      { name:'Sprite', x:3, z:3, color:0xF5F0E8,
         lines:["Hi! I'm Sprite! I've been searching for glowing crystal shards — they're scattered all over the forest!", "Walk toward anything that sparkles and your lantern will reach out to it."],
         restoredLine:"SPARKLES! SO MANY SPARKLES! You did it!!" },
     ]
@@ -93,7 +93,7 @@ export const ISLANDS = [
       { type:'spring_water', x:-3, z:-4, label:'Spring Water' },
     ],
     npcs: [
-      { name:'Blossom', x:-3, z:2, color:0xF29FD7,
+      { name:'Blossom', x:-3, z:2, color:0xF5F0E8,
         lines:["Cherry petals used to fall year-round here. Could you gather a bundle from the sacred tree?", "The petals are near the eastern grove. Your lantern makes them glow!"],
         quest: { type:'gather_petals', reward: 0, done: false },
         restoredLine:"Look! The petals are falling again! Just like before!" },
@@ -167,7 +167,7 @@ export const ISLANDS = [
         lines:["I've grown here ten thousand years. Scatter crystal dust on my base — it'll open the sealed chamber.", "The dust is somewhere in the eastern alcove."],
         quest: { type:'use_dust', reward: 1, done: false },
         restoredLine:"I glow again! After all these centuries… I glow!" },
-      { name:'Echo', x:3, z:3, color:0xF29FD7,
+      { name:'Echo', x:3, z:3, color:0xF5F0E8,
         lines:["Both tasks done? Then the cave's final crystal shard has awakened.", "*whispers* Collect it and your lantern will shine a little brighter."],
         quest: { type:'cave_elder', reward: 2, done: false, requires:['fetch_glowstone','use_dust'] },
         restoredLine:"*resonating warmth* The cave sings your name, Lantern Bearer." },

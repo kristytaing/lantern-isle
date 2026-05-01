@@ -256,19 +256,19 @@ function buildIsland(islandId) {
       if (r < 0.14) addFlower(tx, tz, 0xEBB21A);
       else if (r < 0.21) addRock(tx, tz);
       else if (r < 0.26) addCactus(tx, tz);
-      else if (r < 0.30) addFlower(tx, tz, 0xF29FD7);
+      else if (r < 0.30) addFlower(tx, tz, 0xF5F0E8);
     },
     // 2 Sakura Cove: trees, flowers, lanterns, rocks
     (tx, tz, r) => {
       if (r < 0.11) addTree(tx, tz);
-      else if (r < 0.20) addFlower(tx, tz, 0xF29FD7);
+      else if (r < 0.20) addFlower(tx, tz, 0xF5F0E8);
       else if (r < 0.24) addLantern(tx, tz);
       else if (r < 0.28) addRock(tx, tz);
     },
     // 3 Cozy Village: flowers, lanterns, trees, mushrooms
     (tx, tz, r) => {
       if (r < 0.10) addLantern(tx, tz);
-      else if (r < 0.18) addFlower(tx, tz, 0xF29FD7);
+      else if (r < 0.18) addFlower(tx, tz, 0xF5F0E8);
       else if (r < 0.24) addTree(tx, tz);
       else if (r < 0.28) addMushroom(tx, tz);
     },
@@ -277,7 +277,7 @@ function buildIsland(islandId) {
       if (r < 0.14) addCrystalSpire(tx, tz, 0x9B9AE2);
       else if (r < 0.21) addRock(tx, tz);
       else if (r < 0.27) addMushroom(tx, tz);
-      else if (r < 0.30) addCrystalSpire(tx, tz, 0xF29FD7);
+      else if (r < 0.30) addCrystalSpire(tx, tz, 0xF5F0E8);
     },
     // 5 Lavender Highlands: flowers, trees, rocks, crystal spires
     (tx, tz, r) => {
@@ -413,7 +413,7 @@ function buildIsland(islandId) {
         const stemBundleMat = new THREE.MeshLambertMaterial({ color: 0x5A8A3A });
         const stemBundle = new THREE.Mesh(stemBundleGeo, stemBundleMat); stemBundle.position.y = 0.14;
         const ribbonGeo = new THREE.TorusGeometry(0.04, 0.012, 5, 10);
-        const ribbonMat = new THREE.MeshLambertMaterial({ color: 0xF29FD7 });
+        const ribbonMat = new THREE.MeshLambertMaterial({ color: 0xF5F0E8 });
         const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat); ribbon.position.y = 0.1; ribbon.rotation.x = Math.PI/2;
         for (let pi = 0; pi < 5; pi++) {
           const angle = (pi/5)*Math.PI*2;
@@ -637,7 +637,7 @@ function buildIsland(islandId) {
       const headMat = new THREE.MeshLambertMaterial({ color: 0xC2DBA0 });
       const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.6;
       const crownGeo = new THREE.TorusGeometry(0.1, 0.02, 6, 10);
-      const crownMat = new THREE.MeshLambertMaterial({ color: 0xF29FD7 });
+      const crownMat = new THREE.MeshLambertMaterial({ color: 0xF5F0E8 });
       const crown = new THREE.Mesh(crownGeo, crownMat); crown.position.y = 0.73; crown.rotation.x = Math.PI/2;
       const eyeGeo = new THREE.SphereGeometry(0.02, 5, 5);
       const eyeMat = new THREE.MeshLambertMaterial({ color: 0x2A5C10 });
@@ -653,7 +653,7 @@ function buildIsland(islandId) {
     } else if (npc.name === 'Sprite') {
       // Tiny glowing fairy: small round body, sparkle wings, bright emissive glow
       const bodyGeo = new THREE.SphereGeometry(0.13, 8, 7);
-      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xF29FD7, emissive: 0xCC5599, emissiveIntensity: 0.3 });
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xF5F0E8, emissive: 0xCC5599, emissiveIntensity: 0.3 });
       const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.3; body.scale.set(1, 1.1, 1);
       const headGeo = new THREE.SphereGeometry(0.12, 8, 7);
       const headMat = new THREE.MeshLambertMaterial({ color: 0xFFE4F5 });
@@ -790,7 +790,7 @@ function buildIsland(islandId) {
     } else if (npc.name === 'Blossom') {
       // Cherry blossom spirit: soft pink body, petal skirt, flower in hair
       const bodyGeo = new THREE.SphereGeometry(0.17, 10, 8);
-      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xF29FD7 });
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xF5F0E8 });
       const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.26; body.scale.set(1, 0.9, 1);
       // Petal skirt ring
       const skirtGeo = new THREE.CylinderGeometry(0.24, 0.28, 0.08, 10);
@@ -888,7 +888,7 @@ function buildIsland(islandId) {
     } else if (npc.name === 'Echo') {
       // Echo spirit: translucent wavering form, ghostly rings, soft pulse
       const bodyGeo = new THREE.SphereGeometry(0.17, 10, 8);
-      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xF29FD7, transparent: true, opacity: 0.55 });
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xF5F0E8, transparent: true, opacity: 0.55 });
       const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.3; body.scale.set(1, 1.2, 1);
       const innerGeo = new THREE.SphereGeometry(0.11, 8, 7);
       const innerMat = new THREE.MeshLambertMaterial({ color: 0xFFEEFF, transparent: true, opacity: 0.5, emissive: 0xDDAAFF, emissiveIntensity: 0.4 });
@@ -1064,7 +1064,7 @@ const NPC_COLORS = {
 // Cycle 10: NPC portrait color map
 const NPC_PORTRAIT_COLORS = {
   'Baker Bun': '#F5CBA7', 'Gardener': '#5B8C3A', 'Elder Owl': '#4F4261',
-  'Elder Moss': '#4A5C2A', 'Fern': '#7BAE5C', 'Sprite': '#F29FD7',
+  'Elder Moss': '#4A5C2A', 'Fern': '#7BAE5C', 'Sprite': '#F5F0E8',
   'Sandy': '#EBB21A', 'Crab': '#EB6259', 'Driftwood': '#6A7A8A',
   'Crystal': '#9B9AE2', 'Shrine': '#9B9AE2', 'Restoration!': '#EBB21A',
   'Map Updated': '#EBB21A', 'Found': '#EBB21A',
