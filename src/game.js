@@ -28,7 +28,7 @@ renderer.setClearColor(0x9B9AE2);
 
 const scene = new THREE.Scene();
 const aspect = window.innerWidth / window.innerHeight;
-const camD = 10;
+const camD = 8;
 const camera = new THREE.OrthographicCamera(-camD*aspect, camD*aspect, camD, -camD, 0.1, 200);
 camera.position.set(12, 12, 12);
 camera.lookAt(0, 0, 0);
@@ -381,129 +381,6 @@ function buildIsland(islandId) {
         const handle = new THREE.Mesh(handleGeo, jarMat); handle.position.set(0.1, 0.2, 0); handle.rotation.y = Math.PI/2;
         group.add(jar, lid, handle);
       }
-      // Floating icon sprite
-      const lCanvas = document.createElement('canvas'); lCanvas.width = 64; lCanvas.height = 64;
-      const lCtx = lCanvas.getContext('2d');
-      (function drawCollectibleIcon(ctx, type) {
-        ctx.clearRect(0, 0, 64, 64);
-        const cx = 32, cy = 32;
-        if (type === 'shell') {
-          // Spiral shell: concentric arcs
-          ctx.save();
-          for (let i = 0; i < 4; i++) {
-            const r = 20 - i * 4.5;
-            ctx.beginPath(); ctx.arc(cx, cy+2, r, Math.PI*0.1, Math.PI*1.9);
-            ctx.strokeStyle = i===0?'#e8a87c':'#c97040'; ctx.lineWidth = 3-i*0.4; ctx.stroke();
-          }
-          ctx.beginPath(); ctx.arc(cx, cy+2, 4, 0, Math.PI*2);
-          ctx.fillStyle = '#e8a87c'; ctx.fill();
-          ctx.restore();
-        } else if (type === 'driftwood_note') {
-          // Paper scroll with lines
-          ctx.save();
-          ctx.fillStyle = '#f5e8c8'; ctx.strokeStyle = '#c8a060'; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.roundRect(14, 10, 36, 44, 4); ctx.fill(); ctx.stroke();
-          ctx.fillStyle = '#c8a060';
-          [20,27,34,41].forEach(y => { ctx.fillRect(18, y, 24, 2); });
-          ctx.restore();
-        } else if (type === 'petal_bundle') {
-          // 5 pink petals around center
-          ctx.save();
-          for (let i = 0; i < 5; i++) {
-            ctx.save(); ctx.translate(cx, cy); ctx.rotate(i * Math.PI*2/5);
-            ctx.beginPath(); ctx.ellipse(0, -14, 6, 11, 0, 0, Math.PI*2);
-            ctx.fillStyle = i%2===0?'#f9a8c9':'#f472a8'; ctx.fill();
-            ctx.restore();
-          }
-          ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI*2);
-          ctx.fillStyle = '#fde68a'; ctx.fill();
-          ctx.restore();
-        } else if (type === 'spring_water') {
-          // Water droplet
-          ctx.save();
-          ctx.beginPath(); ctx.moveTo(cx, cy-20); ctx.bezierCurveTo(cx+16,cy-4, cx+16,cy+10, cx,cy+18);
-          ctx.bezierCurveTo(cx-16,cy+10, cx-16,cy-4, cx,cy-20);
-          ctx.fillStyle = '#7ec8e3'; ctx.fill();
-          ctx.strokeStyle = '#4aa8c8'; ctx.lineWidth = 2; ctx.stroke();
-          ctx.fillStyle = 'rgba(255,255,255,0.5)';
-          ctx.beginPath(); ctx.ellipse(cx-5, cy-4, 3, 7, -0.4, 0, Math.PI*2); ctx.fill();
-          ctx.restore();
-        } else if (type === 'mochi') {
-          // Round cat face
-          ctx.save();
-          ctx.beginPath(); ctx.arc(cx, cy+2, 20, 0, Math.PI*2);
-          ctx.fillStyle = '#f8e8d0'; ctx.fill(); ctx.strokeStyle = '#d4a870'; ctx.lineWidth = 2; ctx.stroke();
-          // ears
-          ctx.fillStyle = '#f8e8d0';
-          [[cx-12,cy-16],[cx+12,cy-16]].forEach(([ex,ey]) => {
-            ctx.beginPath(); ctx.moveTo(ex,ey+8); ctx.lineTo(ex-6,ey-6); ctx.lineTo(ex+6,ey-6); ctx.closePath(); ctx.fill(); ctx.stroke();
-          });
-          // eyes
-          ctx.fillStyle = '#5a3820';
-          ctx.beginPath(); ctx.arc(cx-7,cy,3,0,Math.PI*2); ctx.fill();
-          ctx.beginPath(); ctx.arc(cx+7,cy,3,0,Math.PI*2); ctx.fill();
-          // nose
-          ctx.fillStyle = '#e87090';
-          ctx.beginPath(); ctx.arc(cx,cy+5,3,0,Math.PI*2); ctx.fill();
-          ctx.restore();
-        } else if (type === 'water_jar') {
-          // Simple clay jar
-          ctx.save();
-          ctx.beginPath(); ctx.moveTo(cx-8,cy-18); ctx.lineTo(cx-14,cy+14); ctx.lineTo(cx+14,cy+14); ctx.lineTo(cx+8,cy-18); ctx.closePath();
-          ctx.fillStyle = '#c87840'; ctx.fill(); ctx.strokeStyle = '#a05a28'; ctx.lineWidth = 2; ctx.stroke();
-          ctx.fillRect(cx-10,cy-22,20,6); // rim
-          ctx.fillStyle = '#7ec8e3'; ctx.globalAlpha=0.5;
-          ctx.beginPath(); ctx.ellipse(cx,cy,8,12,0,0,Math.PI*2); ctx.fill();
-          ctx.globalAlpha=1; ctx.restore();
-        } else if (type === 'glowstone') {
-          // Glowing gem
-          ctx.save();
-          ctx.shadowColor='#a0e8ff'; ctx.shadowBlur=16;
-          ctx.beginPath(); ctx.moveTo(cx,cy-20); ctx.lineTo(cx+14,cy-4); ctx.lineTo(cx+10,cy+14);
-          ctx.lineTo(cx-10,cy+14); ctx.lineTo(cx-14,cy-4); ctx.closePath();
-          ctx.fillStyle='#80d8f0'; ctx.fill(); ctx.strokeStyle='#40b8e0'; ctx.lineWidth=2; ctx.stroke();
-          ctx.shadowBlur=0;
-          ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=1.5;
-          ctx.beginPath(); ctx.moveTo(cx-6,cy-10); ctx.lineTo(cx+2,cy+4); ctx.stroke();
-          ctx.restore();
-        } else if (type === 'crystal_dust') {
-          // Sparkle cluster
-          ctx.save();
-          const pts = [[cx,cy-18],[cx+16,cy-8],[cx+18,cy+8],[cx+6,cy+18],[cx-10,cy+16],[cx-18,cy+4],[cx-14,cy-12]];
-          pts.forEach(([px,py],i) => {
-            ctx.beginPath(); ctx.arc(px,py,i%2===0?4:3,0,Math.PI*2);
-            ctx.fillStyle=i%3===0?'#c0f0ff':i%3===1?'#e0c8ff':'#fff8c0'; ctx.fill();
-          });
-          // center shine
-          ctx.beginPath(); ctx.arc(cx,cy,5,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
-          ctx.restore();
-        } else if (type === 'wind_chime') {
-          // Hanging chime rods
-          ctx.save();
-          ctx.strokeStyle='#c8a860'; ctx.lineWidth=2.5;
-          ctx.beginPath(); ctx.moveTo(cx-14,cy-18); ctx.lineTo(cx+14,cy-18); ctx.stroke(); // top bar
-          [cx-12,cx-4,cx+4,cx+12].forEach((x,i) => {
-            const h = 18 + (i%2)*8;
-            ctx.beginPath(); ctx.moveTo(x,cy-18); ctx.lineTo(x,cy-18+h); ctx.stroke();
-            ctx.beginPath(); ctx.arc(x,cy-18+h+3,3,0,Math.PI*2); ctx.fillStyle='#e8c870'; ctx.fill(); ctx.stroke();
-          });
-          ctx.restore();
-        } else if (type === 'highland_flower') {
-          // Lavender sprig
-          ctx.save();
-          ctx.strokeStyle='#7a5a9a'; ctx.lineWidth=2.5;
-          ctx.beginPath(); ctx.moveTo(cx,cy+20); ctx.lineTo(cx,cy-18); ctx.stroke();
-          [[cx-10,cy-2],[cx+10,cy-2],[cx-6,cy-12],[cx+6,cy-12],[cx,cy-20]].forEach(([fx,fy]) => {
-            ctx.beginPath(); ctx.arc(fx,fy,5,0,Math.PI*2);
-            ctx.fillStyle='#b088d8'; ctx.fill(); ctx.strokeStyle='#8860b8'; ctx.lineWidth=1; ctx.stroke();
-          });
-          ctx.restore();
-        }
-      })(lCtx, col.type);
-      const lTex = new THREE.CanvasTexture(lCanvas);
-      const lSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: lTex, transparent: true, depthTest: false }));
-      lSprite.scale.set(0.55, 0.55, 1); lSprite.position.y = 0.95;
-      group.add(lSprite);
       scene.add(group); islandMeshes.push(group);
     });
   }
