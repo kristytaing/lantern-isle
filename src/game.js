@@ -1772,17 +1772,13 @@ window.addEventListener('keydown', e => {
   keys[k] = true;
   if (state === 'title') return;
   if (state === 'dialogue') {
-    if (k === 'e' || k === ' ' || k === 'enter') {
-      e.preventDefault();
-      if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; currentLine = currentFullLine; dialogueText.innerHTML = formatDialogueLine(currentFullLine); dialogueContinue.style.display='block'; return; }
-      if (!wasDown && dialogueContinue.style.display !== 'none') advanceDialogue();
-    }
+    e.preventDefault();
+    if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; currentLine = currentFullLine; dialogueText.innerHTML = formatDialogueLine(currentFullLine); dialogueContinue.style.display='block'; return; }
+    if (!wasDown && dialogueContinue.style.display !== 'none') advanceDialogue();
     return;
   }
   if (state === 'playing') {
     if (!wasDown && k === 'tab') { e.preventDefault(); openMap(); return; }
-    // interact keys removed — proximity auto-triggers
-    if (!wasDown && k === 'shift') { if(player && player.activateSprint()) { const pp=player.pos; particles.addBurst(pp.x,0.5,pp.z,0xEBB21A,12); particles.addPulseRing(pp.x,0,pp.z); } }
   }
   if (state === 'map') {
     if (!wasDown && (k === 'm' || k === 'tab' || k === 'escape')) { e.preventDefault(); closeMap(); }
