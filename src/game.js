@@ -22,7 +22,7 @@ const canvas = document.getElementById('game-canvas');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3));
 renderer.shadowMap.enabled = false;
 renderer.setClearColor(0x9B9AE2);
 
@@ -76,7 +76,6 @@ function showHUD(show) {
   document.getElementById('inventory').style.display = show ? 'flex' : 'none';
   document.getElementById('sound-toggle').style.display = show ? 'block' : 'none';
   document.getElementById('map-btn').style.display = show ? 'block' : 'none';
-  document.getElementById('ability-bar').style.display = show ? 'flex' : 'none';
 }
 
 // ── Build Island ──────────────────────────────────────────────
@@ -1327,15 +1326,6 @@ function activateShrine() {
   if (shrineMesh) { shrineMesh.material.emissiveIntensity = 0.9; }
 
 
-  // Grant ability
-  const abilityMap = ['pulse','sprint','heatWard','whistle','sonar','starlight'];
-  const abilityNames = ['Lantern Pulse','Sprint','Heat Ward','Whistle','Sonar Echo','Starlight'];
-  const abilityKey = abilityMap[currentIslandId];
-  if (abilityKey && player) {
-    player.grantAbility(abilityKey);
-    updateAbilityBar();
-  }
-
   const loreDrops = [
     'A memory stirs in the light… "The Star did not fall by accident. Someone let it go."',
     'The shrine whispers… "The Keeper of Lanterns left willingly — to protect the islands from a greater dark."',
@@ -1347,7 +1337,6 @@ function activateShrine() {
 
   const restoreLines = [
     `✦ ${island.name} restored!` +
-    (abilityKey ? ` You gained: ${abilityNames[currentIslandId]}.` : '') +
     (loreDrops[currentIslandId] ? ' ' + loreDrops[currentIslandId] : ''),
   ];
 
@@ -1476,13 +1465,6 @@ function showMoodHint(islandId) {
   el._hideTimer = setTimeout(() => { el.style.opacity = '0'; }, 4000);
 }
 
-// ── Ability Bar ───────────────────────────────────────────────
-function updateAbilityBar() {
-  if (!player) return;
-  document.getElementById('ab-pulse').style.display = player.abilities.pulse ? 'flex' : 'none';
-  document.getElementById('ab-sprint').style.display = player.abilities.sprint ? 'flex' : 'none';
-}
-
 // ── Compass ───────────────────────────────────────────────────
 function drawCompass(island) {
   const cc = document.getElementById('compass-canvas');
@@ -1562,13 +1544,18 @@ function drawCompass(island) {
 // ── World Map Screen ──────────────────────────────────────────
 function drawWorldMap() {
   const mc = document.getElementById('map-canvas');
-  // Fit canvas to modal width with 16:6 aspect ratio
+  // Fit canvas to modal width with 16:6 aspect ratio, DPR-scaled for crispness
   const modal = document.getElementById('map-modal');
-  const availW = Math.min(modal.clientWidth - 32, 820);
-  const availH = Math.round(availW * 6 / 16);
-  mc.width = availW; mc.height = availH;
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = Math.max(Math.min(modal.clientWidth - 32, 820), 560);
+  const cssH = Math.round(cssW * 6 / 16);
+  mc.style.width = cssW + 'px';
+  mc.style.height = cssH + 'px';
+  mc.width = Math.round(cssW * dpr);
+  mc.height = Math.round(cssH * dpr);
   const ctx = mc.getContext('2d');
-  const W = mc.width, H = mc.height;
+  ctx.scale(dpr, dpr);
+  const W = cssW, H = cssH;
   ctx.clearRect(0,0,W,H);
 
   // ── Watercolor background ──────────────────────────────────
@@ -1772,7 +1759,6 @@ window.addEventListener('keydown', e => {
   if (state === 'playing') {
     if (!wasDown && k === 'tab') { e.preventDefault(); openMap(); return; }
     // interact keys removed — proximity auto-triggers
-    if (!wasDown && k === 'q') { activatePulseAbility(); }
     if (!wasDown && k === 'shift') { if(player && player.activateSprint()) { const pp=player.pos; particles.addBurst(pp.x,0.5,pp.z,0xEBB21A,12); particles.addPulseRing(pp.x,0,pp.z); } }
   }
   if (state === 'map') {
@@ -1829,18 +1815,6 @@ function handleInteract() {
     if (pp.distanceTo(cm.position) < 1.0) { collectCrystal(cm); return; }
   }
 
-  activatePulseAbility();
-}
-
-function activatePulseAbility() {
-  if (!player || !player.abilities.pulse) return;
-  const pp = player.pos;
-  if (player.activatePulse()) {
-    sfxLanternPulse();
-    particles.addBurst(pp.x, 0.5, pp.z, PALETTE.goldenYellowN, 20);
-    particles.addPulseRing(pp.x, 0, pp.z);
-    pulseRevealTimer = 3;
-  }
 }
 
 // Quest collectible type → inventory key mapping
@@ -1977,7 +1951,6 @@ function loadIsland(id) {
     inventoryItems = [];
     player.pos.set(0, 0, 2);
     buildIsland(id);
-    updateAbilityBar();
     setIslandMusic(id);
     sfxIslandArrive();
     const island = getIsland(id);
@@ -2043,7 +2016,7 @@ function updateQuestTracker(islandId) {
   const qs = getQuestState(islandId);
   const anyStarted = quests.some(q => qs[q.type] || q.done || qs[q.type + '_started']);
   if (!anyStarted) {
-    list.innerHTML = '<li style="color:rgba(198,195,220,0.8);font-style:italic">Talk to the islanders to begin quests…</li>';
+    list.innerHTML = '';
     tracker.style.display = 'block'; return;
   }
   const QUEST_THEMES = {
@@ -2388,18 +2361,13 @@ function loop(ts) {
     // Pulse reveal timer
     if (pulseRevealTimer > 0) pulseRevealTimer -= dt;
     // compass removed
-    // Ability cooldown HUD
-    const cdSprint = document.querySelector('#ab-sprint .ability-cooldown');
-    if (cdSprint) cdSprint.style.transform = `scaleY(${Math.max(0, player.sprintCooldown/4)})`;
-    const cdPulse = document.querySelector('#ab-pulse .ability-cooldown');
-    if (cdPulse) cdPulse.style.transform = `scaleY(${Math.max(0, player.pulseCooldown/5)})`;
   }
 
   // Firefly auto-collect on proximity (no button press needed)
   if (state === 'playing' && player && fireflyTargetMesh && !questState['find_firefly']) {
     const ff = fireflyTargetMesh;
     const fdx = player.pos.x - ff.position.x, fdz = player.pos.z - ff.position.z;
-    if (Math.sqrt(fdx*fdx + fdz*fdz) < 1.4) {
+    if (Math.sqrt(fdx*fdx + fdz*fdz) < 0.4) {
       questState['find_firefly'] = true;
       questState['find_firefly_started'] = true;
       scene.remove(ff);
@@ -2421,7 +2389,7 @@ function loop(ts) {
 
     // Crystals: auto-collect
     for (let i = crystalMeshes.length - 1; i >= 0; i--) {
-      if (pp.distanceTo(crystalMeshes[i].position) < 1.0) {
+      if (pp.distanceTo(crystalMeshes[i].position) < 0.35) {
         collectCrystal(crystalMeshes[i]); break;
       }
     }
@@ -2430,7 +2398,7 @@ function loop(ts) {
     for (let i = islandMeshes.length - 1; i >= 0; i--) {
       const m = islandMeshes[i];
       if (!m.userData.collectibleType) continue;
-      if (pp.distanceTo(m.position) < 1.2) {
+      if (pp.distanceTo(m.position) < 0.35) {
         const ctype = m.userData.collectibleType;
         if (!inventoryItems.includes(ctype)) {
           inventoryItems.push(ctype);
@@ -2447,20 +2415,20 @@ function loop(ts) {
     // NPCs: auto-dialogue on approach; resets when player walks away so re-trigger works
     npcMeshes.forEach((nm, ni) => {
       const dist = pp.distanceTo(nm.position);
-      if (dist < 0.7 && !nm.userData.autoTriggered && state === 'playing') {
+      if (dist < 0.38 && !nm.userData.autoTriggered && state === 'playing') {
         nm.userData.autoTriggered = true;
         handleNPCInteract(island.npcs[ni], ni);
-      } else if (dist > 1.2) {
+      } else if (dist > 0.75) {
         nm.userData.autoTriggered = false;
       }
     });
 
     // Shrine: auto-activate on approach
     const sd = Math.sqrt((pp.x - island.shrinePos.x) ** 2 + (pp.z - island.shrinePos.z) ** 2);
-    if (sd < 0.65 && !island._shrineAutoTriggered && state === 'playing') {
+    if (sd < 0.38 && !island._shrineAutoTriggered && state === 'playing') {
       island._shrineAutoTriggered = true;
       activateShrine();
-    } else if (sd > 1.4) {
+    } else if (sd > 0.75) {
       island._shrineAutoTriggered = false;
     }
   }
