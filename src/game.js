@@ -2118,37 +2118,43 @@ function updateQuestTracker() {}
 // ── Mobile Controls ───────────────────────────────────────────
 function setupMobile() {
   if (!isMobile) return;
-  // Touch-drag movement: touch anywhere on renderer canvas
-  let touchOrigin = null;
-  const DEAD = 8; // px dead zone
+
+  // Tap-to-move: character walks toward tapped world position
+  let touchTarget = null; // { x, z } world coords
+
+  function screenToWorld(clientX, clientY) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
+    const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
+    const vec = new THREE.Vector3(ndcX, ndcY, 0);
+    vec.unproject(camera);
+    // Ray from orthographic camera hits y=0 plane
+    const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(camera.quaternion).negate();
+    const t = -vec.y / dir.y;
+    return { x: vec.x + dir.x * t, z: vec.z + dir.z * t };
+  }
+
   renderer.domElement.addEventListener('touchstart', e => {
-    // Ignore touches that start on UI elements
     if (e.target !== renderer.domElement) return;
     e.preventDefault();
-    const t = e.touches[0];
-    touchOrigin = { x: t.clientX, y: t.clientY };
-    joystickDir.x = 0; joystickDir.z = 0;
+    const touch = e.touches[0];
+    touchTarget = screenToWorld(touch.clientX, touch.clientY);
   }, { passive: false });
+
   renderer.domElement.addEventListener('touchmove', e => {
     e.preventDefault();
-    if (!touchOrigin) return;
-    const t = e.touches[0];
-    const dx = t.clientX - touchOrigin.x;
-    const dy = t.clientY - touchOrigin.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if (dist < DEAD) { joystickDir.x = 0; joystickDir.z = 0; return; }
-    // Normalise and scale — isometric: screen right = +X-Z, screen down = +X+Z
-    const scale = Math.min(dist, 80) / 80;
-    joystickDir.x = (dx - dy) / dist * scale;
-    joystickDir.z = (dx + dy) / dist * scale;
+    const touch = e.touches[0];
+    touchTarget = screenToWorld(touch.clientX, touch.clientY);
   }, { passive: false });
+
   renderer.domElement.addEventListener('touchend', e => {
     e.preventDefault();
-    touchOrigin = null;
+    touchTarget = null;
     joystickDir.x = 0; joystickDir.z = 0;
-
   }, { passive: false });
 
+  // Expose touchTarget so the game loop can read it
+  window._touchTarget = () => touchTarget;
 }
 
 // ── Map click handling ────────────────────────────────────────
@@ -2263,6 +2269,21 @@ function loop(ts) {
   // Player movement
   if (state === 'playing') {
     const island = getIsland(currentIslandId);
+    // Tap-to-move: compute joystickDir from world target
+    if (window._touchTarget) {
+      const tt = window._touchTarget();
+      if (tt && player) {
+        const dx = tt.x - player.pos.x;
+        const dz = tt.z - player.pos.z;
+        const dist = Math.sqrt(dx*dx + dz*dz);
+        if (dist > 0.15) {
+          joystickDir.x = dx / dist;
+          joystickDir.z = dz / dist;
+        } else {
+          joystickDir.x = 0; joystickDir.z = 0;
+        }
+      }
+    }
     player.update(dt, keys, (joystickDir.x||joystickDir.z) ? joystickDir : null, island.tiles, island.obstacles);
     if (player.isMoving && player.footstepTimer <= 0) {
       sfxFootstep();
