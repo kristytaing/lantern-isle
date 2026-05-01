@@ -30,14 +30,14 @@ export const ISLANDS = [
     shrinePos: {x:0,z:0},
     npcs: [
       { name:'Elder Moss', x:2, z:-1, color:0x6F7E4A,
-        lines:["The forest dims each day. Crystal shards hold the Star's lost light — seek them!", "My old bones sense the darkness creeping closer…"],
+        lines:["The Guardian Star shattered long ago. Its shards fell across these islands as crystals.", "Walk close to the glowing crystals — your lantern will draw them in."],
         quest: { type:'find_firefly', reward: 0, done: false },
         restoredLine:"The light returns! I can smell the blooms again!" },
       { name:'Fern', x:-3, z:2, color:0x9B9AE2,
-        lines:["Fireflies vanished when the Star fell. I miss their glow.", "The glowing orbs scattered through the forest — those are the crystal shards!"],
+        lines:["Fireflies haven't danced here since the Star went dark.", "Each crystal shard you collect brings a little more warmth back to the forest."],
         restoredLine:"It's warm again! Thank you, Lantern Bearer!" },
       { name:'Sprite', x:3, z:3, color:0xF29FD7,
-        lines:["I'm Sprite! Your lantern pulses with light — press Space near the shrine!", "The shrine is at the forest center. Can you feel it calling?"],
+        lines:["Hi! I'm Sprite! I've been searching for glowing crystal shards — they're scattered all over the forest!", "Walk toward anything that sparkles and your lantern will reach out to it."],
         restoredLine:"SPARKLES! SO MANY SPARKLES! You did it!!" },
     ]
   },
@@ -102,7 +102,7 @@ export const ISLANDS = [
         quest: { type:'fetch_spring', reward: 1, done: false },
         restoredLine:"…The grief lifts. Thank you, Lantern Bearer. Truly." },
       { name:'Ember', x:2, z:-2, color:0xEB6259,
-        lines:["Both offerings gathered? Then the final shard can be freed.", "The shrine awaits your lantern's light."],
+        lines:["Both offerings gathered? Wonderful — you've earned the cove's final crystal shard.", "It should appear nearby now. Gather all the shards, then the shrine stone will awaken."],
         quest: { type:'sakura_elder', reward: 2, done: false, requires:['gather_petals','fetch_spring'] },
         restoredLine:"The blossoms are beautiful again, not dangerous!" },
     ]
@@ -135,7 +135,7 @@ export const ISLANDS = [
         quest: { type:'fetch_water', reward: 1, done: false },
         restoredLine:"My flowers! They're blooming! Happy tears!" },
       { name:'Elder Owl', x:0, z:3, color:0x4F4261,
-        lines:["Help the baker and the gardener first. Then return to me.", "The crystal shards respond to kindness, young one."],
+        lines:["The village folk are struggling without the Star's warmth. Help them first, then come back.", "Deeds of kindness light the path to the crystal shard."],
         quest: { type:'elder_final', reward: 2, done: false, requires:['find_cat','fetch_water'] },
         restoredLine:"Hoo hoo… The warmth returns. The Star remembers us." },
     ]
@@ -168,7 +168,7 @@ export const ISLANDS = [
         quest: { type:'use_dust', reward: 1, done: false },
         restoredLine:"I glow again! After all these centuries… I glow!" },
       { name:'Echo', x:3, z:3, color:0xF29FD7,
-        lines:["Both offerings placed? Then the final shard stirs.", "*whispers* The cave will answer your lantern's pulse."],
+        lines:["Both tasks done? Then the cave's final crystal shard has awakened.", "*whispers* Collect it and your lantern will shine a little brighter."],
         quest: { type:'cave_elder', reward: 2, done: false, requires:['fetch_glowstone','use_dust'] },
         restoredLine:"*resonating warmth* The cave sings your name, Lantern Bearer." },
     ]
@@ -201,7 +201,7 @@ export const ISLANDS = [
         quest: { type:'offer_flower', reward: 1, done: false },
         restoredLine:"*tearfully* They're turning! Oh, listen to them sing!" },
       { name:'Ancient Keeper', x:0, z:3, color:0x4F4261,
-        lines:["Young Lantern Bearer… I have waited so long. The prophecy spoke of one who carries light through six islands.", "This is the final island. Place the crystals. The Guardian Star awaits."],
+        lines:["Young Lantern Bearer… I have waited so long. The prophecy spoke of one who gathers the scattered shards.", "This is the final island. Collect all the crystals here and the Guardian Star will be reborn."],
         quest: { type:'highlands_elder', reward: 2, done: false, requires:['find_chime','offer_flower'] },
         restoredLine:"*smiles softly* The Star shines. And so do you, dear child." },
     ]

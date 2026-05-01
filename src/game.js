@@ -484,6 +484,20 @@ function buildIsland(islandId) {
         const handle = new THREE.Mesh(handleGeo, jarMat); handle.position.set(0.1, 0.2, 0); handle.rotation.y = Math.PI/2;
         group.add(jar, lid, handle);
       }
+      // Scale up + emissive glow + point light + spin flag
+      group.scale.setScalar(1.4);
+      group.traverse(child => {
+        if (child.isMesh && child.material) {
+          child.material = child.material.clone();
+          const ec = child.material.color.clone().multiplyScalar(0.4);
+          child.material.emissive = ec;
+          child.material.emissiveIntensity = 0.7;
+        }
+      });
+      const colLight = new THREE.PointLight(0xFFFFCC, 1.0, 2.2);
+      colLight.position.set(0, 0.8, 0);
+      group.add(colLight);
+      group.userData.spin = true;
       scene.add(group); islandMeshes.push(group);
     });
   }
@@ -492,7 +506,9 @@ function buildIsland(islandId) {
   island.npcs.forEach((npc, ni) => {
     const nGroup = new THREE.Group();
     nGroup.position.set(npc.x, 0, npc.z);
-    nGroup.userData = { npcIdx: ni, bobBase: 0, bobOffset: Math.random()*Math.PI*2 };
+    nGroup.userData = { npcIdx: ni, bobBase: 0, bobOffset: Math.random()*Math.PI*2,
+      homeX: npc.x, homeZ: npc.z,
+      wanderTimer: Math.random()*3, wanderDx: 0, wanderDz: 0, wanderActive: false };
 
     if (npc.name === 'Baker Bun') {
       // Round baker: cream body, white apron, chef hat, rosy cheeks
@@ -2103,7 +2119,7 @@ function loop(ts) {
       const footY =      [0.05,     0.02,     0.04,     0.03,     0.06,    0.04];
       const fc = footColors[currentIslandId] || 0xC8B89A;
       const fy = footY[currentIslandId] || 0.05;
-      particles.addBurst(player.pos.x, fy, player.pos.z, fc, 5);
+      particles.addBurst(player.pos.x, 0.25, player.pos.z, fc, 6);
       // Cycle 5: sprint afterimage — extra burst trail when dashing
       if (player.sprintActive) {
         particles.addBurst(player.pos.x, 0.3, player.pos.z, 0xCCDDFF, 8);
@@ -2139,12 +2155,44 @@ function loop(ts) {
         m.rotation.z = Math.sin(time * 0.9 + wo) * 0.04;
         m.rotation.x = Math.sin(time * 0.7 + wo * 1.3) * 0.025;
       }
+      if (m.userData.spin) {
+        m.rotation.y = time * 1.1;
+        m.position.y = Math.sin(time * 2.0 + (m.userData.bobOffset||0)) * 0.08 + 0.25;
+      }
     });
     // NPC bob + sway + Cycle 2 head-look toward player
     npcMeshes.forEach(m=>{
       const t = time*1.8 + m.userData.bobOffset;
       m.position.y = m.userData.bobBase + Math.sin(t)*0.06;
       m.rotation.z = Math.sin(t*0.7)*0.12;
+      // Wander
+      if (m.userData.homeX !== undefined) {
+        m.userData.wanderTimer -= dt;
+        if (m.userData.wanderTimer <= 0) {
+          if (!m.userData.wanderActive) {
+            const angle = Math.random()*Math.PI*2;
+            const dist = 0.6 + Math.random()*0.8;
+            m.userData.wanderDx = Math.cos(angle)*dist;
+            m.userData.wanderDz = Math.sin(angle)*dist;
+            m.userData.wanderActive = true;
+            m.userData.wanderTimer = 1.2 + Math.random()*1.0;
+          } else {
+            m.userData.wanderActive = false;
+            m.userData.wanderTimer = 2.0 + Math.random()*2.5;
+          }
+        }
+        if (m.userData.wanderActive) {
+          const tx = m.userData.homeX + m.userData.wanderDx;
+          const tz = m.userData.homeZ + m.userData.wanderDz;
+          const ddx = tx - m.position.x, ddz = tz - m.position.z;
+          const spd = 0.6;
+          m.position.x += ddx * spd * dt;
+          m.position.z += ddz * spd * dt;
+          if (Math.abs(ddx) > 0.05 || Math.abs(ddz) > 0.05) {
+            m.rotation.y += (Math.atan2(ddx, ddz) - m.rotation.y) * 6 * dt;
+          }
+        }
+      }
       // Animate ! sprite
       if (m.userData.excSprite) {
         const sp = m.userData.excSprite;
