@@ -133,7 +133,7 @@ function buildIsland(islandId) {
     const canopyMat = new THREE.MeshLambertMaterial({ color: island.groundColor });
     const canopy = new THREE.Mesh(canopyGeo, canopyMat);
     canopy.position.set(x, 0.62+Math.random()*0.08, z);
-    canopy.userData = { bobOffset: Math.random()*Math.PI*2, bobBase: canopy.position.y };
+    canopy.userData = { bobOffset: Math.random()*Math.PI*2, bobBase: canopy.position.y, windSway: true, windOffset: Math.random()*Math.PI*2 };
     scene.add(canopy); islandMeshes.push(canopy);
   }
 
@@ -156,7 +156,7 @@ function buildIsland(islandId) {
     const headMat = new THREE.MeshLambertMaterial({ color: col });
     const head = new THREE.Mesh(headGeo, headMat);
     head.position.set(x, 0.27, z);
-    head.userData = { bobOffset: Math.random()*Math.PI*2, bobBase: head.position.y };
+    head.userData = { bobOffset: Math.random()*Math.PI*2, bobBase: head.position.y, windSway: true, windOffset: Math.random()*Math.PI*2 };
     scene.add(head); islandMeshes.push(head);
   }
 
@@ -305,7 +305,16 @@ function buildIsland(islandId) {
     const mesh = new THREE.Mesh(tileGeo, mat);
     mesh.position.set(tile.x, yOff, tile.z);
     // Water tiles get shimmer animation tag
-    if (isWater) { mesh.userData.waterTile = true; mesh.userData.waterPhase = h * Math.PI * 2; mesh.userData.baseMat = mat; }
+    // Cycle 3: store biome water color pair for hue oscillation
+    const WATER_COLORS_A = [0x8AAABB, 0x9BC8D4, 0xB8A8CC, 0xC4A882, 0x2A4A6B, 0x8899CC];
+    const WATER_COLORS_B = [0x7ABBB0, 0x80E0F0, 0xC8C0EE, 0xD4BB99, 0x3A5A9B, 0x99AADE];
+    if (isWater) {
+      mesh.userData.waterTile = true;
+      mesh.userData.waterPhase = h * Math.PI * 2;
+      mesh.userData.baseMat = mat;
+      mesh.userData.waterColorA = new THREE.Color(WATER_COLORS_A[islandId] || 0x8AAABB);
+      mesh.userData.waterColorB = new THREE.Color(WATER_COLORS_B[islandId] || 0x7ABBB0);
+    }
     scene.add(mesh); islandMeshes.push(mesh);
 
     // Terrain decorations — skip occupied tiles and centre, use stable hash for consistency
@@ -370,6 +379,100 @@ function buildIsland(islandId) {
         const tailGeo = new THREE.TorusGeometry(0.07, 0.025, 6, 8, Math.PI);
         const tail = new THREE.Mesh(tailGeo, bodyMat); tail.position.set(0.13, 0.12, 0); tail.rotation.z = -Math.PI/2;
         group.add(body, head, earL, earR, tail);
+      } else if (col.type === 'shell') {
+        // Spiral shell: torus + cone tip
+        const shellRingGeo = new THREE.TorusGeometry(0.09, 0.04, 8, 14);
+        const shellMat2 = new THREE.MeshLambertMaterial({ color: 0xF4DEB8 });
+        const shellRing = new THREE.Mesh(shellRingGeo, shellMat2); shellRing.position.y = 0.12; shellRing.rotation.x = Math.PI/2;
+        const shellTipGeo = new THREE.ConeGeometry(0.045, 0.14, 8);
+        const shellTip = new THREE.Mesh(shellTipGeo, shellMat2); shellTip.position.y = 0.22; shellTip.rotation.z = 0.4;
+        const shellInnerGeo = new THREE.TorusGeometry(0.055, 0.022, 6, 10);
+        const shellInnerMat = new THREE.MeshLambertMaterial({ color: 0xF8C8A0 });
+        const shellInner = new THREE.Mesh(shellInnerGeo, shellInnerMat); shellInner.position.y = 0.12; shellInner.rotation.x = Math.PI/2;
+        group.add(shellRing, shellTip, shellInner);
+      } else if (col.type === 'driftwood_note') {
+        // Rolled parchment scroll
+        const scrollGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.18, 8);
+        const scrollMat = new THREE.MeshLambertMaterial({ color: 0xE8D4A0 });
+        const scroll = new THREE.Mesh(scrollGeo, scrollMat); scroll.position.y = 0.14; scroll.rotation.z = 0.35;
+        const capGeo = new THREE.CylinderGeometry(0.052, 0.052, 0.025, 8);
+        const capMat = new THREE.MeshLambertMaterial({ color: 0xD4B870 });
+        const capT = new THREE.Mesh(capGeo, capMat); capT.position.set(0, 0.23, 0); capT.rotation.z = 0.35;
+        const capB = new THREE.Mesh(capGeo, capMat); capB.position.set(0, 0.05, 0); capB.rotation.z = 0.35;
+        // Wax seal dot
+        const sealGeo = new THREE.SphereGeometry(0.025, 6, 5);
+        const sealMat = new THREE.MeshLambertMaterial({ color: 0xC04040 });
+        const seal = new THREE.Mesh(sealGeo, sealMat); seal.position.set(0.04, 0.14, 0.05);
+        group.add(scroll, capT, capB, seal);
+      } else if (col.type === 'petal_bundle') {
+        // Bundle of petals tied with ribbon
+        const stemBundleGeo = new THREE.CylinderGeometry(0.03, 0.025, 0.22, 6);
+        const stemBundleMat = new THREE.MeshLambertMaterial({ color: 0x5A8A3A });
+        const stemBundle = new THREE.Mesh(stemBundleGeo, stemBundleMat); stemBundle.position.y = 0.14;
+        const ribbonGeo = new THREE.TorusGeometry(0.04, 0.012, 5, 10);
+        const ribbonMat = new THREE.MeshLambertMaterial({ color: 0xF29FD7 });
+        const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat); ribbon.position.y = 0.1; ribbon.rotation.x = Math.PI/2;
+        for (let pi = 0; pi < 5; pi++) {
+          const angle = (pi/5)*Math.PI*2;
+          const petalBGeo = new THREE.SphereGeometry(0.055, 6, 5);
+          const petalBMat = new THREE.MeshLambertMaterial({ color: 0xFFBBDD });
+          const petal = new THREE.Mesh(petalBGeo, petalBMat);
+          petal.position.set(Math.cos(angle)*0.07, 0.28+Math.sin(angle)*0.04, Math.sin(angle)*0.07);
+          petal.scale.set(1, 0.55, 1);
+          group.add(petal);
+        }
+        group.add(stemBundle, ribbon);
+      } else if (col.type === 'spring_water') {
+        // Leaf cup with water
+        const leafCupGeo = new THREE.CylinderGeometry(0.09, 0.06, 0.08, 8);
+        const leafCupMat = new THREE.MeshLambertMaterial({ color: 0x6A9A40 });
+        const leafCup = new THREE.Mesh(leafCupGeo, leafCupMat); leafCup.position.y = 0.1;
+        const waterTopGeo = new THREE.CylinderGeometry(0.082, 0.082, 0.02, 8);
+        const waterTopMat = new THREE.MeshLambertMaterial({ color: 0x70C0E8, transparent: true, opacity: 0.75 });
+        const waterTop = new THREE.Mesh(waterTopGeo, waterTopMat); waterTop.position.y = 0.16;
+        group.add(leafCup, waterTop);
+      } else if (col.type === 'glowstone') {
+        // Glowing amber stone
+        const gsGeo = new THREE.DodecahedronGeometry(0.1, 0);
+        const gsMat = new THREE.MeshLambertMaterial({ color: 0xFFCC44, emissive: 0xFF8800, emissiveIntensity: 0.5 });
+        const gs = new THREE.Mesh(gsGeo, gsMat); gs.position.y = 0.18;
+        group.add(gs);
+      } else if (col.type === 'crystal_dust') {
+        // Small pouch with sparkle
+        const pouchGeo = new THREE.SphereGeometry(0.09, 8, 7);
+        const pouchMat = new THREE.MeshLambertMaterial({ color: 0x9B9AE2 });
+        const pouch = new THREE.Mesh(pouchGeo, pouchMat); pouch.position.y = 0.13; pouch.scale.set(1, 0.9, 1);
+        const tieGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.04, 6);
+        const tieMat = new THREE.MeshLambertMaterial({ color: 0x7070BB });
+        const tie = new THREE.Mesh(tieGeo, tieMat); tie.position.y = 0.22;
+        group.add(pouch, tie);
+      } else if (col.type === 'wind_chime') {
+        // Small cluster of crystal rods
+        const chimeBarGeo = new THREE.CylinderGeometry(0.014, 0.014, 0.18, 5);
+        const chimeMat = new THREE.MeshLambertMaterial({ color: 0xC6C3DC, emissive: 0x9999CC, emissiveIntensity: 0.3 });
+        for (let ci2 = 0; ci2 < 4; ci2++) {
+          const angle2 = (ci2/4)*Math.PI*2;
+          const bar = new THREE.Mesh(chimeBarGeo, chimeMat);
+          bar.position.set(Math.cos(angle2)*0.07, 0.22 - ci2*0.03, Math.sin(angle2)*0.07);
+          group.add(bar);
+        }
+        const ringTopGeo = new THREE.TorusGeometry(0.08, 0.01, 4, 10);
+        const ringTop = new THREE.Mesh(ringTopGeo, chimeMat); ringTop.position.y = 0.32; ringTop.rotation.x = Math.PI/2;
+        group.add(ringTop);
+      } else if (col.type === 'highland_flower') {
+        // Lavender sprig
+        const sprigGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.24, 5);
+        const sprigMat = new THREE.MeshLambertMaterial({ color: 0x5A7A3A });
+        const sprig = new THREE.Mesh(sprigGeo, sprigMat); sprig.position.y = 0.15;
+        for (let li = 0; li < 5; li++) {
+          const lAngle = (li/5)*Math.PI*2;
+          const lvGeo = new THREE.SphereGeometry(0.035, 5, 4);
+          const lvMat = new THREE.MeshLambertMaterial({ color: 0x9B6ABE });
+          const lv = new THREE.Mesh(lvGeo, lvMat);
+          lv.position.set(Math.cos(lAngle)*0.04, 0.2+li*0.028, Math.sin(lAngle)*0.04);
+          group.add(lv);
+        }
+        group.add(sprig);
       } else if (col.type === 'water_jar') {
         // Blue ceramic jar
         const jarGeo = new THREE.CylinderGeometry(0.07, 0.09, 0.22, 8);
@@ -415,6 +518,7 @@ function buildIsland(islandId) {
       const cheekMat = new THREE.MeshLambertMaterial({ color: 0xF4A0A0 });
       const cheekL = new THREE.Mesh(cheekGeo, cheekMat); cheekL.position.set(-0.1, 0.59, 0.12);
       const cheekR = new THREE.Mesh(cheekGeo, cheekMat); cheekR.position.set(0.1, 0.59, 0.12);
+      nGroup.userData.headMesh = head;
       nGroup.add(body, apron, head, hat, hatBrim, eyeL, eyeR, cheekL, cheekR);
 
     } else if (npc.name === 'Gardener') {
@@ -439,6 +543,7 @@ function buildIsland(islandId) {
       const trowelGeo = new THREE.BoxGeometry(0.04, 0.12, 0.06);
       const trowelMat = new THREE.MeshLambertMaterial({ color: 0xA0A0A0 });
       const trowel = new THREE.Mesh(trowelGeo, trowelMat); trowel.position.set(0.28, 0.22, 0); trowel.rotation.z = -0.5;
+      nGroup.userData.headMesh = head;
       nGroup.add(body, head, hat, brim, eyeL, eyeR, arm, trowel);
 
     } else if (npc.name === 'Elder Owl') {
@@ -472,6 +577,7 @@ function buildIsland(islandId) {
       const orbGeo = new THREE.SphereGeometry(0.055, 8, 6);
       const orbMat = new THREE.MeshLambertMaterial({ color: 0x9B9AE2, emissive: 0x5555CC, emissiveIntensity: 0.5 });
       const orb = new THREE.Mesh(orbGeo, orbMat); orb.position.set(0.22, 0.72, 0);
+      nGroup.userData.headMesh = head;
       nGroup.add(body, belly, head, eyeL, eyeR, pupilL, pupilR, beak, tuftL, tuftR, staff, orb);
 
     } else if (npc.name === 'Elder Moss') {
@@ -500,6 +606,7 @@ function buildIsland(islandId) {
       const leafGeo = new THREE.SphereGeometry(0.055, 5, 4);
       const leafMat = new THREE.MeshLambertMaterial({ color: 0x5DA82A });
       const leaf = new THREE.Mesh(leafGeo, leafMat); leaf.position.set(-0.38, 0.8, 0); leaf.scale.set(1, 0.5, 0.8);
+      nGroup.userData.headMesh = head;
       nGroup.add(body, moss, head, cap, eyeL, eyeR, staff, branch, leaf);
 
     } else if (npc.name === 'Fern') {
@@ -521,6 +628,7 @@ function buildIsland(islandId) {
       const wingMat = new THREE.MeshLambertMaterial({ color: 0x9BCE6A, transparent: true, opacity: 0.75 });
       const wingL = new THREE.Mesh(wingGeo, wingMat); wingL.position.set(-0.18, 0.42, -0.08); wingL.scale.set(0.5, 0.9, 0.3);
       const wingR = new THREE.Mesh(wingGeo, wingMat); wingR.position.set(0.18, 0.42, -0.08); wingR.scale.set(0.5, 0.9, 0.3);
+      nGroup.userData.headMesh = head;
       nGroup.add(body, head, crown, eyeL, eyeR, wingL, wingR);
 
     } else if (npc.name === 'Sprite') {
@@ -544,6 +652,7 @@ function buildIsland(islandId) {
       const glowGeo = new THREE.SphereGeometry(0.17, 6, 5);
       const glowMat = new THREE.MeshLambertMaterial({ color: 0xFFAADD, transparent: true, opacity: 0.18 });
       const glow = new THREE.Mesh(glowGeo, glowMat); glow.position.y = 0.32;
+      nGroup.userData.headMesh = head;
       nGroup.add(body, head, eyeL, eyeR, wingTL, wingTR, wingBL, wingBR, glow);
 
     } else if (npc.name === 'Sandy') {
@@ -573,6 +682,7 @@ function buildIsland(islandId) {
       const bucketGeo = new THREE.CylinderGeometry(0.055, 0.045, 0.1, 8);
       const bucketMat = new THREE.MeshLambertMaterial({ color: 0x4488CC });
       const bucket = new THREE.Mesh(bucketGeo, bucketMat); bucket.position.set(0.22, 0.18, 0);
+      nGroup.userData.headMesh = head;
       nGroup.add(body, head, hatBrim, hatTop, flower, eyeL, eyeR, cheekL, cheekR, bucket);
 
     } else if (npc.name === 'Crab') {
@@ -631,6 +741,7 @@ function buildIsland(islandId) {
       const pipeGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.14, 5);
       const pipeMat = new THREE.MeshLambertMaterial({ color: 0x4A2E1A });
       const pipe = new THREE.Mesh(pipeGeo, pipeMat); pipe.position.set(0.08, 0.57, 0.15); pipe.rotation.z = 0.4; pipe.rotation.x = 0.3;
+      nGroup.userData.headMesh = head;
       nGroup.add(body, coat, head, hat, hatBrim, eyeL, eyeR, beard, pipe);
 
     } else if (npc.name === 'Ember') {
@@ -654,6 +765,7 @@ function buildIsland(islandId) {
       const eyeMat = new THREE.MeshLambertMaterial({ color: 0xFF8800, emissive: 0xFF4400, emissiveIntensity: 0.6 });
       const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.06, 0.62, 0.13);
       const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.06, 0.62, 0.13);
+      nGroup.userData.headMesh = head;
       nGroup.add(body, core, head, flameC, flameL, flameR, eyeL, eyeR);
 
     } else if (npc.name === 'Blossom') {
@@ -687,6 +799,7 @@ function buildIsland(islandId) {
       const cheekMat = new THREE.MeshLambertMaterial({ color: 0xFFAACC });
       const cheekL = new THREE.Mesh(cheekGeo, cheekMat); cheekL.position.set(-0.085, 0.58, 0.12);
       const cheekR = new THREE.Mesh(cheekGeo, cheekMat); cheekR.position.set(0.085, 0.58, 0.12);
+      nGroup.userData.headMesh = head;
       nGroup.add(body, skirt, head, flower, eyeL, eyeR, cheekL, cheekR);
 
     } else if (npc.name === 'Ashrock') {
@@ -731,6 +844,7 @@ function buildIsland(islandId) {
       const eyeMat = new THREE.MeshLambertMaterial({ color: 0x7766CC });
       const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.053, 0.635, 0.12);
       const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.053, 0.635, 0.12);
+      nGroup.userData.headMesh = head;
       nGroup.add(body, head, crown, wingTL, wingTR, wingBL, wingBR, eyeL, eyeR);
 
     } else if (npc.name === 'Stalagmite') {
@@ -772,6 +886,7 @@ function buildIsland(islandId) {
       const eyeMat = new THREE.MeshLambertMaterial({ color: 0xCC88FF, transparent: true, opacity: 0.9 });
       const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.052, 0.62, 0.12);
       const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.052, 0.62, 0.12);
+      nGroup.userData.headMesh = head;
       nGroup.add(body, inner, head, ring1, ring2, eyeL, eyeR);
 
     } else if (npc.name === 'Zephyr') {
@@ -797,6 +912,7 @@ function buildIsland(islandId) {
       const swirlGeo = new THREE.TorusGeometry(0.1, 0.018, 5, 10);
       const swirlMat = new THREE.MeshLambertMaterial({ color: 0x99BBEE, transparent: true, opacity: 0.7 });
       const swirl = new THREE.Mesh(swirlGeo, swirlMat); swirl.position.y = 0.75; swirl.rotation.x = 0.4;
+      nGroup.userData.headMesh = head;
       nGroup.add(body, head, eyeL, eyeR, s1, s2, s3, s4, swirl);
 
     } else if (npc.name === 'Windkeeper') {
@@ -926,13 +1042,27 @@ const NPC_COLORS = {
   '✨': '#EBB21A', 'Shrine': '#9B9AE2', '✨ Shrine': '#9B9AE2',
   '✨ Restoration!': '#EBB21A', '✨ Map Updated': '#EBB21A',
 };
+// Cycle 10: NPC portrait color map
+const NPC_PORTRAIT_COLORS = {
+  'Baker Bun': '#F5CBA7', 'Gardener': '#5B8C3A', 'Elder Owl': '#4F4261',
+  'Elder Moss': '#4A5C2A', 'Fern': '#7BAE5C', 'Sprite': '#F29FD7',
+  'Sandy': '#EBB21A', 'Crab': '#EB6259', 'Driftwood': '#6A7A8A',
+  'Crystal': '#9B9AE2', 'Shrine': '#9B9AE2', 'Restoration!': '#EBB21A',
+  'Map Updated': '#EBB21A', 'Found': '#EBB21A',
+};
 function showDialogue(speaker, lines, callback) {
   if (state === 'dialogue') return;
   state = 'dialogue';
   dialogueQueue = [...lines];
   dialogueCallback = callback || null;
   dialogueSpeaker.textContent = speaker;
-
+  // Cycle 10: update speaker portrait circle color
+  const icon = document.getElementById('dialogue-speaker-icon');
+  if (icon) {
+    const pColor = NPC_PORTRAIT_COLORS[speaker] || '#9B9AE2';
+    const initial = speaker.replace(/[✨\s]/g,'').charAt(0).toUpperCase() || '?';
+    icon.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="${pColor}" opacity="0.85"/><text x="12" y="16" text-anchor="middle" font-size="11" font-family="Quicksand,sans-serif" fill="white" font-weight="700">${initial}</text></svg>`;
+  }
   dialogueBox.style.display = 'block';
   advanceDialogue();
 }
@@ -976,6 +1106,61 @@ function closeDialogue() {
   if (dialogueCallback) { const cb = dialogueCallback; dialogueCallback = null; cb(); }
 }
 
+// ── Wisdom quotes per biome (Cycle 4) ────────────────────────
+const CRYSTAL_WISDOM = [
+  [ // Mossy Forest
+    "Light finds the cracks where shadows sleep.",
+    "The forest remembers every kindness.",
+    "Even a small flame drives away great dark.",
+  ],
+  [ // Sunflower Beach
+    "Tides carry what the heart cannot hold.",
+    "Warmth given freely returns a hundredfold.",
+    "Every shore is the start of somewhere new.",
+  ],
+  [ // Sakura Cove
+    "Beauty blooms when you stop trying to keep it.",
+    "A petal falls. The tree remains.",
+    "Some things only exist to become the wind.",
+  ],
+  [ // Cozy Village
+    "Home is the people who wait up for you.",
+    "Good bread and honest work — enough.",
+    "Ordinary days, remembered, become extraordinary.",
+  ],
+  [ // Crystal Cave
+    "Pressure and time make beautiful things.",
+    "Light does not ask permission to shine.",
+    "The deep dark is just depth, waiting to be loved.",
+  ],
+  [ // Lavender Highlands
+    "High places remind you how small worry is.",
+    "The wind carries no malice — only passage.",
+    "Rest is not surrender. It is preparation.",
+  ],
+];
+let wisdomCycleIndex = 0;
+function showWisdomOverlay(islandId) {
+  const quotes = CRYSTAL_WISDOM[islandId] || CRYSTAL_WISDOM[0];
+  const text = quotes[wisdomCycleIndex % quotes.length];
+  wisdomCycleIndex++;
+  let el = document.getElementById('wisdom-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'wisdom-overlay';
+    el.style.cssText = `position:fixed;bottom:96px;left:50%;transform:translateX(-50%);
+      font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;
+      color:rgba(240,222,194,0.92);text-align:center;pointer-events:none;z-index:300;
+      text-shadow:0 1px 8px rgba(0,0,0,0.7);transition:opacity 0.8s ease;opacity:0;
+      letter-spacing:0.5px;max-width:380px;line-height:1.5;`;
+    document.body.appendChild(el);
+  }
+  el.textContent = `✦ ${text} ✦`;
+  el.style.opacity = '1';
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => { el.style.opacity = '0'; }, 3200);
+}
+
 // ── Shrine Beam ───────────────────────────────────────────────
 let shrinBeamMesh = null;
 let shrineBeamLight = null;
@@ -1016,6 +1201,7 @@ function collectCrystal(mesh) {
   particles.addBurst(mesh.position.x, mesh.position.y, mesh.position.z, PALETTE.softPinkN, 25);
   particles.addPulseRing(mesh.position.x, 0.1, mesh.position.z);
   sfxCrystalCollect();
+  showWisdomOverlay(currentIslandId);
   updateCrystalHUD();
   if (island.crystalCount >= island.totalCrystals) {
     // Beam of light on shrine
@@ -1060,6 +1246,7 @@ function activateShrine() {
   }
   island.restored = true;
   sfxShrine();
+  triggerCameraShake(0.18, 0.9);
   particles.addRestorationBurst(island.shrinePos.x, 1, island.shrinePos.z);
   // Screen flash on restoration
   const flash = document.getElementById('restore-flash');
@@ -1152,6 +1339,72 @@ function startWinStarfield() {
   }
   drawStars(0);
   document.getElementById('restart-btn').addEventListener('click', () => { running = false; }, { once: true });
+}
+
+// ── Camera Shake (Cycle 6) ────────────────────────────────────
+let cameraShake = { active: false, intensity: 0, duration: 0, elapsed: 0 };
+function triggerCameraShake(intensity, duration) {
+  cameraShake.active = true;
+  cameraShake.intensity = intensity;
+  cameraShake.duration = duration;
+  cameraShake.elapsed = 0;
+}
+
+// ── Biome Weather Particles (Cycle 1) ─────────────────────────
+let weatherTimer = 0;
+const BIOME_WEATHER = [
+  null,                    // 0 Mossy Forest — handled by existing fireflies
+  { type:'foam', color:0xCCEEFF, rate:2.2 },  // 1 Sunflower Beach — sea foam
+  { type:'petals', color:0xFFBBDD, rate:1.8 }, // 2 Sakura Cove — petals
+  { type:'embers', color:0xFFCC88, rate:1.5 }, // 3 Cozy Village — warm embers
+  { type:'spores', color:0xBBAAFF, rate:2.0 }, // 4 Crystal Cave — spores
+  { type:'seeds', color:0xC8D8FF, rate:1.6 },  // 5 Lavender Highlands — seed fluff
+];
+function spawnWeatherParticle(islandId) {
+  const w = BIOME_WEATHER[islandId];
+  if (!w || !particles) return;
+  const spread = 10;
+  const px2 = player ? player.pos.x + (Math.random()-0.5)*spread : (Math.random()-0.5)*spread;
+  const pz2 = player ? player.pos.z + (Math.random()-0.5)*spread : (Math.random()-0.5)*spread;
+  if (w.type === 'petals' || w.type === 'seeds') {
+    particles.addBurst(px2, 3.5, pz2, w.color, 3);
+  } else if (w.type === 'foam') {
+    particles.addBurst(px2, 0.05, pz2, w.color, 4);
+  } else if (w.type === 'embers' || w.type === 'spores') {
+    particles.addBurst(px2, 0.5+Math.random()*1.5, pz2, w.color, 2);
+  }
+}
+
+// ── Ambient Mood Hints (Cycle 15) ─────────────────────────────
+const BIOME_HINTS = [
+  ["The air smells of pine and damp earth…", "Fireflies once filled this hollow…", "Something ancient stirs beneath the moss…"],
+  ["Salt on the breeze. The tide is coming in…", "A distant gull cries out to no one…", "The sand holds the warmth of a thousand days…"],
+  ["Cherry blossoms fall even when no wind blows…", "The cove whispers old songs in your ear…", "Something sweet drifts on the sakura air…"],
+  ["Smoke from chimneys. Someone baked today…", "A child's laughter echoes from somewhere…", "The cobblestones know every footstep here…"],
+  ["Your lantern casts impossible shadows…", "The crystals hum just below hearing…", "Deep in the cave, something gleams…"],
+  ["The wind up here carries voices from below…", "Lavender fills your lungs like a slow song…", "The horizon feels closer than it should…"],
+];
+let hintTimer = 0;
+let hintIndex = 0;
+function showMoodHint(islandId) {
+  const hints = BIOME_HINTS[islandId] || BIOME_HINTS[0];
+  const text = hints[hintIndex % hints.length];
+  hintIndex++;
+  let el = document.getElementById('mood-hint');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'mood-hint';
+    el.style.cssText = `position:fixed;top:50%;left:24px;transform:translateY(-50%);
+      font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;
+      color:rgba(198,195,220,0.7);pointer-events:none;z-index:200;
+      text-shadow:0 1px 6px rgba(0,0,0,0.6);transition:opacity 1.2s ease;opacity:0;
+      writing-mode:horizontal-tb;max-width:160px;line-height:1.6;`;
+    document.body.appendChild(el);
+  }
+  el.textContent = text;
+  el.style.opacity = '1';
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => { el.style.opacity = '0'; }, 4000);
 }
 
 // ── Ability Bar ───────────────────────────────────────────────
@@ -1612,8 +1865,17 @@ function loadIsland(id) {
     sfxIslandArrive();
     const island = getIsland(id);
     // Show island name banner
+    // Cycle 7: island banner with biome lore flavor
+    const ISLAND_LORE = [
+      'Where the fireflies first learned to dream…',
+      'The tide keeps every secret you whisper to it…',
+      'Petals that fall here never truly touch the ground…',
+      'Bread and lanterns. The oldest comforts.',
+      'Light lives in the dark, waiting to be found…',
+      'Above the clouds, the wind remembers everything…',
+    ];
     document.getElementById('island-banner-name').textContent = island.name;
-    document.getElementById('island-banner-sub').textContent = island.mechanic || 'A mysterious isle…';
+    document.getElementById('island-banner-sub').textContent = ISLAND_LORE[id] || island.mechanic || 'A mysterious isle…';
     banner.classList.add('show');
     // Fade back in
     overlay.style.opacity = '0';
@@ -1636,8 +1898,21 @@ function updateInventoryUI() {
     const col = (island.collectibles||[]).find(c=>c.type===item);
     const label = col ? col.label : item;
     sl.title = label;
-    // Simple dot indicator — item present
-    sl.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="6" fill="#EBB21A" opacity="0.9"/><circle cx="12" cy="12" r="3" fill="#F0DEC2"/></svg>`;
+    // Cycle 12: per-type inventory icons
+    const ITEM_ICONS = {
+      mochi_cat:      `<text y="17" x="12" text-anchor="middle" font-size="14">🐱</text>`,
+      water_jar:      `<text y="17" x="12" text-anchor="middle" font-size="14">🫙</text>`,
+      shell:          `<text y="17" x="12" text-anchor="middle" font-size="14">🐚</text>`,
+      driftwood_note: `<text y="17" x="12" text-anchor="middle" font-size="14">📜</text>`,
+      petal_bundle:   `<text y="17" x="12" text-anchor="middle" font-size="14">🌸</text>`,
+      spring_water:   `<text y="17" x="12" text-anchor="middle" font-size="14">💧</text>`,
+      glowstone:      `<text y="17" x="12" text-anchor="middle" font-size="14">🔮</text>`,
+      crystal_dust:   `<text y="17" x="12" text-anchor="middle" font-size="14">✨</text>`,
+      wind_chime:     `<text y="17" x="12" text-anchor="middle" font-size="14">🎐</text>`,
+      highland_flower:`<text y="17" x="12" text-anchor="middle" font-size="14">💜</text>`,
+    };
+    const icon = ITEM_ICONS[item] || `<circle cx="12" cy="12" r="6" fill="#EBB21A" opacity="0.9"/><circle cx="12" cy="12" r="3" fill="#F0DEC2"/>`;
+    sl.innerHTML = `<svg viewBox="0 0 24 24" fill="none">${icon}</svg>`;
   });
 }
 
@@ -1821,7 +2096,17 @@ function loop(ts) {
     if (player.isMoving && player.footstepTimer <= 0) {
       sfxFootstep();
       player.footstepTimer = 0.28;
-      particles.addBurst(player.pos.x, 0.05, player.pos.z, 0xC8B89A, 5);
+      // Cycle 11: biome-specific footstep particles
+      const footColors = [0x88AA77, 0xE8DDB5, 0xFFCCDD, 0xD4A57A, 0xBBAAFF, 0xC8D0FF];
+      const footY =      [0.05,     0.02,     0.04,     0.03,     0.06,    0.04];
+      const fc = footColors[currentIslandId] || 0xC8B89A;
+      const fy = footY[currentIslandId] || 0.05;
+      particles.addBurst(player.pos.x, fy, player.pos.z, fc, 5);
+      // Cycle 5: sprint afterimage — extra burst trail when dashing
+      if (player.sprintActive) {
+        particles.addBurst(player.pos.x, 0.3, player.pos.z, 0xCCDDFF, 8);
+        particles.addPulseRing(player.pos.x, 0.05, player.pos.z, 0xAABBFF, 0.5);
+      }
     }
     // Camera follow
     const tx = player.pos.x+12, ty = 12, tz = player.pos.z+12;
@@ -1830,19 +2115,30 @@ function loop(ts) {
     camera.position.z += (tz - camera.position.z) * 4 * dt;
     camera.lookAt(player.pos.x, 0, player.pos.z);
 
-    // Foliage + objects bob + water shimmer
+    // Foliage + objects bob + water shimmer + Cycle 14 wind sway
     islandMeshes.forEach(m=>{
       if (m.userData.bobBase !== undefined) {
         m.position.y = m.userData.bobBase + Math.sin(time*1.5+(m.userData.bobOffset||0))*0.03;
       }
       if (m.userData.waterTile) {
+        const wt = 0.5 + Math.sin(time * 0.22 + m.userData.waterPhase) * 0.5;
         m.userData.baseMat.opacity = 0.68 + Math.sin(time*1.1 + m.userData.waterPhase)*0.1;
+        // Cycle 3: gentle hue oscillation between two water colors
+        if (m.userData.waterColorA && m.userData.waterColorB) {
+          m.userData.baseMat.color.lerpColors(m.userData.waterColorA, m.userData.waterColorB, wt);
+        }
       }
       if (m.userData.bioPool) {
         m.intensity = 0.4 + Math.sin(time*2.3)*0.35;
       }
+      // Cycle 14: wind sway for trees and flowers
+      if (m.userData.windSway) {
+        const wo = m.userData.windOffset || 0;
+        m.rotation.z = Math.sin(time * 0.9 + wo) * 0.04;
+        m.rotation.x = Math.sin(time * 0.7 + wo * 1.3) * 0.025;
+      }
     });
-    // NPC bob + sway
+    // NPC bob + sway + Cycle 2 head-look toward player
     npcMeshes.forEach(m=>{
       const t = time*1.8 + m.userData.bobOffset;
       m.position.y = m.userData.bobBase + Math.sin(t)*0.06;
@@ -1852,6 +2148,16 @@ function loop(ts) {
         const sp = m.userData.excSprite;
         sp.position.y = sp.userData.excBase + Math.sin(time*3 + sp.userData.excOffset)*0.07;
         sp.material.opacity = 0.75 + Math.sin(time*3 + sp.userData.excOffset)*0.25;
+      }
+      // Cycle 2: NPC head-look toward player when nearby
+      if (player && m.userData.headMesh) {
+        const dx = player.pos.x - m.position.x, dz = player.pos.z - m.position.z;
+        const dist = Math.sqrt(dx*dx + dz*dz);
+        if (dist < 3.5) {
+          const targetAngle = Math.atan2(dx, dz);
+          const head = m.userData.headMesh;
+          head.rotation.y += (targetAngle - head.rotation.y) * 3 * dt;
+        }
       }
     });
     // Crystal bob + glow pulse
@@ -1873,6 +2179,46 @@ function loop(ts) {
     if (shrineBeamLight) {
       shrineBeamLight.intensity = 2.0 + Math.sin(time * 3) * 0.8;
     }
+    // Cycle 1: Biome weather particles
+    weatherTimer += dt;
+    const bw = BIOME_WEATHER[currentIslandId];
+    if (bw && weatherTimer > 1 / bw.rate) { weatherTimer = 0; spawnWeatherParticle(currentIslandId); }
+
+    // Cycle 15: Ambient mood hints
+    hintTimer += dt;
+    if (hintTimer > 38) { hintTimer = 0; showMoodHint(currentIslandId); }
+
+    // Cycle 9: Sky color breathing — subtle background oscillation per biome
+    const SKY_BASES = [0x1a1f2e, 0x1a2540, 0x1f1a2e, 0x1a1810, 0x0d0d1a, 0x121828];
+    const skyBase = SKY_BASES[currentIslandId] || 0x1a1f2e;
+    const sb = new THREE.Color(skyBase);
+    const breathe = Math.sin(time * 0.18) * 0.012;
+    scene.background.setRGB(sb.r + breathe, sb.g + breathe * 0.7, sb.b + breathe * 0.5);
+
+    // Cycle 13: Shrine proximity lantern glow pulse
+    if (shrineMesh && player) {
+      const island = getIsland(currentIslandId);
+      const sdx = player.pos.x - island.shrinePos.x, sdz = player.pos.z - island.shrinePos.z;
+      const sdist = Math.sqrt(sdx*sdx + sdz*sdz);
+      if (!island.restored && sdist < 5) {
+        const prox = 1 - sdist / 5;
+        if (shrineBeamLight) shrineBeamLight.intensity = 2.0 + prox * 2.5 + Math.sin(time * 3) * 0.8;
+      }
+    }
+
+    // Cycle 6: Camera shake application
+    if (cameraShake.active) {
+      cameraShake.elapsed += dt;
+      if (cameraShake.elapsed >= cameraShake.duration) {
+        cameraShake.active = false;
+      } else {
+        const decay = 1 - cameraShake.elapsed / cameraShake.duration;
+        camera.position.x += (Math.random() - 0.5) * cameraShake.intensity * decay;
+        camera.position.y += (Math.random() - 0.5) * cameraShake.intensity * decay * 0.5;
+        camera.position.z += (Math.random() - 0.5) * cameraShake.intensity * decay;
+      }
+    }
+
     // Pulse reveal timer
     if (pulseRevealTimer > 0) pulseRevealTimer -= dt;
     // compass removed
