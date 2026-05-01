@@ -442,6 +442,385 @@ function buildIsland(islandId) {
       const orb = new THREE.Mesh(orbGeo, orbMat); orb.position.set(0.22, 0.72, 0);
       nGroup.add(body, belly, head, eyeL, eyeR, pupilL, pupilR, beak, tuftL, tuftR, staff, orb);
 
+    } else if (npc.name === 'Elder Moss') {
+      // Ancient mossy tree-spirit: hunched wide body, bark-like texture, branch staff, mossy cap
+      const bodyGeo = new THREE.SphereGeometry(0.22, 10, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0x4A5C2A });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.26; body.scale.set(1.1, 0.85, 1);
+      const mossGeo = new THREE.SphereGeometry(0.14, 8, 6);
+      const mossMat = new THREE.MeshLambertMaterial({ color: 0x6F9A30 });
+      const moss = new THREE.Mesh(mossGeo, mossMat); moss.position.set(0, 0.22, 0.1); moss.scale.set(1.2, 0.5, 0.7);
+      const headGeo = new THREE.SphereGeometry(0.16, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0x5C6E35 });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.58;
+      const capGeo = new THREE.SphereGeometry(0.18, 8, 4);
+      const capMat = new THREE.MeshLambertMaterial({ color: 0x3D5C18 });
+      const cap = new THREE.Mesh(capGeo, capMat); cap.position.y = 0.7; cap.scale.set(1, 0.5, 1);
+      const eyeGeo = new THREE.SphereGeometry(0.022, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x8FCC44, emissive: 0x336600, emissiveIntensity: 0.4 });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.06, 0.6, 0.14);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.06, 0.6, 0.14);
+      const staffGeo = new THREE.CylinderGeometry(0.022, 0.03, 0.75, 5);
+      const staffMat = new THREE.MeshLambertMaterial({ color: 0x5C3A1A });
+      const staff = new THREE.Mesh(staffGeo, staffMat); staff.position.set(-0.24, 0.38, 0); staff.rotation.z = 0.15;
+      const branchGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.2, 4);
+      const branch = new THREE.Mesh(branchGeo, staffMat); branch.position.set(-0.28, 0.76, 0); branch.rotation.z = 0.9;
+      const leafGeo = new THREE.SphereGeometry(0.055, 5, 4);
+      const leafMat = new THREE.MeshLambertMaterial({ color: 0x5DA82A });
+      const leaf = new THREE.Mesh(leafGeo, leafMat); leaf.position.set(-0.38, 0.8, 0); leaf.scale.set(1, 0.5, 0.8);
+      nGroup.add(body, moss, head, cap, eyeL, eyeR, staff, branch, leaf);
+
+    } else if (npc.name === 'Fern') {
+      // Delicate nature sprite: slim body, leaf-wing shapes on back, flower crown
+      const bodyGeo = new THREE.CylinderGeometry(0.1, 0.13, 0.35, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0x7BAE5C });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.28;
+      const headGeo = new THREE.SphereGeometry(0.14, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xC2DBA0 });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.6;
+      const crownGeo = new THREE.TorusGeometry(0.1, 0.02, 6, 10);
+      const crownMat = new THREE.MeshLambertMaterial({ color: 0xF29FD7 });
+      const crown = new THREE.Mesh(crownGeo, crownMat); crown.position.y = 0.73; crown.rotation.x = Math.PI/2;
+      const eyeGeo = new THREE.SphereGeometry(0.02, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x2A5C10 });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.055, 0.62, 0.12);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.055, 0.62, 0.12);
+      const wingGeo = new THREE.SphereGeometry(0.12, 6, 4);
+      const wingMat = new THREE.MeshLambertMaterial({ color: 0x9BCE6A, transparent: true, opacity: 0.75 });
+      const wingL = new THREE.Mesh(wingGeo, wingMat); wingL.position.set(-0.18, 0.42, -0.08); wingL.scale.set(0.5, 0.9, 0.3);
+      const wingR = new THREE.Mesh(wingGeo, wingMat); wingR.position.set(0.18, 0.42, -0.08); wingR.scale.set(0.5, 0.9, 0.3);
+      nGroup.add(body, head, crown, eyeL, eyeR, wingL, wingR);
+
+    } else if (npc.name === 'Sprite') {
+      // Tiny glowing fairy: small round body, sparkle wings, bright emissive glow
+      const bodyGeo = new THREE.SphereGeometry(0.13, 8, 7);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xF29FD7, emissive: 0xCC5599, emissiveIntensity: 0.3 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.3; body.scale.set(1, 1.1, 1);
+      const headGeo = new THREE.SphereGeometry(0.12, 8, 7);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xFFE4F5 });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.57;
+      const eyeGeo = new THREE.SphereGeometry(0.018, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x9922BB });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.048, 0.59, 0.11);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.048, 0.59, 0.11);
+      const wingGeo = new THREE.SphereGeometry(0.1, 5, 4);
+      const wingMat = new THREE.MeshLambertMaterial({ color: 0xFFCCEE, transparent: true, opacity: 0.6 });
+      const wingTL = new THREE.Mesh(wingGeo, wingMat); wingTL.position.set(-0.15, 0.48, -0.05); wingTL.scale.set(0.4, 0.7, 0.25);
+      const wingTR = new THREE.Mesh(wingGeo, wingMat); wingTR.position.set(0.15, 0.48, -0.05); wingTR.scale.set(0.4, 0.7, 0.25);
+      const wingBL = new THREE.Mesh(wingGeo, wingMat); wingBL.position.set(-0.13, 0.34, -0.05); wingBL.scale.set(0.35, 0.5, 0.2);
+      const wingBR = new THREE.Mesh(wingGeo, wingMat); wingBR.position.set(0.13, 0.34, -0.05); wingBR.scale.set(0.35, 0.5, 0.2);
+      const glowGeo = new THREE.SphereGeometry(0.17, 6, 5);
+      const glowMat = new THREE.MeshLambertMaterial({ color: 0xFFAADD, transparent: true, opacity: 0.18 });
+      const glow = new THREE.Mesh(glowGeo, glowMat); glow.position.y = 0.32;
+      nGroup.add(body, head, eyeL, eyeR, wingTL, wingTR, wingBL, wingBR, glow);
+
+    } else if (npc.name === 'Sandy') {
+      // Beach character: warm tan body, sun hat with flower, bucket accessory
+      const bodyGeo = new THREE.CylinderGeometry(0.13, 0.16, 0.36, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xEBB21A });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.28;
+      const headGeo = new THREE.SphereGeometry(0.15, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xF5D5A0 });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.62;
+      const hatBrimGeo = new THREE.CylinderGeometry(0.27, 0.27, 0.03, 12);
+      const hatMat = new THREE.MeshLambertMaterial({ color: 0xF0C060 });
+      const hatBrim = new THREE.Mesh(hatBrimGeo, hatMat); hatBrim.position.y = 0.74;
+      const hatTopGeo = new THREE.CylinderGeometry(0.14, 0.16, 0.15, 10);
+      const hatTop = new THREE.Mesh(hatTopGeo, hatMat); hatTop.position.y = 0.83;
+      const flowerGeo = new THREE.SphereGeometry(0.04, 6, 5);
+      const flowerMat = new THREE.MeshLambertMaterial({ color: 0xFF8888 });
+      const flower = new THREE.Mesh(flowerGeo, flowerMat); flower.position.set(0.1, 0.92, 0.06);
+      const eyeGeo = new THREE.SphereGeometry(0.022, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x5C3A0A });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.06, 0.64, 0.13);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.06, 0.64, 0.13);
+      const cheekGeo = new THREE.SphereGeometry(0.035, 5, 5);
+      const cheekMat = new THREE.MeshLambertMaterial({ color: 0xF4B080 });
+      const cheekL = new THREE.Mesh(cheekGeo, cheekMat); cheekL.position.set(-0.09, 0.61, 0.12);
+      const cheekR = new THREE.Mesh(cheekGeo, cheekMat); cheekR.position.set(0.09, 0.61, 0.12);
+      const bucketGeo = new THREE.CylinderGeometry(0.055, 0.045, 0.1, 8);
+      const bucketMat = new THREE.MeshLambertMaterial({ color: 0x4488CC });
+      const bucket = new THREE.Mesh(bucketGeo, bucketMat); bucket.position.set(0.22, 0.18, 0);
+      nGroup.add(body, head, hatBrim, hatTop, flower, eyeL, eyeR, cheekL, cheekR, bucket);
+
+    } else if (npc.name === 'Crab') {
+      // Crab creature: wide flat shell body, large claws, googly eyes on stalks
+      const shellGeo = new THREE.SphereGeometry(0.2, 10, 6);
+      const shellMat = new THREE.MeshLambertMaterial({ color: 0xEB6259 });
+      const shell = new THREE.Mesh(shellGeo, shellMat); shell.position.y = 0.22; shell.scale.set(1.3, 0.6, 1.0);
+      const bellyGeo = new THREE.SphereGeometry(0.15, 8, 5);
+      const bellyMat = new THREE.MeshLambertMaterial({ color: 0xF5A090 });
+      const belly = new THREE.Mesh(bellyGeo, bellyMat); belly.position.set(0, 0.18, 0.1); belly.scale.set(1, 0.5, 0.6);
+      // Eye stalks
+      const stalkGeo = new THREE.CylinderGeometry(0.022, 0.022, 0.12, 5);
+      const stalkMat = new THREE.MeshLambertMaterial({ color: 0xEB6259 });
+      const stalkL = new THREE.Mesh(stalkGeo, stalkMat); stalkL.position.set(-0.1, 0.44, 0.08);
+      const stalkR = new THREE.Mesh(stalkGeo, stalkMat); stalkR.position.set(0.1, 0.44, 0.08);
+      const eyeGeo = new THREE.SphereGeometry(0.05, 7, 6);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.1, 0.54, 0.1);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.1, 0.54, 0.1);
+      const pupilGeo = new THREE.SphereGeometry(0.025, 5, 4);
+      const pupilMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+      const pupilL = new THREE.Mesh(pupilGeo, pupilMat); pupilL.position.set(-0.1, 0.55, 0.15);
+      const pupilR = new THREE.Mesh(pupilGeo, pupilMat); pupilR.position.set(0.1, 0.55, 0.15);
+      // Claws
+      const clawBaseGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.18, 6);
+      const clawL = new THREE.Mesh(clawBaseGeo, shellMat); clawL.position.set(-0.3, 0.22, 0.05); clawL.rotation.z = 0.7;
+      const clawR = new THREE.Mesh(clawBaseGeo, shellMat); clawR.position.set(0.3, 0.22, 0.05); clawR.rotation.z = -0.7;
+      const clawTipGeo = new THREE.SphereGeometry(0.07, 7, 5);
+      const clawTipL = new THREE.Mesh(clawTipGeo, shellMat); clawTipL.position.set(-0.4, 0.32, 0.05); clawTipL.scale.set(1, 0.7, 0.8);
+      const clawTipR = new THREE.Mesh(clawTipGeo, shellMat); clawTipR.position.set(0.4, 0.32, 0.05); clawTipR.scale.set(1, 0.7, 0.8);
+      nGroup.add(shell, belly, stalkL, stalkR, eyeL, eyeR, pupilL, pupilR, clawL, clawR, clawTipL, clawTipR);
+
+    } else if (npc.name === 'Driftwood') {
+      // Old sailor: weathered wide body, captain's coat, naval hat, pipe
+      const bodyGeo = new THREE.CylinderGeometry(0.16, 0.18, 0.38, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0x6A7A8A });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.28;
+      const coatGeo = new THREE.CylinderGeometry(0.17, 0.2, 0.38, 8);
+      const coatMat = new THREE.MeshLambertMaterial({ color: 0x2C3E50 });
+      const coat = new THREE.Mesh(coatGeo, coatMat); coat.position.y = 0.26; coat.scale.set(1, 1, 0.85);
+      const headGeo = new THREE.SphereGeometry(0.15, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xF0DEC2 });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.62;
+      const hatGeo = new THREE.CylinderGeometry(0.12, 0.14, 0.12, 10);
+      const hatMat = new THREE.MeshLambertMaterial({ color: 0x1A2530 });
+      const hat = new THREE.Mesh(hatGeo, hatMat); hat.position.y = 0.78;
+      const hatBrimGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.03, 10);
+      const hatBrim = new THREE.Mesh(hatBrimGeo, hatMat); hatBrim.position.y = 0.72;
+      const eyeGeo = new THREE.SphereGeometry(0.022, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x3A5060 });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.06, 0.64, 0.13);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.06, 0.64, 0.13);
+      const beardGeo = new THREE.SphereGeometry(0.09, 7, 5);
+      const beardMat = new THREE.MeshLambertMaterial({ color: 0xCCC8B8 });
+      const beard = new THREE.Mesh(beardGeo, beardMat); beard.position.set(0, 0.56, 0.1); beard.scale.set(0.9, 0.6, 0.7);
+      const pipeGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.14, 5);
+      const pipeMat = new THREE.MeshLambertMaterial({ color: 0x4A2E1A });
+      const pipe = new THREE.Mesh(pipeGeo, pipeMat); pipe.position.set(0.08, 0.57, 0.15); pipe.rotation.z = 0.4; pipe.rotation.x = 0.3;
+      nGroup.add(body, coat, head, hat, hatBrim, eyeL, eyeR, beard, pipe);
+
+    } else if (npc.name === 'Ember') {
+      // Fire spirit: round glowing body with flame wisps rising, ember core
+      const bodyGeo = new THREE.SphereGeometry(0.18, 10, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xEB6259, emissive: 0xCC2200, emissiveIntensity: 0.4 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.28; body.scale.set(1, 1.05, 1);
+      const coreGeo = new THREE.SphereGeometry(0.1, 8, 6);
+      const coreMat = new THREE.MeshLambertMaterial({ color: 0xFFCC44, emissive: 0xFF8800, emissiveIntensity: 0.6 });
+      const core = new THREE.Mesh(coreGeo, coreMat); core.position.set(0, 0.28, 0.06);
+      const headGeo = new THREE.SphereGeometry(0.15, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xF08070 });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.6;
+      // Flame hair spikes
+      const flameGeo = new THREE.ConeGeometry(0.045, 0.18, 5);
+      const flameMat = new THREE.MeshLambertMaterial({ color: 0xFF6622, emissive: 0xFF3300, emissiveIntensity: 0.5 });
+      const flameC = new THREE.Mesh(flameGeo, flameMat); flameC.position.set(0, 0.84, 0);
+      const flameL = new THREE.Mesh(flameGeo, flameMat); flameL.position.set(-0.09, 0.8, 0); flameL.rotation.z = -0.35;
+      const flameR = new THREE.Mesh(flameGeo, flameMat); flameR.position.set(0.09, 0.8, 0); flameR.rotation.z = 0.35;
+      const eyeGeo = new THREE.SphereGeometry(0.025, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0xFF8800, emissive: 0xFF4400, emissiveIntensity: 0.6 });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.06, 0.62, 0.13);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.06, 0.62, 0.13);
+      nGroup.add(body, core, head, flameC, flameL, flameR, eyeL, eyeR);
+
+    } else if (npc.name === 'Blossom') {
+      // Cherry blossom spirit: soft pink body, petal skirt, flower in hair
+      const bodyGeo = new THREE.SphereGeometry(0.17, 10, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xF29FD7 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.26; body.scale.set(1, 0.9, 1);
+      // Petal skirt ring
+      const skirtGeo = new THREE.CylinderGeometry(0.24, 0.28, 0.08, 10);
+      const skirtMat = new THREE.MeshLambertMaterial({ color: 0xFFBBDD });
+      const skirt = new THREE.Mesh(skirtGeo, skirtMat); skirt.position.y = 0.1;
+      const headGeo = new THREE.SphereGeometry(0.15, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xFFE0F0 });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.58;
+      const flowerGeo = new THREE.SphereGeometry(0.06, 6, 5);
+      const flowerMat = new THREE.MeshLambertMaterial({ color: 0xFF88AA });
+      const flower = new THREE.Mesh(flowerGeo, flowerMat); flower.position.set(0.1, 0.73, 0.06); flower.scale.set(1, 0.5, 1);
+      const petalGeo = new THREE.SphereGeometry(0.04, 5, 4);
+      const petalMat = new THREE.MeshLambertMaterial({ color: 0xFFCCDD });
+      for (let pi = 0; pi < 5; pi++) {
+        const angle = (pi / 5) * Math.PI * 2;
+        const p = new THREE.Mesh(petalGeo, petalMat);
+        p.position.set(0.1 + Math.cos(angle)*0.065, 0.73, 0.06 + Math.sin(angle)*0.065);
+        nGroup.add(p);
+      }
+      const eyeGeo = new THREE.SphereGeometry(0.02, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x883355 });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.055, 0.6, 0.13);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.055, 0.6, 0.13);
+      const cheekGeo = new THREE.SphereGeometry(0.032, 5, 5);
+      const cheekMat = new THREE.MeshLambertMaterial({ color: 0xFFAACC });
+      const cheekL = new THREE.Mesh(cheekGeo, cheekMat); cheekL.position.set(-0.085, 0.58, 0.12);
+      const cheekR = new THREE.Mesh(cheekGeo, cheekMat); cheekR.position.set(0.085, 0.58, 0.12);
+      nGroup.add(body, skirt, head, flower, eyeL, eyeR, cheekL, cheekR);
+
+    } else if (npc.name === 'Ashrock') {
+      // Stone golem: angular blocky body, rocky chunks, mossy cracks, single glowing eye
+      const bodyGeo = new THREE.BoxGeometry(0.36, 0.42, 0.3);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0x4F4261 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.28;
+      const shoulderLGeo = new THREE.BoxGeometry(0.14, 0.14, 0.14);
+      const rockMat = new THREE.MeshLambertMaterial({ color: 0x3A2E52 });
+      const shoulderL = new THREE.Mesh(shoulderLGeo, rockMat); shoulderL.position.set(-0.22, 0.38, 0); shoulderL.rotation.y = 0.4;
+      const shoulderR = new THREE.Mesh(shoulderLGeo, rockMat); shoulderR.position.set(0.22, 0.38, 0); shoulderR.rotation.y = -0.4;
+      const headGeo = new THREE.BoxGeometry(0.28, 0.24, 0.24);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0x5A5070 });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.64; head.rotation.y = 0.1;
+      const crackGeo = new THREE.BoxGeometry(0.04, 0.18, 0.02);
+      const crackMat = new THREE.MeshLambertMaterial({ color: 0x5DA82A });
+      const crack = new THREE.Mesh(crackGeo, crackMat); crack.position.set(0.05, 0.28, 0.16);
+      const eyeGeo = new THREE.SphereGeometry(0.042, 7, 6);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x8B44CC, emissive: 0x6622AA, emissiveIntensity: 0.6 });
+      const eye = new THREE.Mesh(eyeGeo, eyeMat); eye.position.set(0, 0.65, 0.13);
+      nGroup.add(body, shoulderL, shoulderR, head, crack, eye);
+
+    } else if (npc.name === 'Glimmer') {
+      // Crystal fairy: faceted gem body, crystalline wings, sparkling silver
+      const bodyGeo = new THREE.OctahedronGeometry(0.16, 0);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xC6C3DC, emissive: 0x9999CC, emissiveIntensity: 0.3 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.32; body.scale.set(0.9, 1.3, 0.9);
+      const headGeo = new THREE.SphereGeometry(0.14, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xEEECFF });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.62;
+      const crownGeo = new THREE.OctahedronGeometry(0.06, 0);
+      const crownMat = new THREE.MeshLambertMaterial({ color: 0xFFEEFF, emissive: 0xBBAAFF, emissiveIntensity: 0.5 });
+      const crown = new THREE.Mesh(crownGeo, crownMat); crown.position.set(0, 0.77, 0); crown.scale.set(1.2, 0.7, 1.2);
+      // Crystal wing shards
+      const wingGeo = new THREE.OctahedronGeometry(0.1, 0);
+      const wingMat = new THREE.MeshLambertMaterial({ color: 0xDDCCFF, transparent: true, opacity: 0.7 });
+      const wingTL = new THREE.Mesh(wingGeo, wingMat); wingTL.position.set(-0.2, 0.5, -0.05); wingTL.scale.set(0.5, 1.0, 0.3);
+      const wingTR = new THREE.Mesh(wingGeo, wingMat); wingTR.position.set(0.2, 0.5, -0.05); wingTR.scale.set(0.5, 1.0, 0.3);
+      const wingBL = new THREE.Mesh(wingGeo, wingMat); wingBL.position.set(-0.16, 0.35, -0.05); wingBL.scale.set(0.4, 0.7, 0.25);
+      const wingBR = new THREE.Mesh(wingGeo, wingMat); wingBR.position.set(0.16, 0.35, -0.05); wingBR.scale.set(0.4, 0.7, 0.25);
+      const eyeGeo = new THREE.SphereGeometry(0.02, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x7766CC });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.053, 0.635, 0.12);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.053, 0.635, 0.12);
+      nGroup.add(body, head, crown, wingTL, wingTR, wingBL, wingBR, eyeL, eyeR);
+
+    } else if (npc.name === 'Stalagmite') {
+      // Cave creature: cluster of crystal spires as body, hunched low, mineral glow
+      const baseGeo = new THREE.CylinderGeometry(0.22, 0.26, 0.12, 8);
+      const baseMat = new THREE.MeshLambertMaterial({ color: 0x3A2E52 });
+      const base = new THREE.Mesh(baseGeo, baseMat); base.position.y = 0.1;
+      // Central spire
+      const spireGeo = new THREE.ConeGeometry(0.1, 0.45, 6);
+      const spireMat = new THREE.MeshLambertMaterial({ color: 0x9B9AE2, emissive: 0x4444AA, emissiveIntensity: 0.35 });
+      const spireC = new THREE.Mesh(spireGeo, spireMat); spireC.position.y = 0.38;
+      const spireL = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.3, 5), spireMat); spireL.position.set(-0.15, 0.28, 0.04); spireL.rotation.z = -0.25;
+      const spireR = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.3, 5), spireMat); spireR.position.set(0.15, 0.28, 0.04); spireR.rotation.z = 0.25;
+      const spireB = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.22, 5), spireMat); spireB.position.set(0, 0.22, -0.12); spireB.rotation.x = -0.3;
+      // Eyes embedded in central spire
+      const eyeGeo = new THREE.SphereGeometry(0.028, 6, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0xCCBBFF, emissive: 0x8877EE, emissiveIntensity: 0.7 });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.05, 0.32, 0.09);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.05, 0.32, 0.09);
+      nGroup.add(base, spireC, spireL, spireR, spireB, eyeL, eyeR);
+
+    } else if (npc.name === 'Echo') {
+      // Echo spirit: translucent wavering form, ghostly rings, soft pulse
+      const bodyGeo = new THREE.SphereGeometry(0.17, 10, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xF29FD7, transparent: true, opacity: 0.55 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.3; body.scale.set(1, 1.2, 1);
+      const innerGeo = new THREE.SphereGeometry(0.11, 8, 7);
+      const innerMat = new THREE.MeshLambertMaterial({ color: 0xFFEEFF, transparent: true, opacity: 0.5, emissive: 0xDDAAFF, emissiveIntensity: 0.4 });
+      const inner = new THREE.Mesh(innerGeo, innerMat); inner.position.y = 0.3;
+      const headGeo = new THREE.SphereGeometry(0.14, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xFFEEFF, transparent: true, opacity: 0.7 });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.6;
+      // Echo rings
+      const ringGeo = new THREE.TorusGeometry(0.22, 0.015, 5, 16);
+      const ringMat = new THREE.MeshLambertMaterial({ color: 0xEEBBFF, transparent: true, opacity: 0.4 });
+      const ring1 = new THREE.Mesh(ringGeo, ringMat); ring1.position.y = 0.28; ring1.rotation.x = Math.PI/2;
+      const ring2 = new THREE.Mesh(ringGeo, ringMat); ring2.position.y = 0.42; ring2.rotation.x = Math.PI/2; ring2.scale.set(0.7, 0.7, 1);
+      const eyeGeo = new THREE.SphereGeometry(0.022, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0xCC88FF, transparent: true, opacity: 0.9 });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.052, 0.62, 0.12);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.052, 0.62, 0.12);
+      nGroup.add(body, inner, head, ring1, ring2, eyeL, eyeR);
+
+    } else if (npc.name === 'Zephyr') {
+      // Wind spirit: flowing streamers, swirling body, dynamic wisps
+      const bodyGeo = new THREE.SphereGeometry(0.16, 10, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0xC6C3DC });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.3; body.scale.set(1, 1.1, 1);
+      const headGeo = new THREE.SphereGeometry(0.14, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xEEECFF });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.6;
+      const eyeGeo = new THREE.SphereGeometry(0.02, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x7799CC });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.052, 0.62, 0.12);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.052, 0.62, 0.12);
+      // Streamer wisps (curved cylinder approximations)
+      const streamerGeo = new THREE.CylinderGeometry(0.018, 0.004, 0.35, 5);
+      const streamerMat = new THREE.MeshLambertMaterial({ color: 0xBBCCEE, transparent: true, opacity: 0.75 });
+      const s1 = new THREE.Mesh(streamerGeo, streamerMat); s1.position.set(-0.18, 0.28, 0); s1.rotation.z = 0.6; s1.rotation.x = 0.2;
+      const s2 = new THREE.Mesh(streamerGeo, streamerMat); s2.position.set(0.18, 0.28, 0); s2.rotation.z = -0.6; s2.rotation.x = -0.2;
+      const s3 = new THREE.Mesh(streamerGeo, streamerMat); s3.position.set(-0.1, 0.18, 0.1); s3.rotation.z = 0.9; s3.rotation.x = 0.5;
+      const s4 = new THREE.Mesh(streamerGeo, streamerMat); s4.position.set(0.1, 0.18, 0.1); s4.rotation.z = -0.9; s4.rotation.x = -0.5;
+      // Swirling crown element
+      const swirlGeo = new THREE.TorusGeometry(0.1, 0.018, 5, 10);
+      const swirlMat = new THREE.MeshLambertMaterial({ color: 0x99BBEE, transparent: true, opacity: 0.7 });
+      const swirl = new THREE.Mesh(swirlGeo, swirlMat); swirl.position.y = 0.75; swirl.rotation.x = 0.4;
+      nGroup.add(body, head, eyeL, eyeR, s1, s2, s3, s4, swirl);
+
+    } else if (npc.name === 'Windkeeper') {
+      // Guardian with windmill-like arms and a wide traveler's cloak
+      const bodyGeo = new THREE.CylinderGeometry(0.14, 0.2, 0.4, 8);
+      const bodyMat = new THREE.MeshLambertMaterial({ color: 0x9B9AE2 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat); body.position.y = 0.28;
+      const cloakGeo = new THREE.CylinderGeometry(0.22, 0.28, 0.38, 10);
+      const cloakMat = new THREE.MeshLambertMaterial({ color: 0x7070BB });
+      const cloak = new THREE.Mesh(cloakGeo, cloakMat); cloak.position.y = 0.25; cloak.scale.set(1, 1, 0.8);
+      const headGeo = new THREE.SphereGeometry(0.15, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xD0CEEE });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.62;
+      const eyeGeo = new THREE.SphereGeometry(0.022, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0x4444AA });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.06, 0.64, 0.13);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.06, 0.64, 0.13);
+      // Windmill vane arms
+      const vaneGeo = new THREE.BoxGeometry(0.3, 0.04, 0.06);
+      const vaneMat = new THREE.MeshLambertMaterial({ color: 0xCCCCFF });
+      const vaneH = new THREE.Mesh(vaneGeo, vaneMat); vaneH.position.set(0.26, 0.38, 0.12);
+      const vaneV = new THREE.Mesh(vaneGeo, vaneMat); vaneV.position.set(0.26, 0.38, 0.12); vaneV.rotation.z = Math.PI/2;
+      const hubGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.04, 7);
+      const hubMat = new THREE.MeshLambertMaterial({ color: 0xEEEEFF });
+      const hub = new THREE.Mesh(hubGeo, hubMat); hub.position.set(0.26, 0.38, 0.14); hub.rotation.x = Math.PI/2;
+      nGroup.add(body, cloak, head, eyeL, eyeR, vaneH, vaneV, hub);
+
+    } else if (npc.name === 'Ancient Keeper') {
+      // Ancient wise being: tall stately robes, long beard, glowing rune staff
+      const robeGeo = new THREE.CylinderGeometry(0.12, 0.22, 0.48, 10);
+      const robeMat = new THREE.MeshLambertMaterial({ color: 0x2A1E40 });
+      const robe = new THREE.Mesh(robeGeo, robeMat); robe.position.y = 0.3;
+      const robeTrimGeo = new THREE.CylinderGeometry(0.13, 0.23, 0.05, 10);
+      const trimMat = new THREE.MeshLambertMaterial({ color: 0x8866AA });
+      const robeTrim = new THREE.Mesh(robeTrimGeo, trimMat); robeTrim.position.y = 0.08;
+      const headGeo = new THREE.SphereGeometry(0.15, 10, 8);
+      const headMat = new THREE.MeshLambertMaterial({ color: 0xD8C8AA });
+      const head = new THREE.Mesh(headGeo, headMat); head.position.y = 0.68;
+      const hoodGeo = new THREE.ConeGeometry(0.17, 0.28, 10);
+      const hoodMat = new THREE.MeshLambertMaterial({ color: 0x2A1E40 });
+      const hood = new THREE.Mesh(hoodGeo, hoodMat); hood.position.y = 0.84;
+      const beardGeo = new THREE.ConeGeometry(0.07, 0.22, 7);
+      const beardMat = new THREE.MeshLambertMaterial({ color: 0xEEEEDD });
+      const beard = new THREE.Mesh(beardGeo, beardMat); beard.position.set(0, 0.57, 0.1); beard.rotation.x = -0.3; beard.scale.set(1, 1, 0.6);
+      const eyeGeo = new THREE.SphereGeometry(0.02, 5, 5);
+      const eyeMat = new THREE.MeshLambertMaterial({ color: 0xCCBBFF, emissive: 0x9988CC, emissiveIntensity: 0.5 });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.055, 0.7, 0.13);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.055, 0.7, 0.13);
+      const staffGeo = new THREE.CylinderGeometry(0.022, 0.022, 0.82, 6);
+      const staffMat = new THREE.MeshLambertMaterial({ color: 0x2A1E30 });
+      const staff = new THREE.Mesh(staffGeo, staffMat); staff.position.set(-0.22, 0.42, 0);
+      const runeGeo = new THREE.OctahedronGeometry(0.065, 0);
+      const runeMat = new THREE.MeshLambertMaterial({ color: 0xBB88FF, emissive: 0x9955EE, emissiveIntensity: 0.7 });
+      const rune = new THREE.Mesh(runeGeo, runeMat); rune.position.set(-0.22, 0.85, 0);
+      nGroup.add(robe, robeTrim, head, hood, beard, eyeL, eyeR, staff, rune);
+
     } else {
       // Generic fallback NPC
       const bodyGeo = new THREE.CapsuleGeometry(0.14, 0.22, 4, 8);
