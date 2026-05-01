@@ -14,7 +14,7 @@ let state = 'title'; // title | playing | dialogue | map | win
 let currentIslandId = 0;
 let audioReady = false;
 const keys = {};
-const isMobile = navigator.maxTouchPoints > 0 || window.innerWidth < 768;
+const isMobile = window.matchMedia('(pointer:coarse)').matches || window.innerWidth < 768;
 let joystickDir = { x: 0, z: 0 };
 
 // ── Three.js ─────────────────────────────────────────────────
@@ -353,7 +353,7 @@ function buildIsland(islandId) {
   shrineMesh.position.set(island.shrinePos.x, 0.3, island.shrinePos.z);
   if (island.restored) { shrMat.emissive.set(PALETTE.goldenYellowN); shrMat.emissiveIntensity = 0.7; }
   scene.add(shrineMesh);
-  if (island.crystalCount >= island.totalCrystals) addShrineBeam(island);
+  if (island.crystalCount >= island.totalCrystals && !island.beamAdded) { island.beamAdded = true; addShrineBeam(island); }
   const shrLight = new THREE.PointLight(PALETTE.goldenYellowN, 0.6, 3);
   shrLight.position.set(island.shrinePos.x, 1, island.shrinePos.z);
   scene.add(shrLight); islandMeshes.push(shrLight);
@@ -1224,7 +1224,7 @@ function collectCrystal(mesh) {
   updateCrystalHUD();
   if (island.crystalCount >= island.totalCrystals) {
     // Beam of light on shrine
-    addShrineBeam(island);
+    island.beamAdded = true; addShrineBeam(island);
     setTimeout(()=>showDialogue('Shrine', ['All shards gathered! Bring them to the shrine.'], null), 600);
   }
 }
@@ -1323,8 +1323,8 @@ function activateShrine() {
 
 
   // Grant ability
-  const abilityMap = ['pulse','sprint','heatWard','whistle','sonar'];
-  const abilityNames = ['Lantern Pulse','Sprint','Heat Ward','Whistle','Sonar Echo'];
+  const abilityMap = ['pulse','sprint','heatWard','whistle','sonar','starlight'];
+  const abilityNames = ['Lantern Pulse','Sprint','Heat Ward','Whistle','Sonar Echo','Starlight'];
   const abilityKey = abilityMap[currentIslandId];
   if (abilityKey && player) {
     player.grantAbility(abilityKey);
@@ -1743,7 +1743,9 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 
 function handleInteract() {
-  if (!player || !audioReady) return;
+  if (!player) return;
+  // Ensure audio is initialized on first interaction
+  if (!audioReady) { initAudio(); audioReady = true; startExploreMusic(); }
   const island = getIsland(currentIslandId);
   const pp = player.pos;
 
@@ -1803,7 +1805,7 @@ function handleInteract() {
   // Check crystals — only collectible after all quests on this island are done
   const island2 = getIsland(currentIslandId);
   const islandQuests = island2.npcs.filter(n=>n.quest);
-  const questsDone = islandQuests.length === 0 || islandQuests.every(n=>n.quest.done || questState[n.quest.type]);
+  const questsDone = islandQuests.length === 0 || islandQuests.every(n=>questState[n.quest.type]);
   for (let i = crystalMeshes.length-1; i >= 0; i--) {
     const cm = crystalMeshes[i];
     const d = pp.distanceTo(cm.position);
@@ -1956,6 +1958,7 @@ function loadIsland(id) {
   setTimeout(() => {
     currentIslandId = id;
     questState = getQuestState(id);
+    inventoryItems = [];
     player.pos.set(0, 0, 2);
     buildIsland(id);
     updateAbilityBar();
@@ -2022,6 +2025,11 @@ function updateQuestTracker(islandId) {
   const quests = island.npcs.filter(n => n.quest).map(n => n.quest);
   if (!quests.length) { tracker.style.display = 'none'; return; }
   const qs = getQuestState(islandId);
+  const anyStarted = quests.some(q => qs[q.type] || q.done || qs[q.type + '_started']);
+  if (!anyStarted) {
+    list.innerHTML = '<li style="color:rgba(198,195,220,0.8);font-style:italic">Talk to the islanders to begin quests…</li>';
+    tracker.style.display = 'block'; return;
+  }
   const QUEST_THEMES = {
     find_firefly:      'Find the lost firefly',
     find_shell:        'Collect a spiral shell',
@@ -2096,7 +2104,7 @@ document.getElementById('map-canvas').addEventListener('click', e => {
   const my = (e.clientY - rect.top) / rect.height;
   ISLANDS.forEach((island, i) => {
     const dx = mx - island.mapPos.x, dy = my - island.mapPos.y;
-    if (Math.sqrt(dx*dx+dy*dy) < 0.10 && island.unlocked) selectIslandFromMap(i);
+    if (Math.sqrt(dx*dx+dy*dy) < 0.15 && island.unlocked) selectIslandFromMap(i);
   });
 });
 
@@ -2119,7 +2127,7 @@ document.getElementById('dialogue-box').addEventListener('click', ()=>{
 });
 document.getElementById('restart-btn').addEventListener('click', ()=>{
   document.getElementById('win-screen').style.display='none';
-  ISLANDS.forEach(i=>{ i.unlocked=false; i.restored=false; i.crystalCount=0; });
+  ISLANDS.forEach(i=>{ i.unlocked=false; i.restored=false; i.crystalCount=0; i.beamAdded=false; });
   questStateMap = {};
   ISLANDS[0].unlocked=true;
   loadIsland(0); showHUD(true); state='playing';
@@ -2127,7 +2135,7 @@ document.getElementById('restart-btn').addEventListener('click', ()=>{
 
 // ── Dev mode ──────────────────────────────────────────────────
 document.getElementById('dev-btn').addEventListener('click', () => {
-  ISLANDS.forEach(i=>{ i.unlocked=true; i.restored=false; i.crystalCount=0; });
+  ISLANDS.forEach(i=>{ i.unlocked=true; i.restored=false; i.crystalCount=0; i.beamAdded=false; });
   questStateMap = {};
   initAudio(); audioReady=true;
   startExploreMusic();
@@ -2152,7 +2160,7 @@ document.getElementById('start-btn').addEventListener('click', () => {
     'Your golden lantern glows as you step onto the Mossy Forest…',
     'Five crystal shards hide on this island. Find them, then bring them to the shrine!',
     'Press Space near objects to interact. M to open your map. Good luck!'
-  ], null), 1200);
+  ], null), 350);
 });
 
 // ── Resize ────────────────────────────────────────────────────
