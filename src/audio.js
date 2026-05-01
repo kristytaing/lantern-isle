@@ -16,14 +16,14 @@ export function initAudio() {
 // ── Reverb via convolver ───────────────────────────────────
 function buildReverb() {
   const convolver = ctx.createConvolver();
-  const len = ctx.sampleRate * 2.2;
+  const len = ctx.sampleRate * 1.8;
   const buf = ctx.createBuffer(2, len, ctx.sampleRate);
   for (let c = 0; c < 2; c++) {
     const d = buf.getChannelData(c);
-    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 2.5);
+    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 3.2);
   }
   convolver.buffer = buf;
-  const wet = ctx.createGain(); wet.gain.value = 0.28;
+  const wet = ctx.createGain(); wet.gain.value = 0.18; // reduced from 0.28 — less muddy
   convolver.connect(wet); wet.connect(masterGain);
   return { input: convolver };
 }
@@ -34,8 +34,8 @@ function filterNode(freq=900, type='lowpass') {
 }
 
 // Route a node through warm lowpass + optional reverb send
-function connectWarm(source, reverbSend=0.4) {
-  const lp = filterNode(1400, 'lowpass');
+function connectWarm(source, reverbSend=0.3) {
+  const lp = filterNode(1200, 'lowpass');
   source.connect(lp); lp.connect(masterGain);
   if (reverbSend > 0 && reverbNode) {
     const send = gainNode(reverbSend);
@@ -44,70 +44,73 @@ function connectWarm(source, reverbSend=0.4) {
 }
 
 // ── Island music configs ───────────────────────────────────
-// Each island: root, chords (semitone offsets from root), BPM, melody style
+// Chords: semitone offsets from root (clean triads only — no maj7/min7)
+// melodyOct: integer octave multiplier for melody/pad register (2 = 2 octaves up)
+// All chord pads and melody use semitone(root, semi + 12*melodyOct) — clean octaves only
 const ISLAND_MUSIC = [
-  { // 0 Mossy Forest — Cm, slow dreamy
-    root: 130.81, bpm: 62,
+  { // 0 Mossy Forest — C minor, slow dreamy
+    root: 130.81, bpm: 58,
     chords: [[0,3,7],[5,8,12],[3,7,10],[7,10,14]],
     melodyOct: 2, swing: 0.58,
-    bassStyle: 'slow', crackle: 0.010
-  },
-  { // 1 Sunflower Beach — C major, warm gentle
-    root: 130.81, bpm: 72,
-    chords: [[0,4,7],[5,9,12],[4,7,11],[7,11,14]],
-    melodyOct: 2.5, swing: 0.46,
-    bassStyle: 'bounce', crackle: 0.007
-  },
-  { // 2 Sakura Cove — Bm, gentle flowing
-    root: 123.47, bpm: 66,
-    chords: [[0,3,7],[5,8,12],[7,10,14],[3,7,10]],
-    melodyOct: 2.2, swing: 0.54,
-    bassStyle: 'slow', crackle: 0.009
-  },
-  { // 3 Cozy Village — C, warm folksy
-    root: 130.81, bpm: 74,
-    chords: [[0,4,7],[5,9,12],[9,12,16],[7,10,14]],
-    melodyOct: 2.3, swing: 0.50,
-    bassStyle: 'bounce', crackle: 0.013
-  },
-  { // 4 Crystal Cave — Ab, eerie sparse
-    root: 103.83, bpm: 54,
-    chords: [[0,3,7],[5,8,12],[8,11,15],[3,7,10]],
-    melodyOct: 1.8, swing: 0.65,
-    bassStyle: 'sparse', crackle: 0.005
-  },
-  { // 5 Lavender Highlands — Am, airy floaty
-    root: 110, bpm: 66,
-    chords: [[0,3,7],[5,8,12],[7,10,14],[3,7,10]],
-    melodyOct: 2.4, swing: 0.50,
     bassStyle: 'slow', crackle: 0.008
+  },
+  { // 1 Sunflower Beach — C major, warm gentle (no maj7 — pure triads)
+    root: 130.81, bpm: 68,
+    chords: [[0,4,7],[5,9,12],[9,12,16],[7,11,14]],
+    melodyOct: 2, swing: 0.46,
+    bassStyle: 'bounce', crackle: 0.006
+  },
+  { // 2 Sakura Cove — B minor, gentle flowing (pure minor triads)
+    root: 123.47, bpm: 62,
+    chords: [[0,3,7],[5,8,12],[7,10,14],[3,7,10]],
+    melodyOct: 2, swing: 0.54,
+    bassStyle: 'slow', crackle: 0.007
+  },
+  { // 3 Cozy Village — C major, warm folksy
+    root: 130.81, bpm: 70,
+    chords: [[0,4,7],[5,9,12],[9,12,16],[7,11,14]],
+    melodyOct: 2, swing: 0.50,
+    bassStyle: 'bounce', crackle: 0.010
+  },
+  { // 4 Crystal Cave — Ab minor, eerie sparse
+    root: 103.83, bpm: 52,
+    chords: [[0,3,7],[5,8,12],[8,11,15],[3,7,10]],
+    melodyOct: 2, swing: 0.65,
+    bassStyle: 'sparse', crackle: 0.004
+  },
+  { // 5 Lavender Highlands — A minor, airy floaty
+    root: 110, bpm: 63,
+    chords: [[0,3,7],[5,8,12],[7,10,14],[3,7,10]],
+    melodyOct: 2, swing: 0.50,
+    bassStyle: 'slow', crackle: 0.006
   },
 ];
 
+// semitone(base, n) — raise base by n semitones
 function semitone(base, semi) { return base * Math.pow(2, semi/12); }
 
 // ── Lofi instrument voices ─────────────────────────────────
-function playPianoNote(freq, time, dur, vol=0.18) {
+function playPianoNote(freq, time, dur, vol=0.15) {
   const o1 = ctx.createOscillator(); o1.type = 'triangle'; o1.frequency.value = freq;
-  const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq*2.005;
-  const g = gainNode(0); connectWarm(g, 0.38);
-  [[o1,1],[o2,0.3]].forEach(([o,w]) => {
-    const og = gainNode(w); o.connect(og); og.connect(g); o.start(time); o.stop(time+dur+0.6);
+  const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq*2.003;
+  const g = gainNode(0); connectWarm(g, 0.28);
+  [[o1,1],[o2,0.25]].forEach(([o,w]) => {
+    const og = gainNode(w); o.connect(og); og.connect(g); o.start(time); o.stop(time+dur+0.8);
   });
   g.gain.setValueAtTime(0, time);
-  g.gain.linearRampToValueAtTime(vol, time+0.025);
-  g.gain.setValueAtTime(vol*0.55, time+0.12);
-  g.gain.exponentialRampToValueAtTime(0.001, time+dur+0.55);
+  g.gain.linearRampToValueAtTime(vol, time+0.03);
+  g.gain.setValueAtTime(vol*0.5, time+0.14);
+  g.gain.exponentialRampToValueAtTime(0.001, time+dur+0.75);
 }
 
-function playBassNote(freq, time, dur, vol=0.22) {
+function playBassNote(freq, time, dur, vol=0.20) {
   const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
-  const o2 = ctx.createOscillator(); o2.type = 'triangle'; o2.frequency.value = freq*1.004;
+  const o2 = ctx.createOscillator(); o2.type = 'triangle'; o2.frequency.value = freq*1.003;
   const g = gainNode(0);
-  const lp = filterNode(400, 'lowpass'); g.connect(lp); lp.connect(masterGain);
+  const lp = filterNode(350, 'lowpass'); g.connect(lp); lp.connect(masterGain);
   [o, o2].forEach(osc => { const og = gainNode(0.5); osc.connect(og); og.connect(g); osc.start(time); osc.stop(time+dur+0.2); });
   g.gain.setValueAtTime(0, time);
-  g.gain.linearRampToValueAtTime(vol, time+0.02);
+  g.gain.linearRampToValueAtTime(vol, time+0.025);
   g.gain.exponentialRampToValueAtTime(0.001, time+dur+0.18);
 }
 
@@ -159,53 +162,59 @@ function scheduleVinylCrackle(startTime, duration, intensity) {
 // ── Main scheduler ─────────────────────────────────────────
 function buildLofiScheduler(islandId) {
   const cfg = ISLAND_MUSIC[islandId] || ISLAND_MUSIC[0];
-  const { root, bpm, chords, melodyScale, melodyOct, swing, bassStyle, crackle } = cfg;
+  const { root, bpm, chords, melodyOct, swing, bassStyle, crackle } = cfg;
   const beat = 60 / bpm;
   const bar = beat * 4;
   let active = false, startTime = 0, chordIdx = 0;
   let rafId = null, scheduledUntil = 0;
   const LOOKAHEAD = 0.3;
 
+  // Pad register root: root shifted up by melodyOct octaves (integer octaves only)
+  const padRoot = root * Math.pow(2, melodyOct);
+
   function scheduleBar(barStart) {
     const chord = chords[chordIdx % chords.length];
     chordIdx++;
 
-    // Bass line
-    const bassRoot = semitone(root, chord[0]);
+    // Bass line — plays at root octave (1 octave above sub-bass)
+    const bassRoot = semitone(root * 2, chord[0]);
     if (bassStyle === 'bounce') {
       playBassNote(bassRoot, barStart, beat*1.4);
-      if (Math.random() > 0.35) playBassNote(bassRoot, barStart+beat*2.5, beat*1.0, 0.15);
+      if (Math.random() > 0.38) playBassNote(bassRoot, barStart+beat*2.5, beat*1.0, 0.14);
     } else if (bassStyle === 'sparse') {
-      playBassNote(bassRoot, barStart, beat*2.2);
-      if (Math.random() > 0.5) playBassNote(bassRoot, barStart+beat*3, beat*1.0, 0.14);
+      playBassNote(bassRoot, barStart, beat*2.5);
+      if (Math.random() > 0.55) playBassNote(bassRoot, barStart+beat*3, beat*1.0, 0.12);
     } else {
-      playBassNote(bassRoot, barStart, beat*2.0);
-      if (Math.random() > 0.4) playBassNote(bassRoot, barStart+beat*2.5, beat*1.4, 0.15);
+      playBassNote(bassRoot, barStart, beat*2.2);
+      if (Math.random() > 0.42) playBassNote(bassRoot, barStart+beat*2.5, beat*1.6, 0.13);
     }
 
-    // Chord pads: gentle strum on beat 1, optional soft repeat on beat 3
+    // Chord pads: each note is semitone offset from padRoot (clean octave above root)
     chord.forEach((semi, i) => {
-      const freq = semitone(root * melodyOct, semi);
-      playPianoNote(freq, barStart + i*0.022, beat*2.2, 0.085);
-      if (Math.random() > 0.55) playPianoNote(freq, barStart+beat*2.5 + i*0.018, beat*1.4, 0.055);
+      const freq = semitone(padRoot, semi);
+      playPianoNote(freq, barStart + i*0.025, beat*2.4, 0.072);
+      if (Math.random() > 0.58) playPianoNote(freq, barStart+beat*2.5 + i*0.020, beat*1.6, 0.048);
     });
 
-    // Melody: chord-aware, 1-2 notes per bar, long gentle durations
-    // Only pick semitones that belong to the current chord (+ octave up)
+    // Melody: chord-aware, 1-2 notes per bar, one octave above pad
+    // Picks only semitones belonging to the current chord
     const melodyPool = [];
-    chord.forEach(semi => { melodyPool.push(semi); melodyPool.push(semi + 12); });
-    const numNotes = Math.random() > 0.45 ? 2 : 1;
+    chord.forEach(semi => {
+      melodyPool.push(semi);       // same octave as pad
+      melodyPool.push(semi + 12);  // one octave above
+    });
+    const numNotes = Math.random() > 0.5 ? 2 : 1;
     const usedBeats = new Set();
     for (let n = 0; n < numNotes; n++) {
       const beatChoices = [0, beat, beat*1.5, beat*2, beat*3];
       let beatPos = beatChoices[Math.floor(Math.random()*beatChoices.length)];
       if (usedBeats.has(beatPos)) beatPos = beatChoices[(Math.floor(Math.random()*beatChoices.length)+2)%beatChoices.length];
       usedBeats.add(beatPos);
-      const swingAdj = (beatPos > 0) ? beat*0.5*(swing-0.5)*0.3 : 0;
+      const swingAdj = (beatPos > 0) ? beat*0.5*(swing-0.5)*0.25 : 0;
       const semi = melodyPool[Math.floor(Math.random()*melodyPool.length)];
-      const freq = semitone(root * melodyOct, semi);
-      const noteDur = beat * (1.6 + Math.random()*1.2);
-      playPianoNote(freq, barStart + beatPos + swingAdj, noteDur, 0.11 + Math.random()*0.04);
+      const freq = semitone(padRoot, semi);
+      const noteDur = beat * (1.8 + Math.random()*1.4);
+      playPianoNote(freq, barStart + beatPos + swingAdj, noteDur, 0.10 + Math.random()*0.035);
     }
 
     // Vinyl crackle over the bar
@@ -233,11 +242,11 @@ function buildLofiScheduler(islandId) {
       tick();
     },
     stop() {
-      active = false; // immediately stops tick() from scheduling any more notes
+      active = false;
       if (rafId) clearTimeout(rafId);
       masterG.gain.cancelScheduledValues(ctx.currentTime);
       masterG.gain.setValueAtTime(masterG.gain.value, ctx.currentTime);
-      masterG.gain.linearRampToValueAtTime(0, ctx.currentTime+3.0);
+      masterG.gain.linearRampToValueAtTime(0, ctx.currentTime+3.5);
     }
   };
 }
@@ -246,11 +255,12 @@ export function setIslandMusic(islandId) {
   if (!ctx || islandId === currentIslandId) return;
   currentIslandId = islandId;
   if (musicScheduler) { musicScheduler.stop(); musicScheduler = null; }
+  // Wait for fade-out to fully complete before starting new music
   setTimeout(() => {
     if (!ctx || muted || currentIslandId !== islandId) return;
     musicScheduler = buildLofiScheduler(islandId);
     musicScheduler.start();
-  }, 3800);
+  }, 4200);
 }
 
 export function startExploreMusic() {

@@ -167,6 +167,101 @@ function buildIsland(islandId) {
     scene.add(head); islandMeshes.push(head);
   }
 
+  // Lavender spike: tall stem with rounded buds clustered along the top — not a cone
+  function addLavender(x, z) {
+    const group = new THREE.Group();
+    group.position.set(x, 0, z);
+    const numStalks = 2 + Math.floor(Math.random()*2);
+    for (let s = 0; s < numStalks; s++) {
+      const ox = (Math.random()-0.5)*0.15;
+      const oz = (Math.random()-0.5)*0.15;
+      const stemH = 0.28 + Math.random()*0.10;
+      const stemGeo = new THREE.CylinderGeometry(0.012, 0.016, stemH, 5);
+      const stemMat = new THREE.MeshLambertMaterial({ color: 0x6A8C4A });
+      const stem = new THREE.Mesh(stemGeo, stemMat);
+      stem.position.set(ox, stemH*0.5, oz);
+      stem.rotation.z = (Math.random()-0.5)*0.18;
+      group.add(stem);
+      // Cluster of small rounded buds along the upper third of stalk
+      const budCount = 5 + Math.floor(Math.random()*4);
+      for (let b = 0; b < budCount; b++) {
+        const t = 0.55 + (b/budCount)*0.45;
+        const angle = b * 2.39996; // golden angle spacing
+        const budR = 0.022 + Math.random()*0.012;
+        const budGeo = new THREE.SphereGeometry(budR, 6, 5);
+        const budMat = new THREE.MeshLambertMaterial({ color: b % 2 === 0 ? 0x9B6ABE : 0xB48CD4 });
+        const bud = new THREE.Mesh(budGeo, budMat);
+        bud.position.set(
+          ox + Math.cos(angle)*0.025,
+          stemH * t,
+          oz + Math.sin(angle)*0.025
+        );
+        group.add(bud);
+      }
+      // Tiny leaf pair mid-stem
+      const leafGeo = new THREE.SphereGeometry(0.028, 5, 4);
+      leafGeo.scale(1.4, 0.4, 0.7);
+      const leafMat = new THREE.MeshLambertMaterial({ color: 0x5A8040 });
+      const leaf = new THREE.Mesh(leafGeo, leafMat);
+      leaf.position.set(ox + 0.03, stemH*0.4, oz);
+      leaf.rotation.z = 0.4;
+      group.add(leaf);
+    }
+    group.userData = { windSway: true, windOffset: Math.random()*Math.PI*2, bobOffset: Math.random()*Math.PI*2, bobBase: 0 };
+    scene.add(group); islandMeshes.push(group);
+  }
+
+  function addWindmill(x, z) {
+    const group = new THREE.Group();
+    group.position.set(x, 0, z);
+    // Tower — slightly tapered stone cylinder
+    const towerGeo = new THREE.CylinderGeometry(0.10, 0.14, 0.85, 8);
+    const towerMat = new THREE.MeshLambertMaterial({ color: 0xD4C8A8 });
+    const tower = new THREE.Mesh(towerGeo, towerMat);
+    tower.position.y = 0.425;
+    group.add(tower);
+    // Cap (conical roof)
+    const capGeo = new THREE.ConeGeometry(0.13, 0.18, 8);
+    const capMat = new THREE.MeshLambertMaterial({ color: 0x8B6A50 });
+    const cap = new THREE.Mesh(capGeo, capMat);
+    cap.position.y = 0.94;
+    group.add(cap);
+    // Small door
+    const doorGeo = new THREE.BoxGeometry(0.08, 0.13, 0.05);
+    const doorMat = new THREE.MeshLambertMaterial({ color: 0x7A5030 });
+    const door = new THREE.Mesh(doorGeo, doorMat);
+    door.position.set(0, 0.13, 0.13);
+    group.add(door);
+    // Axle hub
+    const hubGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.06, 7);
+    const hubMat = new THREE.MeshLambertMaterial({ color: 0x5A4030 });
+    const hub = new THREE.Mesh(hubGeo, hubMat);
+    hub.rotation.x = Math.PI/2;
+    hub.position.set(0, 0.78, 0.11);
+    group.add(hub);
+    // Four blades — flat elongated boxes that rotate
+    const bladeGroup = new THREE.Group();
+    bladeGroup.position.set(0, 0.78, 0.14);
+    for (let i = 0; i < 4; i++) {
+      const bladeGeo = new THREE.BoxGeometry(0.07, 0.32, 0.025);
+      const bladeMat = new THREE.MeshLambertMaterial({ color: 0xE8DEC0 });
+      const blade = new THREE.Mesh(bladeGeo, bladeMat);
+      const angle = (i/4)*Math.PI*2;
+      blade.position.set(Math.cos(angle)*0.16, Math.sin(angle)*0.16, 0);
+      blade.rotation.z = angle;
+      // Slight pitch on each blade
+      blade.rotation.x = 0.18;
+      bladeGroup.add(blade);
+    }
+    group.add(bladeGroup);
+    // Animate blades slowly
+    bladeGroup.userData = { spinSpeed: 0.004 + Math.random()*0.003, isWindmill: true };
+    scene.add(group); islandMeshes.push(group);
+    // Store blade group for animation
+    if (!scene.userData.windmillBlades) scene.userData.windmillBlades = [];
+    scene.userData.windmillBlades.push(bladeGroup);
+  }
+
   function addMushroom(x, z) {
     const stemGeo = new THREE.CylinderGeometry(0.05, 0.06, 0.18, 6);
     const stemMat = new THREE.MeshLambertMaterial({ color: 0xF0E6D0 });
@@ -283,12 +378,12 @@ function buildIsland(islandId) {
       else if (r < 0.27) addMushroom(tx, tz);
       else if (r < 0.30) addCrystalSpire(tx, tz, 0xF5F0E8);
     },
-    // 5 Lavender Highlands: flowers, trees, rocks, crystal spires
+    // 5 Lavender Highlands: lavender plants, windmills, trees, rocks
     (tx, tz, r) => {
-      if (r < 0.12) addFlower(tx, tz, 0x9B9AE2);
-      else if (r < 0.19) addTree(tx, tz);
-      else if (r < 0.24) addRock(tx, tz);
-      else if (r < 0.28) addCrystalSpire(tx, tz, 0xC6C3DC);
+      if (r < 0.18) addLavender(tx, tz);
+      else if (r < 0.22) addWindmill(tx, tz);
+      else if (r < 0.27) addTree(tx, tz);
+      else if (r < 0.30) addRock(tx, tz);
     },
   ];
   const decorFn = biomeDecorations[islandId] || biomeDecorations[0];
@@ -2286,6 +2381,9 @@ function loop(ts) {
       if (m.userData.spin) {
         m.rotation.y = time * 1.1;
         m.position.y = Math.sin(time * 2.0 + (m.userData.bobOffset||0)) * 0.08 + 0.25;
+      }
+      if (m.userData.isWindmill) {
+        m.rotation.z += m.userData.spinSpeed;
       }
     });
     // NPC bob + sway + Cycle 2 head-look toward player
