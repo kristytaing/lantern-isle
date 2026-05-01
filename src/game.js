@@ -1684,18 +1684,25 @@ function drawWorldMap() {
   const mc = document.getElementById('map-canvas');
   // Size canvas: use actual rendered modal width, DPR-aware, fixed aspect ratio
   const modal = document.getElementById('map-modal');
-  const dpr = window.devicePixelRatio || 1;
-  const availW = modal.clientWidth - 32;
-  const cssW = Math.min(availW, 820);
-  const cssH = Math.round(cssW * 0.45);
-  mc.style.width  = cssW + 'px';
-  mc.style.height = cssH + 'px';
-  mc.width  = Math.round(cssW * dpr);
-  mc.height = Math.round(cssH * dpr);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const padding = 32;
+  const availW = modal.getBoundingClientRect().width - padding;
+  const cssW = Math.max(Math.min(availW, 820), 200);
+  const cssH = Math.round(cssW * 0.38);
+  // Only resize canvas element if dimensions changed (avoids clearing on every draw)
+  const newPxW = Math.round(cssW * dpr);
+  const newPxH = Math.round(cssH * dpr);
+  if (mc.width !== newPxW || mc.height !== newPxH) {
+    mc.width  = newPxW;
+    mc.height = newPxH;
+    mc.style.width  = cssW + 'px';
+    mc.style.height = cssH + 'px';
+  }
   const ctx = mc.getContext('2d');
-  ctx.scale(dpr, dpr);
+  // Reset transform each frame to avoid accumulation
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const W = cssW, H = cssH;
-  ctx.clearRect(0,0,W,H);
+  ctx.clearRect(0, 0, W, H);
 
   // ── Watercolor background ──────────────────────────────────
   // Soft pink-cream gradient
@@ -1737,7 +1744,7 @@ function drawWorldMap() {
   ctx.restore();
 
   // ── Biome mini-scenes ──────────────────────────────────────
-  const R = Math.max(18, Math.round(W * 0.055)); // scales with canvas width
+  const R = Math.max(14, Math.round(Math.min(W / 14, H / 4.5))); // fits 5 islands without overlap
   const biomeColors = [
     { base:'#b8e8c0', mid:'#88c898', dark:'#5a9a6a' }, // Mossy Forest
     { base:'#fdf5d0', mid:'#f8e498', dark:'#e8c860' }, // Sunflower Beach
@@ -2216,6 +2223,7 @@ document.getElementById('map-canvas').addEventListener('touchend', e => {
 }, { passive: false });
 
 document.getElementById('close-map').addEventListener('click', ()=>{ sfxClick(); closeMap(); });
+document.getElementById('map-screen').addEventListener('click', e=>{ if(e.target===document.getElementById('map-screen')){ sfxClick(); closeMap(); } });
 document.getElementById('map-btn').addEventListener('click', ()=>{ if(state==='playing'||state==='dialogue') openMap(); });
 document.getElementById('sound-toggle').addEventListener('click', ()=>{
   const m = toggleMute();
