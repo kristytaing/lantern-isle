@@ -324,8 +324,9 @@ function buildIsland(islandId) {
     }
     scene.add(mesh); islandMeshes.push(mesh);
 
-    // Terrain decorations — skip occupied tiles and centre, use stable hash for consistency
-    if (!isWater && (tile.x!==0||tile.z!==0)) {
+    // Terrain decorations — skip occupied tiles, centre, and tiles near player spawn
+    const nearSpawn = Math.abs(tile.x)<=1 && Math.abs(tile.z-2)<=1;
+    if (!isWater && (tile.x!==0||tile.z!==0) && !nearSpawn) {
       const key = `${tile.x},${tile.z}`;
       const r = h;
       const ox = (tileHash(tile.x+7, tile.z)-0.5)*0.55;
