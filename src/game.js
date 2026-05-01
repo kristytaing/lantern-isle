@@ -1684,16 +1684,16 @@ function drawWorldMap() {
   const mc = document.getElementById('map-canvas');
   // Size canvas: use actual rendered modal width, DPR-aware, fixed aspect ratio
   const modal = document.getElementById('map-modal');
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const availW = modal.getBoundingClientRect().width - 32;
-  const cssW = Math.max(Math.min(availW, 820), 260);
-  const cssH = Math.round(cssW * 0.45); // fixed aspect ~16:7
+  const dpr = window.devicePixelRatio || 1;
+  const availW = modal.clientWidth - 32;
+  const cssW = Math.min(availW, 820);
+  const cssH = Math.round(cssW * 0.45);
   mc.style.width  = cssW + 'px';
   mc.style.height = cssH + 'px';
   mc.width  = Math.round(cssW * dpr);
   mc.height = Math.round(cssH * dpr);
   const ctx = mc.getContext('2d');
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // single scale — draw in CSS pixels
+  ctx.scale(dpr, dpr);
   const W = cssW, H = cssH;
   ctx.clearRect(0,0,W,H);
 
@@ -1737,7 +1737,7 @@ function drawWorldMap() {
   ctx.restore();
 
   // ── Biome mini-scenes ──────────────────────────────────────
-  const R = 38; // island circle radius
+  const R = Math.max(18, Math.round(W * 0.055)); // scales with canvas width
   const biomeColors = [
     { base:'#b8e8c0', mid:'#88c898', dark:'#5a9a6a' }, // Mossy Forest
     { base:'#fdf5d0', mid:'#f8e498', dark:'#e8c860' }, // Sunflower Beach
@@ -1764,7 +1764,7 @@ function drawWorldMap() {
 
     // Ground
     ctx.fillStyle=bc.mid;
-    ctx.beginPath(); ctx.ellipse(px,py+18,R,20,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(px,py+R*0.47,R,R*0.53,0,0,Math.PI*2); ctx.fill();
 
     // Biome-specific details
     if (i===0) {
@@ -1869,10 +1869,10 @@ function drawWorldMap() {
     // Wrap long names
     const words = island.name.split(' ');
     if (words.length <= 2) {
-      ctx.fillText(island.name, px, py+R+14);
+      ctx.fillText(island.name, px, py+R+12);
     } else {
-      ctx.fillText(words.slice(0,2).join(' '), px, py+R+13);
-      ctx.fillText(words.slice(2).join(' '), px, py+R+24);
+      ctx.fillText(words.slice(0,2).join(' '), px, py+R+12);
+      ctx.fillText(words.slice(2).join(' '), px, py+R+22);
     }
     ctx.restore();
   });
