@@ -52,10 +52,10 @@ const ISLAND_MUSIC = [
     melodyScale: [0,3,5,7,10,12,15], melodyOct: 2, swing: 0.6,
     bassStyle: 'slow', crackle: 0.012
   },
-  { // 1 Sunflower Beach — Emaj, upbeat breezy
-    root: 164.81, bpm: 82,
-    chords: [[0,4,7,11],[5,9,12,16],[3,7,10,14],[7,11,14,16]],
-    melodyScale: [0,4,7,9,11,12,16], melodyOct: 2.5, swing: 0.45,
+  { // 1 Sunflower Beach — C major, bright warm
+    root: 130.81, bpm: 78,
+    chords: [[0,4,7,12],[5,9,12,17],[7,11,14,19],[9,12,16,21]],
+    melodyScale: [0,2,4,7,9,12,14], melodyOct: 2.5, swing: 0.48,
     bassStyle: 'bounce', crackle: 0.008
   },
   { // 2 Sakura Cove — Bm, gentle mysterious
@@ -170,22 +170,6 @@ function buildLofiScheduler(islandId) {
   function scheduleBar(barStart) {
     const chord = chords[chordIdx % chords.length];
     chordIdx++;
-
-    // Kick pattern: beats 1 and 3 (with slight lofi variation)
-    playKick(barStart, 0.55);
-    playKick(barStart + beat*2, 0.45);
-
-    // Snare: beats 2 and 4
-    playSnare(barStart + beat, 0.25);
-    playSnare(barStart + beat*3, 0.2);
-
-    // Hi-hats: 8th notes with swing
-    for (let h = 0; h < 8; h++) {
-      const swingOffset = (h % 2 === 1) ? beat*0.5 * swing : beat*0.5 * (1-swing+0.5);
-      const hhTime = barStart + Math.floor(h/2)*beat + (h%2===0 ? 0 : beat*0.5);
-      const isOpen = h === 5;
-      playHihat(hhTime, isOpen ? 0.09 : 0.06, isOpen);
-    }
 
     // Bass line
     const bassRoot = semitone(root, chord[0]);
