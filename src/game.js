@@ -90,6 +90,7 @@ function buildIsland(islandId) {
   if (particles) particles.clearAll();
   crystalOrbits = [];
   islandMeshes = []; crystalMeshes = []; npcMeshes = [];
+  island.obstacles = [];
   if (scene._islandGlowMesh) { scene.remove(scene._islandGlowMesh); scene._islandGlowMesh = null; }
   // Reset per-visit auto-trigger flags
   if (typeof ISLANDS !== 'undefined') ISLANDS.forEach(il => { il._shrineAutoTriggered = false; });
@@ -127,6 +128,7 @@ function buildIsland(islandId) {
 
   // Biome decoration helpers
   function addTree(x, z) {
+    island.obstacles.push({ x, z, r: 0.28 });
     // trunk
     const trunkGeo = new THREE.CylinderGeometry(0.07, 0.09, 0.45, 6);
     const trunkMat = new THREE.MeshLambertMaterial({ color: 0x6B4226 });
@@ -497,6 +499,7 @@ function buildIsland(islandId) {
 
   // NPCs
   island.npcs.forEach((npc, ni) => {
+    island.obstacles.push({ x: npc.x, z: npc.z, r: 0.22 });
     const nGroup = new THREE.Group();
     nGroup.position.set(npc.x, 0, npc.z);
     nGroup.userData = { npcIdx: ni, bobBase: 0, bobOffset: Math.random()*Math.PI*2,
@@ -2218,7 +2221,7 @@ function loop(ts) {
   // Player movement
   if (state === 'playing') {
     const island = getIsland(currentIslandId);
-    player.update(dt, keys, (joystickDir.x||joystickDir.z) ? joystickDir : null, island.tiles);
+    player.update(dt, keys, (joystickDir.x||joystickDir.z) ? joystickDir : null, island.tiles, island.obstacles);
     if (player.isMoving && player.footstepTimer <= 0) {
       sfxFootstep();
       player.footstepTimer = 0.28;

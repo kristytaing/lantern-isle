@@ -151,7 +151,7 @@ export class Player {
     g.add(this.lanternGroup);
   }
 
-  update(dt, keys, isoDir, tiles) {
+  update(dt, keys, isoDir, tiles, obstacles) {
     this.bobTime += dt;
     let dx = 0, dz = 0;
     if (keys['w']||keys['arrowup'])    dz -= 1;
@@ -166,10 +166,10 @@ export class Player {
       dx /= len; dz /= len;
       const nx = this.pos.x + dx * this.speed * dt;
       const nz = this.pos.z + dz * this.speed * dt;
-      if (this._onGround(nx, nz, tiles)) {
+      if (this._onGround(nx, nz, tiles) && !this._blocked(nx, nz, obstacles)) {
         this.pos.x = nx; this.pos.z = nz;
-      } else if (this._onGround(nx, this.pos.z, tiles)) { this.pos.x = nx; }
-        else if (this._onGround(this.pos.x, nz, tiles)) { this.pos.z = nz; }
+      } else if (this._onGround(nx, this.pos.z, tiles) && !this._blocked(nx, this.pos.z, obstacles)) { this.pos.x = nx; }
+        else if (this._onGround(this.pos.x, nz, tiles) && !this._blocked(this.pos.x, nz, obstacles)) { this.pos.z = nz; }
       this.facing = Math.atan2(dx, dz);
       this.footstepTimer -= dt;
     }
@@ -190,6 +190,14 @@ export class Player {
     this.armR.rotation.x =  armSwing;
 
     this.lanternLight.intensity = 1.0 + Math.sin(this.bobTime * 1.3) * 0.20;
+  }
+
+  _blocked(x, z, obstacles) {
+    if (!obstacles) return false;
+    for (const o of obstacles) {
+      if (Math.hypot(x - o.x, z - o.z) < o.r + 0.16) return true;
+    }
+    return false;
   }
 
   _onGround(x, z, tiles) {
