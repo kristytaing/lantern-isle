@@ -1267,22 +1267,20 @@ function spawnFireflyTarget() {
 
 function spawnQuestCrystal(npcX, npcZ) {
   const island = getIsland(currentIslandId);
-  // Find a spot at least 2.8 units from the NPC and 2.0 from other NPCs/shrine
-  const toCenter = new THREE.Vector2(-npcX, -npcZ);
-  const len = toCenter.length();
-  const dir = len > 0.01 ? toCenter.clone().normalize() : new THREE.Vector2(0, 1);
+  // Place crystal in a random open spot on the island, well away from shrine + NPCs
   let cx, cz, attempts = 0;
   do {
-    const spread = (Math.random() - 0.5) * 0.8;
-    const perpDir = new THREE.Vector2(-dir.y, dir.x);
-    cx = npcX + dir.x * (2.8 + Math.random() * 0.6) + perpDir.x * spread;
-    cz = npcZ + dir.y * (2.8 + Math.random() * 0.6) + perpDir.y * spread;
+    // Random angle + radius within island walkable area (~3-5 units from centre)
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 2.8 + Math.random() * 2.0;
+    cx = Math.cos(angle) * radius;
+    cz = Math.sin(angle) * radius;
     attempts++;
-    // Check clearance from all NPCs and shrine
-    const tooClose = island.npcs.some(n => Math.hypot(cx - n.x, cz - n.z) < 1.8)
-      || Math.hypot(cx - island.shrinePos.x, cz - island.shrinePos.z) < 1.8;
-    if (!tooClose) break;
-  } while (attempts < 12);
+    const tooCloseShrine = Math.hypot(cx - island.shrinePos.x, cz - island.shrinePos.z) < 2.8;
+    const tooCloseNPC    = island.npcs.some(n => Math.hypot(cx - n.x, cz - n.z) < 2.2);
+    const tooCloseOrigin = Math.hypot(cx - npcX, cz - npcZ) < 2.0;
+    if (!tooCloseShrine && !tooCloseNPC && !tooCloseOrigin) break;
+  } while (attempts < 20);
   const geo = new THREE.SphereGeometry(0.14, 10, 8);
   const mat = new THREE.MeshLambertMaterial({ color: PALETTE.softPinkN, emissive: PALETTE.softPurpleN, emissiveIntensity: 0.5 });
   const mesh = new THREE.Mesh(geo, mat);
