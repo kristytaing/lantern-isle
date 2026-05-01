@@ -302,7 +302,7 @@ function buildIsland(islandId) {
     const isWater = tile.type === 'water';
     const h = tileHash(tile.x, tile.z);
     const color = isWater
-      ? (islandId === 1 ? 0x9BC8D4 : islandId === 4 ? 0x2A4A6B : 0x8AAABB)
+      ? (islandId === 1 ? 0x9BC8D4 : islandId === 3 ? 0x2A4A6B : 0x8AAABB)
       : island.groundColor;
     // Slight height variation on ground tiles for organic feel
     const yOff = isWater ? -0.18 : (h < 0.3 ? -0.02 : h > 0.85 ? 0.03 : 0);
@@ -336,19 +336,7 @@ function buildIsland(islandId) {
     }
   });
 
-  // Cozy Village houses
-  if (islandId === 3) {
-    const houseSpots = [
-      { x: -5, z: -5, wall: 0xF5EAD8, roof: 0xC0785A },
-      { x:  5, z: -5, wall: 0xEDE0C8, roof: 0x9B6A50 },
-      { x: -6, z:  2, wall: 0xF0E4D0, roof: 0xD4836A },
-      { x:  6, z:  2, wall: 0xF5EAD8, roof: 0xB07060 },
-      { x:  0, z: -7, wall: 0xEADDC8, roof: 0xC0785A },
-    ];
-    houseSpots.forEach(h => addHouse(h.x, h.z, h.wall, h.roof));
-  }
-
-  // Crystals are NOT spawned at island load — they appear when quests are completed
+  // Crystals are NOT spawned at island load — they appear when quests are completed (or are free)
 
   // Shrine
   const shrGeo = new THREE.CylinderGeometry(0.3, 0.4, 0.6, 8);
@@ -1044,7 +1032,7 @@ function buildIsland(islandId) {
     }
   }
   if (islandId === 2) particles.addPetals(isMobile?20:40, PALETTE.softPinkN);
-  if (islandId === 4) { // Crystal Cave — extra spores + bioluminescent pool glow
+  if (islandId === 3) { // Crystal Cave — extra spores + bioluminescent pool glow
     particles.addAmbientMotes(isMobile?30:60);
     // Bioluminescent pool: pulsing cyan point light
     const poolLight = new THREE.PointLight(0x00FFCC, 0.6, 4);
@@ -1052,7 +1040,10 @@ function buildIsland(islandId) {
     poolLight.userData.bioPool = true;
     scene.add(poolLight); islandMeshes.push(poolLight);
   }
-  if (islandId === 5) particles.addPetals(isMobile?20:40, PALETTE.softLavenderN);
+  if (islandId === 4) particles.addPetals(isMobile?20:40, PALETTE.softLavenderN);
+
+  // Spawn free crystals at fixed positions
+  spawnFreeCrystals(islandId);
 
   updateCrystalHUD();
   drawCompass(island);
@@ -1269,22 +1260,56 @@ function spawnFireflyTarget() {
   particles.addBurst(fx, 0.8, fz, 0xFFFF88, 20);
 }
 
-function spawnQuestCrystal(npcX, npcZ) {
+function spawnCrystalAt(cx, cz) {
+  const geo = new THREE.SphereGeometry(0.14, 10, 8);
+  const mat = new THREE.MeshLambertMaterial({ color: PALETTE.softPinkN, emissive: PALETTE.softPurpleN, emissiveIntensity: 0.5 });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(cx, 0.5, cz);
+  const cl = new THREE.PointLight(PALETTE.softPinkN, 0.5, 2.5);
+  cl.position.set(cx, 0.5, cz);
+  scene.add(cl);
+  mesh.userData = { crystalIdx: crystalMeshes.length, bobBase: 0.5, glowLight: cl };
+  scene.add(mesh); crystalMeshes.push(mesh);
+  const orbit = particles.addCrystalOrbiters(cx, 0.5, cz);
+  crystalOrbits.push({ mesh, orbit });
+}
+
+function spawnFreeCrystals(islandId) {
+  const island = getIsland(islandId);
+  // Determine how many crystals are free (not quest-locked)
+  // Count quest rewards — those slots are locked; the rest are free
+  const lockedSlots = new Set();
+  island.npcs.forEach(npc => {
+    if (npc.quest && typeof npc.quest.reward === 'number') lockedSlots.add(npc.quest.reward);
+  });
+  island.crystalPositions.forEach((cp, i) => {
+    if (!lockedSlots.has(i)) spawnCrystalAt(cp.x, cp.z);
+  });
+}
+
+function spawnQuestCrystal(npcX, npcZ, rewardSlot) {
   const island = getIsland(currentIslandId);
-  // Spawn close to the player (1.5–2.5 units away) so they can see and reach it
-  const px = player ? player.pos.x : npcX;
-  const pz = player ? player.pos.z : npcZ;
-  let cx, cz, attempts = 0;
-  do {
-    const angle = Math.random() * Math.PI * 2;
-    const radius = 1.5 + Math.random() * 1.0;
-    cx = px + Math.cos(angle) * radius;
-    cz = pz + Math.sin(angle) * radius;
-    attempts++;
-    const tooCloseShrine = Math.hypot(cx - island.shrinePos.x, cz - island.shrinePos.z) < 1.5;
-    const tooCloseNPC    = island.npcs.some(n => Math.hypot(cx - n.x, cz - n.z) < 1.5);
-    if (!tooCloseShrine && !tooCloseNPC) break;
-  } while (attempts < 20);
+  let cx, cz;
+  // Use fixed position if a reward slot is given and in range
+  if (typeof rewardSlot === 'number' && island.crystalPositions[rewardSlot]) {
+    cx = island.crystalPositions[rewardSlot].x;
+    cz = island.crystalPositions[rewardSlot].z;
+  } else {
+    // Fallback: spawn near player
+    const px = player ? player.pos.x : npcX;
+    const pz = player ? player.pos.z : npcZ;
+    let attempts = 0;
+    do {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 1.5 + Math.random() * 1.0;
+      cx = px + Math.cos(angle) * radius;
+      cz = pz + Math.sin(angle) * radius;
+      attempts++;
+      const tooCloseShrine = Math.hypot(cx - island.shrinePos.x, cz - island.shrinePos.z) < 1.5;
+      const tooCloseNPC    = island.npcs.some(n => Math.hypot(cx - n.x, cz - n.z) < 1.5);
+      if (!tooCloseShrine && !tooCloseNPC) break;
+    } while (attempts < 20);
+  }
   const geo = new THREE.SphereGeometry(0.14, 10, 8);
   const mat = new THREE.MeshLambertMaterial({ color: PALETTE.softPinkN, emissive: PALETTE.softPurpleN, emissiveIntensity: 0.5 });
   const mesh = new THREE.Mesh(geo, mat);
@@ -1329,10 +1354,9 @@ function activateShrine() {
   const loreDrops = [
     'A memory stirs in the light… "The Star did not fall by accident. Someone let it go."',
     'The shrine whispers… "The Keeper of Lanterns left willingly — to protect the islands from a greater dark."',
-    'An ancient voice breathes… "Six shards. Six islands. Each held a piece of the Keeper\'s final wish."',
+    'An ancient voice breathes… "Five shards. Five islands. Each held a piece of the Keeper\'s final wish."',
     'The light pulses… "The Keeper asked one thing: find someone who still believes in warmth. You came."',
-    'The shrine glows… "The darkness was never the enemy. It was grief. And you answered it with light."',
-    '', // Island 5 — lore delivered by Ancient Keeper NPC already
+    '', // Island 4 — lore delivered by Ancient Keeper NPC already
   ];
 
   const restoreLines = [
@@ -1603,7 +1627,6 @@ function drawWorldMap() {
     { base:'#b8e8c0', mid:'#88c898', dark:'#5a9a6a' }, // Mossy Forest
     { base:'#fdf5d0', mid:'#f8e498', dark:'#e8c860' }, // Sunflower Beach
     { base:'#f8c8d8', mid:'#e8a0b8', dark:'#c07090' }, // Sakura Cove
-    { base:'#faecd8', mid:'#f0d8b0', dark:'#d4b888' }, // Cozy Village
     { base:'#c8d8f8', mid:'#a0b8f0', dark:'#7090d8' }, // Crystal Cave
     { base:'#d8c8f0', mid:'#b8a0e0', dark:'#9070c8' }, // Lavender Highlands
   ];
@@ -1871,7 +1894,7 @@ function handleNPCInteract(npc, ni) {
     showDialogue(npc.name, npc.lines, () => {
       npc.quest.done = true;
       questState[qt] = true;
-      spawnQuestCrystal(player ? player.pos.x : npc.x, player ? player.pos.z : npc.z);
+      spawnQuestCrystal(player ? player.pos.x : npc.x, player ? player.pos.z : npc.z, npc.quest.reward);
       updateQuestTracker(currentIslandId);
     });
     return;
@@ -1882,7 +1905,7 @@ function handleNPCInteract(npc, ni) {
     if (!questState[qt]) {
       showDialogue(npc.name, npc.lines, () => {
         questState[qt] = true;
-        spawnQuestCrystal(npc.x, npc.z);
+        spawnQuestCrystal(npc.x, npc.z, npc.quest.reward);
         updateQuestTracker(currentIslandId);
       });
     }
@@ -1910,7 +1933,7 @@ function handleNPCInteract(npc, ni) {
       const idx = inventoryItems.indexOf(itemKey);
       if (idx >= 0) inventoryItems.splice(idx, 1);
       updateInventoryUI();
-      spawnQuestCrystal(player ? player.pos.x : npc.x, player ? player.pos.z : npc.z);
+      spawnQuestCrystal(player ? player.pos.x : npc.x, player ? player.pos.z : npc.z, npc.quest.reward);
       updateQuestTracker(currentIslandId);
     });
   } else {
@@ -1960,7 +1983,6 @@ function loadIsland(id) {
       'Where the fireflies first learned to dream…',
       'The tide keeps every secret you whisper to it…',
       'Petals that fall here never truly touch the ground…',
-      'Bread and lanterns. The oldest comforts.',
       'Light lives in the dark, waiting to be found…',
       'Above the clouds, the wind remembers everything…',
     ];
@@ -2205,16 +2227,12 @@ function loop(ts) {
       sfxFootstep();
       player.footstepTimer = 0.28;
       // Cycle 11: biome-specific footstep particles
-      const footColors = [0x88AA77, 0xE8DDB5, 0xFFCCDD, 0xD4A57A, 0xBBAAFF, 0xC8D0FF];
-      const footY =      [0.05,     0.02,     0.04,     0.03,     0.06,    0.04];
+      const footColors = [0x88AA77, 0xE8DDB5, 0xFFCCDD, 0xBBAAFF, 0xC8D0FF];
+      const footY =      [0.05,     0.02,     0.04,     0.06,     0.04];
       const fc = footColors[currentIslandId] || 0xC8B89A;
       const fy = footY[currentIslandId] || 0.05;
       particles.addBurst(player.pos.x, 0.25, player.pos.z, fc, 6);
-      // Cycle 5: sprint afterimage — extra burst trail when dashing
-      if (player.sprintActive) {
-        particles.addBurst(player.pos.x, 0.3, player.pos.z, 0xCCDDFF, 8);
-        particles.addPulseRing(player.pos.x, 0.05, player.pos.z, 0xAABBFF, 0.5);
-      }
+
     }
     // Camera follow
     const tx = player.pos.x+12, ty = 12, tz = player.pos.z+12;
@@ -2374,7 +2392,7 @@ function loop(ts) {
       const fi = islandMeshes.indexOf(ff);
       if (fi >= 0) islandMeshes.splice(fi, 1);
       fireflyTargetMesh = null;
-      spawnQuestCrystal(0, 3);
+      spawnQuestCrystal(0, 3, 4);
       updateQuestTracker(currentIslandId);
       showDialogue('Firefly', ['✨ The lost firefly drifts toward your lantern happily!'], null);
       particles.addBurst(player.pos.x, 0.8, player.pos.z, 0xFFFF88, 30);
