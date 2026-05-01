@@ -67,7 +67,7 @@ function updateCrystalHUD() {
 
 function showHUD(show) {
   document.getElementById('hud-crystals').style.display = show ? 'flex' : 'none';
-  // compass removed
+  document.getElementById('hud-compass').style.display = show ? 'block' : 'none';
   document.getElementById('inventory').style.display = show ? 'flex' : 'none';
   document.getElementById('sound-toggle').style.display = show ? 'block' : 'none';
   document.getElementById('map-btn').style.display = show ? 'block' : 'none';
@@ -85,7 +85,6 @@ function buildIsland(islandId) {
   if (particles) particles.clearAll();
   crystalOrbits = [];
   islandMeshes = []; crystalMeshes = []; npcMeshes = [];
-  shrinBeamMesh = null; shrineBeamLight = null;
 
   const island = getIsland(islandId);
   scene.background = new THREE.Color(island.skyTop);
@@ -296,14 +295,15 @@ function buildIsland(islandId) {
     const mat = new THREE.MeshLambertMaterial({ color: PALETTE.softPinkN, emissive: PALETTE.softPurpleN, emissiveIntensity: 0.5 });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.set(cp.x, 0.5, cp.z);
-    const cl = new THREE.PointLight(PALETTE.softPinkN, 0.5, 2.5);
-    cl.position.set(cp.x, 0.5, cp.z);
-    scene.add(cl);
-    mesh.userData = { crystalIdx: i, bobBase: 0.5, glowLight: cl };
+    mesh.userData = { crystalIdx: i, bobBase: 0.5 };
     scene.add(mesh); crystalMeshes.push(mesh);
     // Orbiting particles
     const orbit = particles.addCrystalOrbiters(cp.x, 0.5, cp.z);
     crystalOrbits.push({ mesh, orbit });
+    // Glow light
+    const cl = new THREE.PointLight(PALETTE.softPinkN, 0.5, 2.5);
+    cl.position.set(cp.x, 0.5, cp.z);
+    scene.add(cl); islandMeshes.push(cl);
   });
 
   // Shrine
@@ -313,7 +313,6 @@ function buildIsland(islandId) {
   shrineMesh.position.set(island.shrinePos.x, 0.3, island.shrinePos.z);
   if (island.restored) { shrMat.emissive.set(PALETTE.goldenYellowN); shrMat.emissiveIntensity = 0.7; }
   scene.add(shrineMesh);
-  if (island.crystalCount >= island.totalCrystals) addShrineBeam(island);
   const shrLight = new THREE.PointLight(PALETTE.goldenYellowN, 0.6, 3);
   shrLight.position.set(island.shrinePos.x, 1, island.shrinePos.z);
   scene.add(shrLight); islandMeshes.push(shrLight);
@@ -844,34 +843,20 @@ function buildIsland(islandId) {
     const nMesh = nGroup;
     nMesh.userData = { npcIdx: ni, bobBase: 0, bobOffset: Math.random()*Math.PI*2 };
     scene.add(nMesh); npcMeshes.push(nMesh);
-    // Floating thought bubble indicator
+    // Floating ! indicator
     const excCanvas = document.createElement('canvas');
-    excCanvas.width = 48; excCanvas.height = 48;
+    excCanvas.width = 32; excCanvas.height = 32;
     const excCtx = excCanvas.getContext('2d');
-    // Main bubble
-    excCtx.fillStyle = 'rgba(240,222,194,0.95)';
-    excCtx.beginPath(); excCtx.ellipse(24, 18, 16, 12, 0, 0, Math.PI*2); excCtx.fill();
-    excCtx.strokeStyle = 'rgba(79,66,97,0.4)'; excCtx.lineWidth = 1.5;
-    excCtx.beginPath(); excCtx.ellipse(24, 18, 16, 12, 0, 0, Math.PI*2); excCtx.stroke();
-    // Small dots below (classic thought bubble tail)
-    excCtx.fillStyle = 'rgba(240,222,194,0.95)';
-    excCtx.beginPath(); excCtx.arc(20, 32, 4, 0, Math.PI*2); excCtx.fill();
-    excCtx.strokeStyle = 'rgba(79,66,97,0.35)'; excCtx.lineWidth = 1;
-    excCtx.beginPath(); excCtx.arc(20, 32, 4, 0, Math.PI*2); excCtx.stroke();
-    excCtx.fillStyle = 'rgba(240,222,194,0.9)';
-    excCtx.beginPath(); excCtx.arc(15, 40, 2.5, 0, Math.PI*2); excCtx.fill();
-    excCtx.beginPath(); excCtx.arc(15, 40, 2.5, 0, Math.PI*2); excCtx.stroke();
-    // Dots inside bubble suggesting speech
-    excCtx.fillStyle = '#4F4261';
-    excCtx.beginPath(); excCtx.arc(17, 18, 2.5, 0, Math.PI*2); excCtx.fill();
-    excCtx.beginPath(); excCtx.arc(24, 18, 2.5, 0, Math.PI*2); excCtx.fill();
-    excCtx.beginPath(); excCtx.arc(31, 18, 2.5, 0, Math.PI*2); excCtx.fill();
+    excCtx.fillStyle = '#EBB21A';
+    excCtx.font = 'bold 24px sans-serif';
+    excCtx.textAlign = 'center';
+    excCtx.fillText('!', 16, 26);
     const excTex = new THREE.CanvasTexture(excCanvas);
     const excMat = new THREE.SpriteMaterial({ map: excTex, transparent: true, depthTest: false });
     const excSprite = new THREE.Sprite(excMat);
-    excSprite.scale.set(0.55, 0.55, 1);
-    excSprite.position.set(npc.x, 1.25, npc.z);
-    excSprite.userData = { excBase: 1.25, excOffset: Math.random()*Math.PI*2 };
+    excSprite.scale.set(0.35, 0.35, 1);
+    excSprite.position.set(npc.x, 1.15, npc.z);
+    excSprite.userData = { excBase: 1.15, excOffset: Math.random()*Math.PI*2 };
     scene.add(excSprite); islandMeshes.push(excSprite);
     nMesh.userData.excSprite = excSprite;
     // Name float indicator
@@ -965,50 +950,22 @@ function closeDialogue() {
   if (dialogueCallback) { const cb = dialogueCallback; dialogueCallback = null; cb(); }
 }
 
-// ── Shrine Beam ───────────────────────────────────────────────
-let shrinBeamMesh = null;
-let shrineBeamLight = null;
-function addShrineBeam(island) {
-  if (shrinBeamMesh) return;
-  const sx = island.shrinePos.x, sz = island.shrinePos.z;
-  // Tall glowing cylinder as beam
-  const beamGeo = new THREE.CylinderGeometry(0.08, 0.25, 14, 10, 1, true);
-  const beamMat = new THREE.MeshBasicMaterial({
-    color: 0xFFEEAA, transparent: true, opacity: 0.35,
-    side: THREE.DoubleSide, depthWrite: false
-  });
-  shrinBeamMesh = new THREE.Mesh(beamGeo, beamMat);
-  shrinBeamMesh.position.set(sx, 7, sz);
-  shrinBeamMesh.userData.shrineBeam = true;
-  scene.add(shrinBeamMesh); islandMeshes.push(shrinBeamMesh);
-  // Bright point light at base
-  shrineBeamLight = new THREE.PointLight(0xFFDD88, 2.5, 6);
-  shrineBeamLight.position.set(sx, 1.5, sz);
-  shrineBeamLight.userData.shrineBeam = true;
-  scene.add(shrineBeamLight); islandMeshes.push(shrineBeamLight);
-  // Pulse ring burst
-  particles.addPulseRing(sx, 0.1, sz);
-  particles.addBurst(sx, 1, sz, 0xFFDD88, 30);
-}
-
 // ── Crystal Collection ────────────────────────────────────────
 function collectCrystal(mesh) {
   const island = getIsland(currentIslandId);
   const idx = mesh.userData.crystalIdx;
   island.crystalCount++;
-  // Remove mesh and its glow light
+  // Remove mesh
   scene.remove(mesh);
-  if (mesh.userData.glowLight) scene.remove(mesh.userData.glowLight);
   const ci = crystalMeshes.indexOf(mesh);
   if (ci >= 0) crystalMeshes.splice(ci, 1);
   // Burst particles
   particles.addBurst(mesh.position.x, mesh.position.y, mesh.position.z, PALETTE.softPinkN, 25);
   particles.addPulseRing(mesh.position.x, 0.1, mesh.position.z);
   sfxCrystalCollect();
+  // Scale pop on shrine if all collected
   updateCrystalHUD();
   if (island.crystalCount >= island.totalCrystals) {
-    // Beam of light on shrine
-    addShrineBeam(island);
     setTimeout(()=>showDialogue('✨ Shrine', ['All crystal shards gathered! Bring them to the shrine at the center of the island!'], null), 600);
   }
 }
@@ -1301,7 +1258,7 @@ window.addEventListener('keydown', e => {
   }
   if (state === 'playing') {
     if (!wasDown && (k === 'm' || k === 'tab')) { e.preventDefault(); openMap(); return; }
-    if (!wasDown && (k === ' ' || k === 'enter' || k === 'e')) { e.preventDefault(); handleInteract(); }
+    if (!wasDown && (k === ' ' || k === 'enter')) { e.preventDefault(); handleInteract(); }
     if (!wasDown && k === 'q') { activatePulseAbility(); }
     if (!wasDown && k === 'shift') { if(player && player.activateSprint()) { const pp=player.pos; particles.addBurst(pp.x,0.5,pp.z,0xEBB21A,12); particles.addPulseRing(pp.x,0,pp.z); } }
   }
@@ -1539,9 +1496,8 @@ function setupMobile() {
     const angle = Math.atan2(dy, dx);
     knob.style.transform = `translate(calc(-50% + ${Math.cos(angle)*dist}px), calc(-50% + ${Math.sin(angle)*dist}px))`;
     // Isometric input mapping
-    // Isometric camera faces +X+Z. Screen right = world +X-Z, screen down = world +X+Z
-    joystickDir.x = (dx - dy) / 40;
-    joystickDir.z = (dx + dy) / 40;
+    joystickDir.x = ((dx - dy) / 40) * 0.7;
+    joystickDir.z = ((dx + dy) / 40) * 0.7;
   }, {passive:false});
   zone.addEventListener('touchend', () => {
     origin = null; joystickDir.x=0; joystickDir.z=0;
@@ -1720,14 +1676,6 @@ function loop(ts) {
       shrineMesh.rotation.y += dt * 0.4;
       shrineMesh.position.y = 0.3 + Math.sin(time*1.4)*0.03;
     }
-    // Shrine beam pulse
-    if (shrinBeamMesh) {
-      shrinBeamMesh.material.opacity = 0.25 + Math.sin(time * 2.5) * 0.15;
-      shrinBeamMesh.rotation.y += dt * 0.3;
-    }
-    if (shrineBeamLight) {
-      shrineBeamLight.intensity = 2.0 + Math.sin(time * 3) * 0.8;
-    }
     // Shadow creep — grows over time, slows & darkens screen when player inside
     if (shadowCreepMesh && shadowCreepMesh.userData.growing) {
       shadowCreepMesh.userData.radius = Math.min(shadowCreepMesh.userData.radius + dt*0.04, 4);
@@ -1751,7 +1699,8 @@ function loop(ts) {
     }
     // Pulse reveal timer
     if (pulseRevealTimer > 0) pulseRevealTimer -= dt;
-    // compass removed
+    // Redraw compass every frame so shrine arrow tracks player position
+    drawCompass(getIsland(currentIslandId));
     // Ability cooldown HUD
     const cdSprint = document.querySelector('#ab-sprint .ability-cooldown');
     if (cdSprint) cdSprint.style.transform = `scaleY(${Math.max(0, player.sprintCooldown/4)})`;
@@ -1765,12 +1714,12 @@ function loop(ts) {
     let promptTarget = null, promptLabel = 'Space';
     const island = getIsland(currentIslandId);
     const sd = Math.sqrt((pp.x-island.shrinePos.x)**2+(pp.z-island.shrinePos.z)**2);
-    if (sd < 1.2) { promptTarget = shrineMesh; promptLabel = island.restored ? 'Shrine ✦' : 'Shrine'; }
+    if (sd < 1.2) { promptTarget = shrineMesh; promptLabel = island.restored ? '✨ Shrine' : 'Space — Shrine'; }
     npcMeshes.forEach((nm, ni) => {
-      if (pp.distanceTo(nm.position) < 1.4) { promptTarget = nm; promptLabel = island.npcs[ni].name; }
+      if (pp.distanceTo(nm.position) < 1.4) { promptTarget = nm; promptLabel = `Talk to ${island.npcs[ni].name}`; }
     });
     crystalMeshes.forEach(cm => {
-      if (pp.distanceTo(cm.position) < 1.0) { promptTarget = cm; promptLabel = '✦ Crystal'; }
+      if (pp.distanceTo(cm.position) < 1.0) { promptTarget = cm; promptLabel = '✨ Crystal Shard'; }
     });
     const promptEl = document.getElementById('interact-prompt');
     if (promptTarget) {

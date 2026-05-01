@@ -18,7 +18,8 @@
     .gem{width:22px;height:26px;position:relative;}
     .gem svg{width:100%;height:100%;}
     #crystal-label{font-size:12px;font-weight:700;color:#4F4261;margin-left:4px;}
-    #hud-compass{display:none!important;}
+    #hud-compass{position:absolute;top:12px;right:12px;width:88px;height:88px;pointer-events:auto;}
+    #hud-compass canvas{border-radius:50%;border:3px solid #EBB21A;box-shadow:0 0 0 2px #F0DEC2;}
     #inventory{position:absolute;right:12px;top:50%;transform:translateY(-50%);
       display:flex;flex-direction:column;gap:6px;pointer-events:auto;}
     .inv-slot{width:44px;height:44px;background:rgba(240,222,194,0.8);
@@ -71,7 +72,7 @@
       font-family:'Nunito',sans-serif;font-size:11px;font-weight:600;
       padding:5px 16px;border-radius:10px;cursor:pointer;opacity:0.5;}
     #dev-btn:hover{opacity:1;}
-    #sound-toggle{position:absolute;top:12px;right:12px;background:rgba(240,222,194,0.82);
+    #sound-toggle{position:absolute;top:12px;right:116px;background:rgba(240,222,194,0.82);
       border:1.5px solid #4F4261;border-radius:20px;padding:6px 10px;
       cursor:pointer;pointer-events:auto;font-size:18px;}
     #ability-bar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
@@ -118,7 +119,9 @@
       #hud-crystals{top:8px;left:8px;padding:4px 8px;gap:4px;}
       .gem{width:16px;height:20px;}
       #crystal-label{font-size:10px;}
-      #sound-toggle{top:8px;right:12px;padding:4px 8px;font-size:14px;}
+      #hud-compass{top:8px;right:8px;width:60px;height:60px;}
+      #hud-compass canvas{width:54px;height:54px;}
+      #sound-toggle{top:8px;right:76px;padding:4px 8px;font-size:14px;}
       #map-btn{top:8px;left:50%;font-size:11px;padding:4px 10px;}
       #mobile-controls{height:180px;}
       #joystick-zone{width:100px;height:100px;bottom:16px;left:16px;}
@@ -126,13 +129,11 @@
       #action-btn{width:58px;height:58px;font-size:20px;bottom:24px;right:24px;}
     }
     #interact-prompt{position:absolute;display:none;pointer-events:none;
-      background:rgba(240,222,194,0.92);color:#4F4261;font-family:'Nunito',sans-serif;
-      font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;
-      border:1px solid rgba(79,66,97,0.25);white-space:nowrap;transform:translate(-50%,-100%);
-      box-shadow:0 2px 8px rgba(79,66,97,0.15);letter-spacing:0.2px;
-      animation:promptbob 0.8s ease-in-out infinite alternate;}
-    @keyframes promptbob{from{transform:translate(-50%,-100%) translateY(0)}to{transform:translate(-50%,-100%) translateY(-3px)}}
-    .thought-bubble{pointer-events:none;}
+      background:rgba(79,66,97,0.82);color:#F0DEC2;font-family:'Nunito',sans-serif;
+      font-size:12px;font-weight:700;padding:4px 10px;border-radius:10px;
+      border:1.5px solid #EBB21A;white-space:nowrap;transform:translate(-50%,-100%);
+      animation:promptbob 0.7s ease-in-out infinite alternate;}
+    @keyframes promptbob{from{transform:translate(-50%,-100%) translateY(0)}to{transform:translate(-50%,-100%) translateY(-4px)}}
     #transition-overlay{position:fixed;inset:0;background:#1a1228;opacity:0;pointer-events:none;
       z-index:35;transition:opacity 0.35s ease;}
     #island-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.85);

@@ -36,7 +36,7 @@ export const ISLANDS = [
         lines:["I used to see fireflies every night. Now… nothing.","The glowing orbs — those are the crystal shards!","Be careful of the shadow wisps. Lantern light freezes them."],
         restoredLine:"It's warm again! Thank you, Lantern Bearer!" },
       { name:'Sprite', x:3, z:3, color:0xF29FD7,
-        lines:["I'm Sprite! I love sparkly things ✨","Did you know your lantern is SPECIAL? Try pressing E!","The shrine is at the center of the forest. Can you feel it?"],
+        lines:["I'm Sprite! I love sparkly things ✨","Did you know your lantern can PULSE with light? Press Space near the shrine to activate it!","The shrine is at the center of the forest. Can you feel it?"],
         restoredLine:"SPARKLES! SO MANY SPARKLES! You did it!!" },
     ]
   },
