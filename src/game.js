@@ -1682,18 +1682,16 @@ function drawCompass(island) {
 // ── World Map Screen ──────────────────────────────────────────
 function drawWorldMap() {
   const mc = document.getElementById('map-canvas');
-  // Fit canvas to modal — taller ratio on mobile to avoid squashed circles
+  // Fit canvas to modal — pixel dimensions == CSS dimensions (no DPR scaling to avoid distortion)
   const modal = document.getElementById('map-modal');
-  const dpr = window.devicePixelRatio || 1;
   const mobileMap = window.innerWidth < 600;
-  const cssW = Math.max(Math.min(modal.clientWidth - 32, 820), mobileMap ? 300 : 560);
-  const cssH = mobileMap ? Math.round(cssW * 10 / 16) : Math.round(cssW * 6 / 16);
+  const cssW = Math.max(Math.min(modal.clientWidth - 32, 820), mobileMap ? 280 : 560);
+  const cssH = Math.round(cssW * (mobileMap ? 10 : 6) / 16);
   mc.style.width = cssW + 'px';
   mc.style.height = cssH + 'px';
-  mc.width = Math.round(cssW * dpr);
-  mc.height = Math.round(cssH * dpr);
+  mc.width = cssW;
+  mc.height = cssH;
   const ctx = mc.getContext('2d');
-  ctx.scale(dpr, dpr);
   const W = cssW, H = cssH;
   ctx.clearRect(0,0,W,H);
 
@@ -2137,42 +2135,62 @@ function setupMobile() {
     }
   }, { passive: false });
 
-  // Tap-to-move: character walks toward tapped world position
-  let touchTarget = null; // { x, z } world coords
+  // Virtual joystick: touch anywhere to anchor, drag to steer
+  // Isometric mapping: screen right (+dx) = world +X-Z, screen down (+dy) = world +X+Z
+  let joyOrigin = null;
+  const JOY_MAX = 60; // px radius for full speed
+  const JOY_DEAD = 8;
 
-  function screenToWorld(clientX, clientY) {
-    const rect = renderer.domElement.getBoundingClientRect();
-    const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
-    const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
-    const vec = new THREE.Vector3(ndcX, ndcY, 0);
-    vec.unproject(camera);
-    // Ray from orthographic camera hits y=0 plane
-    const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(camera.quaternion).negate();
-    const t = -vec.y / dir.y;
-    return { x: vec.x + dir.x * t, z: vec.z + dir.z * t };
+  // Show joystick ring on screen
+  const joyEl = document.createElement('div');
+  joyEl.id = 'joy-ring';
+  joyEl.style.cssText = 'position:fixed;width:80px;height:80px;border-radius:50%;border:2px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.08);pointer-events:none;display:none;transform:translate(-50%,-50%);z-index:5;';
+  const joyDot = document.createElement('div');
+  joyDot.style.cssText = 'position:absolute;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.45);top:50%;left:50%;transform:translate(-50%,-50%);';
+  joyEl.appendChild(joyDot);
+  document.body.appendChild(joyEl);
+
+  function showJoy(cx, cy, dx, dy) {
+    joyEl.style.display = 'block';
+    joyEl.style.left = cx + 'px';
+    joyEl.style.top = cy + 'px';
+    const clamp = Math.min(Math.sqrt(dx*dx+dy*dy), JOY_MAX);
+    const angle = Math.atan2(dy, dx);
+    joyDot.style.transform = `translate(calc(-50% + ${Math.cos(angle)*clamp}px), calc(-50% + ${Math.sin(angle)*clamp}px))`;
   }
 
   renderer.domElement.addEventListener('touchstart', e => {
     if (e.target !== renderer.domElement) return;
     e.preventDefault();
-    const touch = e.touches[0];
-    touchTarget = screenToWorld(touch.clientX, touch.clientY);
+    const t = e.touches[0];
+    joyOrigin = { x: t.clientX, y: t.clientY };
+    joystickDir.x = 0; joystickDir.z = 0;
+    showJoy(t.clientX, t.clientY, 0, 0);
   }, { passive: false });
 
   renderer.domElement.addEventListener('touchmove', e => {
     e.preventDefault();
-    const touch = e.touches[0];
-    touchTarget = screenToWorld(touch.clientX, touch.clientY);
+    if (!joyOrigin) return;
+    const t = e.touches[0];
+    const dx = t.clientX - joyOrigin.x;
+    const dy = t.clientY - joyOrigin.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    showJoy(joyOrigin.x, joyOrigin.y, dx, dy);
+    if (dist < JOY_DEAD) { joystickDir.x = 0; joystickDir.z = 0; return; }
+    const scale = Math.min(dist, JOY_MAX) / JOY_MAX;
+    // Isometric: screen right/left = +X-Z / -X+Z, screen down/up = +X+Z / -X-Z
+    joystickDir.x = (dx - dy) / dist * scale;
+    joystickDir.z = (dx + dy) / dist * scale;
   }, { passive: false });
 
   renderer.domElement.addEventListener('touchend', e => {
     e.preventDefault();
-    touchTarget = null;
+    joyOrigin = null;
     joystickDir.x = 0; joystickDir.z = 0;
+    joyEl.style.display = 'none';
   }, { passive: false });
 
-  // Expose touchTarget so the game loop can read it
-  window._touchTarget = () => touchTarget;
+  window._touchTarget = () => null;
 }
 
 // ── Map click handling ────────────────────────────────────────
@@ -2287,21 +2305,6 @@ function loop(ts) {
   // Player movement
   if (state === 'playing') {
     const island = getIsland(currentIslandId);
-    // Tap-to-move: compute joystickDir from world target
-    if (window._touchTarget) {
-      const tt = window._touchTarget();
-      if (tt && player) {
-        const dx = tt.x - player.pos.x;
-        const dz = tt.z - player.pos.z;
-        const dist = Math.sqrt(dx*dx + dz*dz);
-        if (dist > 0.15) {
-          joystickDir.x = dx / dist;
-          joystickDir.z = dz / dist;
-        } else {
-          joystickDir.x = 0; joystickDir.z = 0;
-        }
-      }
-    }
     player.update(dt, keys, (joystickDir.x||joystickDir.z) ? joystickDir : null, island.tiles, island.obstacles);
     if (player.isMoving && player.footstepTimer <= 0) {
       sfxFootstep();
