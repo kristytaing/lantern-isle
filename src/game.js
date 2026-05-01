@@ -91,6 +91,7 @@ function buildIsland(islandId) {
   if (particles) particles.clearAll();
   crystalOrbits = [];
   islandMeshes = []; crystalMeshes = []; npcMeshes = [];
+  if (scene._islandGlowMesh) { scene.remove(scene._islandGlowMesh); scene._islandGlowMesh = null; }
   // Reset per-visit auto-trigger flags
   if (typeof ISLANDS !== 'undefined') ISLANDS.forEach(il => { il._shrineAutoTriggered = false; });
   shrinBeamMesh = null; shrineBeamLight = null;
@@ -1353,7 +1354,7 @@ function activateShrine() {
   showDialogue('Restoration!', restoreLines, () => {
     if (currentIslandId + 1 < ISLANDS.length) {
       ISLANDS[currentIslandId+1].unlocked = true;
-      showDialogue('Map Updated', [`New island unlocked: ${ISLANDS[currentIslandId+1].name}. Open the map to navigate.`], null);
+      showDialogue('Map Updated', [`New island unlocked: ${ISLANDS[currentIslandId+1].name}!`], null);
     } else {
       triggerWin();
     }
@@ -1504,6 +1505,35 @@ function drawCompass(island) {
   // Player dot
   ctx.beginPath(); ctx.arc(cx,cy,5,0,Math.PI*2);
   ctx.fillStyle = PALETTE.coralRed; ctx.fill();
+  // Island perimeter glow — grows brighter as more islands are restored
+  if (state === 'playing') {
+    const restoredCount = ISLANDS.filter(il => il.restored).length;
+    if (restoredCount > 0 && !scene._islandGlowMesh) {
+      // Create glow ring on first restoration
+      const glowGeo = new THREE.RingGeometry(7.5, 8.5, 48);
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: 0xFFDD55, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false
+      });
+      const glowRing = new THREE.Mesh(glowGeo, glowMat);
+      glowRing.rotation.x = -Math.PI / 2;
+      glowRing.position.y = 0.08;
+      glowRing.renderOrder = 1;
+      scene.add(glowRing);
+      scene._islandGlowMesh = glowRing;
+    }
+    if (scene._islandGlowMesh) {
+      const restoredCount2 = ISLANDS.filter(il => il.restored).length;
+      const targetOpacity = Math.min(restoredCount2 / ISLANDS.length, 1) * 0.55;
+      scene._islandGlowMesh.material.opacity += (targetOpacity - scene._islandGlowMesh.material.opacity) * 0.02;
+      // Pulse gently
+      const pulse = Math.sin(time * 1.2) * 0.07;
+      scene._islandGlowMesh.material.opacity = Math.max(0, scene._islandGlowMesh.material.opacity + pulse * (restoredCount2 / ISLANDS.length));
+      // Scale ring slightly with progress
+      const s = 1 + (ISLANDS.filter(il=>il.restored).length / ISLANDS.length) * 0.4;
+      scene._islandGlowMesh.scale.set(s, s, s);
+    }
+  }
+
   // Shrine direction arrow (only when shrine not yet restored)
   if (player && island && !island.restored) {
     const pp = player.pos;
@@ -2155,7 +2185,7 @@ document.getElementById('start-btn').addEventListener('click', () => {
   titleFadeFrames = 0;
   setTimeout(()=>showDialogue('✨ Lantern Bearer', [
     'Your golden lantern glows as you step onto the Mossy Forest…',
-    'Five crystal shards hide on this island. Find them, then bring them to the shrine!',
+    'Quests: Find the lost firefly · Collect 5 crystal shards · Restore the shrine.',
   ], null), 350);
 });
 

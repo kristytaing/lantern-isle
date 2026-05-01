@@ -144,7 +144,7 @@ export const ISLANDS = [
     id: 4, name: 'Crystal Cave',
     skyTop: '#2A1A4A', skyBot: '#4F3A7A',
     groundColor: 0x2E1E45, accentColor: 0x9B9AE2,
-    fogColor: 0x2A1A4A, fogNear: 12, fogFar: 25,
+    fogColor: 0x5A4A7A, fogNear: 16, fogFar: 38,
     ambientColor: 0x9B9AE2, ambientInt: 0.35,
     sunColor: 0xC6C3DC, sunInt: 0.4,
     unlocked: false, restored: false,
