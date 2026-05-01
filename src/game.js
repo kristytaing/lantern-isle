@@ -854,11 +854,11 @@ document.getElementById('restart-btn').addEventListener('click', ()=>{
 document.getElementById('dev-btn').addEventListener('click', () => {
   ISLANDS.forEach(i=>{ i.unlocked=true; i.restored=false; i.crystalCount=0; });
   questStateMap = {};
-  document.getElementById('title-screen').style.display='none';
   initAudio(); audioReady=true;
   startExploreMusic();
-  showHUD(true); state='playing';
   buildIsland(0);
+  document.getElementById('title-screen').style.display='none';
+  showHUD(true); state='playing';
   setTimeout(()=>showDialogue('🛠️ Dev Mode', ['All islands unlocked. Use the map (M) to jump to any island.'], null), 500);
 });
 
@@ -884,10 +884,10 @@ document.getElementById('reset-btn').addEventListener('click', () => {
 document.getElementById('start-btn').addEventListener('click', () => {
   initAudio(); audioReady = true;
   startExploreMusic();
+  buildIsland(0);
   document.getElementById('title-screen').style.display = 'none';
   showHUD(true);
   state = 'playing';
-  buildIsland(0);
   setTimeout(()=>showDialogue('✨ Lantern Bearer', [
     'Your golden lantern glows as you step onto the Mossy Forest…',
     'Five crystal shards hide on this island. Find them, then bring them to the shrine!',
