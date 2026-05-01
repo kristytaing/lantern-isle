@@ -357,21 +357,34 @@
 
     /* ── Win Screen ── */
     #win-screen{position:absolute;inset:0;
-      background:linear-gradient(160deg,#fce8f5 0%,#e8d0f0 50%,#d4b8e4 100%);
+      background:linear-gradient(to bottom,
+        #2a1e3a 0%,#3a2858 12%,#4f4261 24%,#6a5a88 34%,
+        #9b9ae2 46%,#b8b0d8 54%,#c6c3dc 60%,#d8c8c0 66%,
+        #e8c890 72%,#ebb21a 78%,#f0dec2 86%,#c8a870 93%,#6a5060 100%);
       display:none;flex-direction:column;align-items:center;justify-content:center;
       z-index:40;pointer-events:auto;overflow:hidden;}
     #win-stars{position:absolute;inset:0;pointer-events:none;}
+    /* Sun glow on win screen */
+    #win-screen::before{content:'';position:absolute;bottom:32%;left:50%;transform:translateX(-50%);
+      width:520px;height:180px;pointer-events:none;
+      background:radial-gradient(ellipse at center bottom,
+        rgba(235,178,26,0.45) 0%,rgba(235,178,26,0.22) 30%,
+        rgba(240,222,194,0.1) 55%,transparent 72%);
+      filter:blur(2px);z-index:1;}
     #win-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;
       padding:20px;text-align:center;}
-    #win-screen h1{font-size:34px;font-weight:700;color:#3A2A10;text-align:center;
-      text-shadow:0 0 28px rgba(180,150,80,0.45),0 2px 6px rgba(255,255,255,0.4);line-height:1.35;}
-    #win-screen p{color:#7A5A7A;margin-top:14px;font-size:20.2px;max-width:440px;line-height:1.85;}
+    #win-screen h1{font-size:34px;font-weight:700;
+      color:#F0DEC2;text-align:center;font-family:'Cormorant Garamond',serif;
+      text-shadow:0 0 32px rgba(235,178,26,0.7),0 2px 8px rgba(0,0,0,0.5);line-height:1.35;}
+    #win-screen p{color:rgba(240,222,194,0.88);margin-top:14px;font-size:18px;
+      max-width:440px;line-height:1.9;font-family:'Cormorant Garamond',serif;font-style:italic;
+      text-shadow:0 1px 6px rgba(0,0,0,0.6);}
     #restart-btn{margin-top:28px;
       background:linear-gradient(135deg,rgba(210,185,140,0.95),rgba(175,155,110,0.95));
       color:#3A2A10;border:1.5px solid rgba(160,130,80,0.6);
       font-family:'Quicksand',sans-serif;font-size:21.6px;font-weight:700;
       padding:12px 36px;border-radius:28px;cursor:pointer;
-      box-shadow:0 4px 20px rgba(220,140,180,0.4);}
+      box-shadow:0 4px 20px rgba(235,178,26,0.35);}
     #restart-btn:hover{transform:scale(1.05);}
 
     /* ── Misc ── */
