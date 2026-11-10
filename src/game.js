@@ -1504,7 +1504,7 @@ function triggerWin() {
     document.getElementById('win-epilogue').textContent =
       'The prophecy is fulfilled. The Lantern Bearer — once a child who wandered ' +
       'into a fading world — has relit the heart of the Archipelago. ' +
-      'Six islands remember warmth. Six shrines sing. ' +
+      'Five islands remember warmth. Five shrines sing. ' +
       'And somewhere above, the Guardian Star smiles back at the light below.';
     document.getElementById('win-screen').style.display = 'flex';
     showHUD(false);
