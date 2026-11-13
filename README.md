@@ -10,31 +10,30 @@
 
 ## About
 
-You are the Lantern Bearer — a wanderer who arrives at a fading archipelago the night the Guardian Star went dark. Guide your chibi adventurer across **6 hand-crafted islands**, earning the trust of islanders, collecting crystal shards, and awakening ancient shrines to restore light to the world.
+You are the Lantern Bearer — a wanderer who arrives at a fading archipelago the night the Guardian Star went dark. Guide your chibi adventurer across **5 hand-crafted islands**, helping islanders, collecting crystal shards, and awakening ancient shrines to restore light to the world.
 
-Every crystal is earned, not found. Help the people first — then the shards appear.
+Some shards are waiting to be found. Others are earned by helping the people who need you.
 
 ---
 
 ## How It Works
 
-Each island has **3 NPCs**, each with a quest. Complete their requests — fetch lost items, gather offerings, earn their trust — and a crystal shard materializes near them as a reward. Collect all shards, then bring them to the shrine at the island's heart.
+Each island holds **5 crystal shards**. Explore to find some of them, and help the islanders with their requests — find a lost firefly, fetch a fallen wind chime, gather cherry petals — to earn the rest. On later islands, an elder's quest opens only after you've helped their neighbors.
 
-The shrine awakens with a beam of light, grants you a new ability, and unlocks the next island.
+Bring all 5 shards to the shrine at the island's heart. The shrine awakens with a beam of light and unlocks the next island on the world map.
 
-**Quests per island:**
-- Two item-fetch quests (find a collectible on the island, deliver it to the NPC)
-- One elder quest (requires both other quests first)
+Islands, in order: **Mossy Forest → Sunflower Beach → Sakura Cove → Crystal Cave → Lavender Highlands**
 
 ---
 
 ## Features
 
-- **6 distinct biomes** — unique skyboxes, terrain palettes, fog, flora, and NPC characters per island
-- **Quest-gated crystal system** — shards are invisible until earned; each appears near the NPC who rewards it
-- **Ability progression** — Lantern Pulse, Sprint, Heat Ward, Whistle, Sonar Echo unlocked island by island
-- **Procedural audio** — generative music and SFX per island, zero file downloads
-- **Mobile ready** — virtual joystick + action button, touch-tuned input mapping
+- **5 distinct biomes** — unique sky colors, terrain palettes, fog, flora, and characters per island
+- **Quest-gated crystals** — some shards are free to find; others appear only after you help an islander
+- **Ambient motion** — collectibles glow so you know what to pick up; everything else bobs gently
+- **Procedural audio** — generative music and sound effects per island, zero audio files
+- **Explore Mode** — unlocks every island so you can jump anywhere from the map
+- **Mobile ready** — tap where you want to walk
 
 ---
 
@@ -43,20 +42,19 @@ The shrine awakens with a beam of light, grants you a new ability, and unlocks t
 | Input | Action |
 |-------|--------|
 | WASD / Arrow Keys | Move |
-| E / Space / Enter | Interact / Advance dialogue |
-| Shift | Sprint (unlocked at Sunflower Beach) |
-| Q | Lantern Pulse (unlocked at Mossy Forest) |
-| M / Tab | World Map |
-| Escape | Close map |
+| Walk up to a character or item | Talk / pick up |
+| Any key | Advance dialogue |
+| Tab or Map button | Open world map |
+| M / Tab / Escape | Close world map |
 
-Mobile: on-screen joystick (bottom-left) + action button (bottom-right).
+Mobile: touch and hold where you want to walk; tap to advance dialogue.
 
 ---
 
 ## Tech
 
 - **Three.js** r160 — ES modules via CDN, no build step
-- **Isometric camera** — `OrthographicCamera` at 45° for classic 2.5D perspective
+- **Isometric camera** — `OrthographicCamera` for a classic 2.5D perspective
 - **Procedural terrain** — per-island tile shapes with deterministic hash-based decoration
 - **Web Audio API** — fully generative music and SFX, no audio files
 - **Canvas 2D** — world map, thought bubbles, water shimmer
